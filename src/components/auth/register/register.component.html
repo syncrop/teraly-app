@@ -59,25 +59,25 @@
         <div>
           <label for="fullName" class="sr-only" i18n>Full Name</label>
           <input formControlName="fullName" id="fullName" name="fullName" type="text" autocomplete="name" required
-                 class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                 class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
                  i18n-placeholder placeholder="Full Name">
         </div>
         <div>
           <label for="email-register" class="sr-only" i18n>Email</label>
           <input formControlName="email" id="email-register" name="email" type="email" autocomplete="email" required
-                 class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                 class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
                  i18n-placeholder placeholder="Email">
         </div>
         <div>
           <label for="password-register" class="sr-only" i18n>Password</label>
           <input formControlName="password" id="password-register" name="password" type="password" required
-                 class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                 class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
                  i18n-placeholder placeholder="Password">
         </div>
         <div>
           <label for="confirmPassword" class="sr-only" i18n>Confirm Password</label>
           <input formControlName="confirmPassword" id="confirmPassword" name="confirmPassword" type="password" required
-                 class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                 class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
                  i18n-placeholder placeholder="Confirm Password">
           @if (registerForm.get('confirmPassword')?.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched) {
             <p i18n class="text-red-500 text-xs mt-1">Passwords do not match.</p>
@@ -88,7 +88,7 @@
           <div class="pt-2">
             <label for="licenseNumber" class="sr-only" i18n>License / Diploma Number</label>
             <input formControlName="licenseNumber" id="licenseNumber" name="licenseNumber" type="text" required
-                   class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                   class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
                    i18n-placeholder placeholder="License / Diploma Number">
           </div>
         }
