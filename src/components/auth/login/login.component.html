@@ -1,0 +1,45 @@
+
+<div class="flex flex-col items-center justify-center min-h-screen bg-white p-6">
+  <div class="w-full max-w-sm space-y-10">
+    
+    <div class="text-center">
+      <div class="inline-block mb-8">
+        <app-logo></app-logo>
+      </div>
+      <h1 i18n class="text-3xl font-bold text-gray-900">Welcome</h1>
+      <p i18n class="mt-2 text-lg text-gray-500">Your trusted Psychology platform</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="login()" class="space-y-6">
+      <div class="space-y-4">
+        <div>
+          <label for="email" class="sr-only" i18n>Email</label>
+          <input formControlName="email" id="email" name="email" type="email" autocomplete="email" required
+                 class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                 i18n-placeholder placeholder="Email">
+        </div>
+        <div>
+          <label for="password" class="sr-only" i18n>Password</label>
+          <input formControlName="password" id="password" name="password" type="password" autocomplete="current-password" required
+                 class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                 i18n-placeholder placeholder="Password">
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button type="submit" [disabled]="!isSubmittable()"
+                class="group relative w-full flex justify-center py-4 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed">
+          <span i18n>Login</span>
+        </button>
+      </div>
+    </form>
+    
+    <p class="text-center text-sm text-gray-600">
+      <span i18n>Don't have an account?</span>
+      <a routerLink="/register" class="font-medium text-indigo-600 hover:text-indigo-500">
+        <span i18n>Register</span>
+      </a>
+    </p>
+
+  </div>
+</div>
