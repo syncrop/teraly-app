@@ -1,6 +1,6 @@
-
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { I18nService } from './services/i18n.service';
 
 @Component({
   selector: 'app-root',
@@ -9,4 +9,9 @@ import { RouterOutlet } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterOutlet]
 })
-export class AppComponent {}
+export class AppComponent {
+  constructor() {
+    // Initialize the service at startup
+    inject(I18nService);
+  }
+}

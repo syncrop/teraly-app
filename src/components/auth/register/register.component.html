@@ -17,7 +17,7 @@
     </div>
 
     <div class="text-center mb-8">
-      <h1 i18n class="text-3xl font-bold text-gray-900">Registration</h1>
+      <h1 class="text-3xl font-bold text-gray-900" i18n="@@register.title">Registration</h1>
     </div>
 
     <!-- User Type Toggle Switch -->
@@ -27,7 +27,7 @@
             [class.font-semibold]="userType() === 'patient'"
             [class.text-gray-400]="userType() !== 'patient'"
             class="transition-colors duration-300">
-            <span i18n>Patient</span>
+            <span i18n="@@register.userTypePatient">Patient</span>
         </span>
         
         <button 
@@ -50,46 +50,46 @@
             [class.font-semibold]="userType() === 'specialist'"
             [class.text-gray-400]="userType() !== 'specialist'"
             class="transition-colors duration-300">
-            <span i18n>Specialist</span>
+            <span i18n="@@register.userTypeSpecialist">Specialist</span>
         </span>
     </div>
 
     <form [formGroup]="registerForm" (ngSubmit)="register()" class="space-y-4">
       <div class="space-y-4">
         <div>
-          <label for="fullName" class="sr-only" i18n>Full Name</label>
+          <label for="fullName" class="sr-only" i18n="@@register.fullNameLabel">Full Name</label>
           <input formControlName="fullName" id="fullName" name="fullName" type="text" autocomplete="name" required
                  class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
-                 i18n-placeholder placeholder="Full Name">
+                 placeholder="Full Name" i18n-placeholder="@@register.fullNamePlaceholder">
         </div>
         <div>
-          <label for="email-register" class="sr-only" i18n>Email</label>
+          <label for="email-register" class="sr-only" i18n="@@register.emailLabel">Email</label>
           <input formControlName="email" id="email-register" name="email" type="email" autocomplete="email" required
                  class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
-                 i18n-placeholder placeholder="Email">
+                 placeholder="Email" i18n-placeholder="@@register.emailPlaceholder">
         </div>
         <div>
-          <label for="password-register" class="sr-only" i18n>Password</label>
+          <label for="password-register" class="sr-only" i18n="@@register.passwordLabel">Password</label>
           <input formControlName="password" id="password-register" name="password" type="password" required
                  class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
-                 i18n-placeholder placeholder="Password">
+                 placeholder="Password" i18n-placeholder="@@register.passwordPlaceholder">
         </div>
         <div>
-          <label for="confirmPassword" class="sr-only" i18n>Confirm Password</label>
+          <label for="confirmPassword" class="sr-only" i18n="@@register.confirmPasswordLabel">Confirm Password</label>
           <input formControlName="confirmPassword" id="confirmPassword" name="confirmPassword" type="password" required
                  class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
-                 i18n-placeholder placeholder="Confirm Password">
+                 placeholder="Confirm Password" i18n-placeholder="@@register.confirmPasswordPlaceholder">
           @if (registerForm.get('confirmPassword')?.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched) {
-            <p i18n class="text-red-500 text-xs mt-1">Passwords do not match.</p>
+            <p class="text-red-500 text-xs mt-1" i18n="@@register.passwordMismatch">Passwords do not match.</p>
           }
         </div>
         
         @if (userType() === 'specialist') {
           <div class="pt-2">
-            <label for="licenseNumber" class="sr-only" i18n>License / Diploma Number</label>
+            <label for="licenseNumber" class="sr-only" i18n="@@register.licenseLabel">License / Diploma Number</label>
             <input formControlName="licenseNumber" id="licenseNumber" name="licenseNumber" type="text" required
                    class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
-                   i18n-placeholder placeholder="License / Diploma Number">
+                   placeholder="License / Diploma Number" i18n-placeholder="@@register.licensePlaceholder">
           </div>
         }
       </div>
@@ -97,15 +97,15 @@
       <div class="pt-4">
         <button type="submit" [disabled]="!isSubmittable()"
                 class="group relative w-full flex justify-center py-4 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed">
-          <span i18n>Register</span>
+          <span i18n="@@register.registerButton">Register</span>
         </button>
       </div>
     </form>
     
     <p class="mt-8 text-center text-sm text-gray-600">
-      <span i18n>Already have an account?</span>
+      <span i18n="@@register.alreadyAccount">Already have an account?</span>
       <a routerLink="/login" class="font-medium text-indigo-600 hover:text-indigo-500">
-        <span i18n>Login</span>
+        <span i18n="@@register.loginLink">Login</span>
       </a>
     </p>
 
