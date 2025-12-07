@@ -1,6 +1,7 @@
-
 {
   "translations": {
+    "auth.layout.tagline": "Znajdź równowagę, znajdź swojego terapeutę.",
+    "auth.layout.description": "Zweryfikowani specjaliści gotowi wspierać Twoje samopoczucie psychiczne w różnych językach i kulturach.",
     "login.welcome": "Witamy",
     "login.subtitle": "Twoja zaufana platforma psychologiczna",
     "login.emailLabel": "Email",

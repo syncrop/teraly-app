@@ -10,54 +10,58 @@ import { loadTranslations } from '@angular/localize';
 import { AppComponent } from './src/app.component';
 import { APP_ROUTES } from './src/app.routes';
 
-// --- Locale Detection ---
-const SUPPORTED_LOCALES = ['en', 'es', 'pl', 'uk'];
-let locale = 'en'; // Default locale
+async function bootstrapApp() {
+  // --- Locale Detection ---
+  const SUPPORTED_LOCALES = ['en', 'es', 'pl', 'uk'];
+  let locale = 'en'; // Default locale
 
-const storedLang = localStorage.getItem('teraly-lang');
-const browserLang = navigator.language.split('-')[0];
+  const storedLang = localStorage.getItem('teraly-lang');
+  const browserLang = navigator.language.split('-')[0];
 
-if (storedLang && SUPPORTED_LOCALES.includes(storedLang)) {
-  locale = storedLang;
-} else if (browserLang && SUPPORTED_LOCALES.includes(browserLang)) {
-  locale = browserLang;
-}
+  if (storedLang && SUPPORTED_LOCALES.includes(storedLang)) {
+    locale = storedLang;
+  } else if (browserLang && SUPPORTED_LOCALES.includes(browserLang)) {
+    locale = browserLang;
+  }
 
-// --- Asynchronous Bootstrap ---
-const bootstrap = () => {
-  bootstrapApplication(AppComponent, {
-    providers: [
-      provideZoneChangeDetection({ eventCoalescing: true }),
-      provideRouter(APP_ROUTES, withHashLocation()),
-      provideHttpClient(),
-      importProvidersFrom(ReactiveFormsModule),
-      { provide: LOCALE_ID, useValue: locale },
-    ],
-  }).catch((err) => console.error(err));
-};
-
-// If the locale is the source locale (English), bootstrap immediately.
-// Otherwise, fetch the translation file first.
-if (locale === 'en') {
-  bootstrap();
-} else {
-  // Use an absolute path from the domain root to make the fetch more robust.
-  fetch(`/assets/i18n/${locale}.json`)
-    .then((response) => {
+  // Load translations if the locale is not the source locale (English)
+  if (locale !== 'en') {
+    try {
+      const response = await fetch(`/assets/i18n/${locale}.json`);
       if (!response.ok) {
-        throw new Error(`Failed to load translation file for locale '${locale}'`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return response.json();
-    })
-    .then((translations) => {
+      
+      const responseText = await response.text();
+      // Guard against a strange platform issue where the response body is "undefined"
+      if (responseText === 'undefined') {
+        throw new Error(`Received "undefined" as response for ${locale}.json`);
+      }
+
+      const translations = JSON.parse(responseText);
       loadTranslations(translations.translations);
-      bootstrap();
-    })
-    .catch((error) => {
-      console.error(error);
-      // Fallback to English if translations fail to load
-      bootstrap();
+    } catch (error) {
+      console.error(`Failed to load translations for '${locale}'. Falling back to 'en'.`, error);
+      locale = 'en'; // Fallback to the default locale
+    }
+  }
+
+  // Bootstrap the application
+  try {
+    await bootstrapApplication(AppComponent, {
+      providers: [
+        provideZoneChangeDetection({ eventCoalescing: true }),
+        provideRouter(APP_ROUTES, withHashLocation()),
+        provideHttpClient(),
+        importProvidersFrom(ReactiveFormsModule),
+        { provide: LOCALE_ID, useValue: locale },
+      ],
     });
+  } catch (err) {
+    console.error('Application bootstrap failed:', err);
+  }
 }
+
+bootstrapApp();
 
 // AI Studio always uses an `index.tsx` file for all project types.

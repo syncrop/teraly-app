@@ -4,12 +4,13 @@ import { Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { LogoComponent } from '../../shared/logo/logo.component';
 import { AuthService } from '../../../services/auth.service';
+import { AuthLayoutComponent } from '../auth-layout/auth-layout.component';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, LogoComponent]
+  imports: [ReactiveFormsModule, RouterLink, LogoComponent, AuthLayoutComponent]
 })
 export class LoginComponent {
   private router = inject(Router);

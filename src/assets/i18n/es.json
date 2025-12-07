@@ -1,6 +1,7 @@
-
 {
   "translations": {
+    "auth.layout.tagline": "Encuentra tu equilibrio, encuentra tu terapeuta.",
+    "auth.layout.description": "Profesionales verificados listos para apoyar tu bienestar mental en diferentes idiomas y culturas.",
     "login.welcome": "Bienvenido",
     "login.subtitle": "Tu plataforma de Psicología de confianza",
     "login.emailLabel": "Correo electrónico",

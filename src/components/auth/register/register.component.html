@@ -1,81 +1,54 @@
+<app-auth-layout>
+  <div class="w-full">
 
-<div class="flex flex-col items-center min-h-screen bg-white p-6">
-  <div class="w-full max-w-sm">
-
-    <div class="grid grid-cols-3 items-center mb-8">
-      <div class="justify-self-start">
-        <a routerLink="/login" class="text-gray-500 hover:text-indigo-600 p-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </a>
-      </div>
-      <div class="justify-self-center">
-        <app-logo></app-logo>
-      </div>
-      <div></div>
+    <div class="md:hidden text-center mb-8">
+      <app-logo></app-logo>
     </div>
 
-    <div class="text-center mb-8">
+    <div class="text-center md:text-left mb-8">
       <h1 class="text-3xl font-bold text-gray-900" i18n="@@register.title">Registration</h1>
     </div>
 
     <!-- User Type Toggle Switch -->
-    <div class="flex justify-center items-center space-x-4 mb-8">
-        <span 
-            [class.text-indigo-600]="userType() === 'patient'" 
-            [class.font-semibold]="userType() === 'patient'"
-            [class.text-gray-400]="userType() !== 'patient'"
-            class="transition-colors duration-300">
+    <div class="flex justify-center items-center space-x-4 mb-8 p-1.5 bg-gray-100 rounded-xl">
+        <button (click)="userType.set('patient')" type="button" 
+            class="w-1/2 py-2.5 text-sm font-semibold rounded-lg transition-colors duration-300"
+            [class.bg-white]="userType() === 'patient'"
+            [class.text-indigo-600]="userType() === 'patient'"
+            [class.text-gray-500]="userType() !== 'patient'">
             <span i18n="@@register.userTypePatient">Patient</span>
-        </span>
-        
-        <button 
-            (click)="toggleUserType()" 
-            type="button" 
-            role="switch"
-            [attr.aria-checked]="userType() === 'patient'"
-            class="relative inline-flex items-center h-8 w-14 rounded-full transition-colors duration-300 focus:outline-none"
-            [class.bg-indigo-600]="userType() === 'patient'"
-            [class.bg-gray-200]="userType() === 'specialist'">
-            <span
-                class="inline-block w-6 h-6 transform bg-white rounded-full transition-transform duration-300 ease-in-out"
-                [class.translate-x-1]="userType() === 'patient'"
-                [class.translate-x-7]="userType() === 'specialist'">
-            </span>
         </button>
-
-        <span 
-            [class.text-indigo-600]="userType() === 'specialist'" 
-            [class.font-semibold]="userType() === 'specialist'"
-            [class.text-gray-400]="userType() !== 'specialist'"
-            class="transition-colors duration-300">
+        <button (click)="userType.set('specialist')" type="button"
+            class="w-1/2 py-2.5 text-sm font-semibold rounded-lg transition-colors duration-300"
+            [class.bg-white]="userType() === 'specialist'"
+            [class.text-indigo-600]="userType() === 'specialist'"
+            [class.text-gray-500]="userType() !== 'specialist'">
             <span i18n="@@register.userTypeSpecialist">Specialist</span>
-        </span>
+        </button>
     </div>
 
     <form [formGroup]="registerForm" (ngSubmit)="register()" class="space-y-4">
       <div class="space-y-4">
         <div>
-          <label for="fullName" class="sr-only" i18n="@@register.fullNameLabel">Full Name</label>
+           <label for="fullName" class="block text-sm font-medium text-gray-700 mb-1" i18n="@@register.fullNameLabel">Full Name</label>
           <input formControlName="fullName" id="fullName" name="fullName" type="text" autocomplete="name" required
                  class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
                  placeholder="Full Name" i18n-placeholder="@@register.fullNamePlaceholder">
         </div>
         <div>
-          <label for="email-register" class="sr-only" i18n="@@register.emailLabel">Email</label>
+           <label for="email-register" class="block text-sm font-medium text-gray-700 mb-1" i18n="@@register.emailLabel">Email</label>
           <input formControlName="email" id="email-register" name="email" type="email" autocomplete="email" required
                  class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
                  placeholder="Email" i18n-placeholder="@@register.emailPlaceholder">
         </div>
         <div>
-          <label for="password-register" class="sr-only" i18n="@@register.passwordLabel">Password</label>
+           <label for="password-register" class="block text-sm font-medium text-gray-700 mb-1" i18n="@@register.passwordLabel">Password</label>
           <input formControlName="password" id="password-register" name="password" type="password" required
                  class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
                  placeholder="Password" i18n-placeholder="@@register.passwordPlaceholder">
         </div>
         <div>
-          <label for="confirmPassword" class="sr-only" i18n="@@register.confirmPasswordLabel">Confirm Password</label>
+           <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1" i18n="@@register.confirmPasswordLabel">Confirm Password</label>
           <input formControlName="confirmPassword" id="confirmPassword" name="confirmPassword" type="password" required
                  class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
                  placeholder="Confirm Password" i18n-placeholder="@@register.confirmPasswordPlaceholder">
@@ -86,7 +59,7 @@
         
         @if (userType() === 'specialist') {
           <div class="pt-2">
-            <label for="licenseNumber" class="sr-only" i18n="@@register.licenseLabel">License / Diploma Number</label>
+            <label for="licenseNumber" class="block text-sm font-medium text-gray-700 mb-1" i18n="@@register.licenseLabel">License / Diploma Number</label>
             <input formControlName="licenseNumber" id="licenseNumber" name="licenseNumber" type="text" required
                    class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
                    placeholder="License / Diploma Number" i18n-placeholder="@@register.licensePlaceholder">
@@ -110,4 +83,4 @@
     </p>
 
   </div>
-</div>
+</app-auth-layout>

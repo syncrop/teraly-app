@@ -1,9 +1,8 @@
-
-<div class="flex flex-col items-center justify-center min-h-screen bg-white p-6">
-  <div class="w-full max-w-sm space-y-10">
+<app-auth-layout>
+  <div class="w-full space-y-10">
     
-    <div class="text-center">
-      <div class="inline-block mb-8">
+    <div class="text-center md:text-left">
+      <div class="md:hidden inline-block mb-8">
         <app-logo></app-logo>
       </div>
       <h1 class="text-3xl font-bold text-gray-900" i18n="@@login.welcome">Welcome</h1>
@@ -13,13 +12,13 @@
     <form [formGroup]="loginForm" (ngSubmit)="login()" class="space-y-6">
       <div class="space-y-4">
         <div>
-          <label for="email" class="sr-only" i18n="@@login.emailLabel">Email</label>
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-1" i18n="@@login.emailLabel">Email</label>
           <input formControlName="email" id="email" name="email" type="email" autocomplete="email" required
                  class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
                  placeholder="client@teraly.com" i18n-placeholder="@@login.emailPlaceholder">
         </div>
         <div>
-          <label for="password" class="sr-only" i18n="@@login.passwordLabel">Password</label>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1" i18n="@@login.passwordLabel">Password</label>
           <input formControlName="password" id="password" name="password" type="password" autocomplete="current-password" required
                  class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
                  placeholder="pass" i18n-placeholder="@@login.passwordPlaceholder">
@@ -54,4 +53,4 @@
     </p>
 
   </div>
-</div>
+</app-auth-layout>
