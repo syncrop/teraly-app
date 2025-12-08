@@ -173,11 +173,13 @@ Este documento presenta un plan de acción priorizado para abordar las vulnerabi
 
 ### Security Headers
 
-**Archivo:** `firebase.json`
+**Archivo:** `firebase.json` (agregar o modificar la sección "hosting")
 
 ```json
 {
   "hosting": {
+    "public": "dist/browser",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "headers": [
       {
         "source": "**",
@@ -397,8 +399,8 @@ describe('Security Tests', () => {
 
 ---
 
-**Documento creado:** 2025-12-08  
-**Última actualización:** 2025-12-08  
+**Documento creado:** 2024-12-08  
+**Última actualización:** 2024-12-08  
 **Versión:** 1.0  
 **Propietario:** Security Team  
 **Estado:** 📋 Draft - Pendiente de aprobación

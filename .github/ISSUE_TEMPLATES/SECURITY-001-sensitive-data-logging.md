@@ -15,7 +15,7 @@ El código actual está registrando información sensible en la consola del nave
 - Errores de autenticación con detalles técnicos
 - Entradas de estado de ánimo del usuario (información de salud mental)
 
-Esta práctica expone información personal identificable (PII) e información de salud protegida (PHI), lo cual representa una violación potencial de GDPR y HIPAA.
+Esta práctica expone información personal identificable (PII) e información de salud protegida (PHI), lo cual va en contra de las mejores prácticas de seguridad y protección de datos (GDPR, HIPAA).
 
 ## Ubicaciones Afectadas
 

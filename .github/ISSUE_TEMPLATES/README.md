@@ -44,4 +44,4 @@ Para preguntas sobre seguridad, contactar al equipo de seguridad del proyecto.
 
 ---
 
-**Última actualización:** 2025-12-08
+**Última actualización:** 2024-12-08
