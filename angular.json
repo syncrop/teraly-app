@@ -21,12 +21,18 @@
           },
           "configurations": {
             "production": {
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "assets": [
+                "src/assets"
+              ]
             },
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true
+              "sourceMap": true,
+              "assets": [
+                "src/assets"
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -48,5 +54,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "4cfa054e-3d21-49eb-97d0-3f45188c8fd2"
   }
 }

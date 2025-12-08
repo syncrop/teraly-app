@@ -27,7 +27,8 @@ async function bootstrapApp() {
   // Load translations if the locale is not the source locale (English)
   if (locale !== 'en') {
     try {
-      const response = await fetch(`/assets/i18n/${locale}.json`);
+
+      const response = await fetch(`/src/assets/i18n/${locale}.json`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
