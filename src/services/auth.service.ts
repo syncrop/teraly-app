@@ -1,7 +1,23 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, user } from '@angular/fire/auth';
-import { Firestore, collection, doc, setDoc, getDoc, query, where, getDocs } from '@angular/fire/firestore';
+import {
+  Auth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut,
+  user,
+} from '@angular/fire/auth';
+import {
+  Firestore,
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  query,
+  where,
+  getDocs,
+} from '@angular/fire/firestore';
 import { from, Observable } from 'rxjs';
 import { map, catchError, switchMap, tap } from 'rxjs/operators';
 
@@ -25,7 +41,7 @@ export class AuthService {
   private auth = inject(Auth);
   private firestore = inject(Firestore);
   private router = inject(Router);
-  
+
   currentUserRole = signal<UserRole>(null);
   currentUser = signal<AppUser | null>(null);
 
@@ -37,7 +53,10 @@ export class AuthService {
   }
 
   // Login con Firebase
-  login(email: string, password: string): Observable<{ success: boolean; role?: UserRole; error?: string }> {
+  login(
+    email: string,
+    password: string
+  ): Observable<{ success: boolean; role?: UserRole; error?: string }> {
     return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
       // Use switchMap to handle the promise and emit the correct type
       // Import switchMap from 'rxjs/operators' if not already imported
@@ -59,7 +78,10 @@ export class AuthService {
                   // store session token details
                   try {
                     const idToken = (tokenResult && (tokenResult.token as string)) || '';
-                    const expiresAt = tokenResult && tokenResult.expirationTime ? new Date(tokenResult.expirationTime).getTime() : (Date.now() + 3600 * 1000);
+                    const expiresAt =
+                      tokenResult && tokenResult.expirationTime
+                        ? new Date(tokenResult.expirationTime).getTime()
+                        : Date.now() + 3600 * 1000;
                     const refreshToken = (credential.user as any)?.refreshToken || '';
                     sessionStorage.setItem('idToken', idToken);
                     sessionStorage.setItem('refreshToken', refreshToken);
@@ -94,50 +116,61 @@ export class AuthService {
   }
 
   // Registro con Firebase
-  register(email: string, password: string, fullName: string, userType: 'client' | 'doctor', licenseNumber?: string): Observable<{ success: boolean; uid?: string; error?: string }> {
+  register(
+    email: string,
+    password: string,
+    fullName: string,
+    userType: 'client' | 'doctor',
+    licenseNumber?: string
+  ): Observable<{ success: boolean; uid?: string; error?: string }> {
     return from(createUserWithEmailAndPassword(this.auth, email, password)).pipe(
       switchMap((credential) =>
-        from((async () => {
-          const uid = credential.user.uid;
-          const userRef = doc(this.firestore, 'users', uid);
-          
-          const userData: AppUser = {
-            uid,
-            email,
-            fullName,
-            role: userType,
-            createdAt: new Date(),
-            isVerified: userType === 'client',
-            ...(userType === 'doctor' && { 
-              licenseNumber, 
-              isVerified: false,
-              specialty: ''
-            })
-          };
-          
-          await setDoc(userRef, userData);
-          this.currentUserRole.set(userType);
-          this.currentUser.set(userData);
-          localStorage.setItem('userRole', userType);
-          localStorage.setItem('userId', uid);
+        from(
+          (async () => {
+            const uid = credential.user.uid;
+            const userRef = doc(this.firestore, 'users', uid);
 
-          // store session token details (idToken, refreshToken, expiresAt, localId, email)
-          try {
-            const tokenResult = await credential.user.getIdTokenResult();
-            const idToken = tokenResult?.token || '';
-            const expiresAt = tokenResult && tokenResult.expirationTime ? new Date(tokenResult.expirationTime).getTime() : (Date.now() + 3600 * 1000);
-            const refreshToken = (credential.user as any)?.refreshToken || '';
-            sessionStorage.setItem('idToken', idToken);
-            sessionStorage.setItem('refreshToken', refreshToken);
-            sessionStorage.setItem('expiresAt', String(expiresAt));
-            sessionStorage.setItem('localId', uid);
-            sessionStorage.setItem('email', credential.user.email || email || '');
-          } catch (e) {
-            console.warn('Could not store session tokens on register', e);
-          }
+            const userData: AppUser = {
+              uid,
+              email,
+              fullName,
+              role: userType,
+              createdAt: new Date(),
+              isVerified: userType === 'client',
+              ...(userType === 'doctor' && {
+                licenseNumber,
+                isVerified: false,
+                specialty: '',
+              }),
+            };
 
-          return { success: true, uid };
-        })())
+            await setDoc(userRef, userData);
+            this.currentUserRole.set(userType);
+            this.currentUser.set(userData);
+            localStorage.setItem('userRole', userType);
+            localStorage.setItem('userId', uid);
+
+            // store session token details (idToken, refreshToken, expiresAt, localId, email)
+            try {
+              const tokenResult = await credential.user.getIdTokenResult();
+              const idToken = tokenResult?.token || '';
+              const expiresAt =
+                tokenResult && tokenResult.expirationTime
+                  ? new Date(tokenResult.expirationTime).getTime()
+                  : Date.now() + 3600 * 1000;
+              const refreshToken = (credential.user as any)?.refreshToken || '';
+              sessionStorage.setItem('idToken', idToken);
+              sessionStorage.setItem('refreshToken', refreshToken);
+              sessionStorage.setItem('expiresAt', String(expiresAt));
+              sessionStorage.setItem('localId', uid);
+              sessionStorage.setItem('email', credential.user.email || email || '');
+            } catch (e) {
+              console.warn('Could not store session tokens on register', e);
+            }
+
+            return { success: true, uid };
+          })()
+        )
       ),
       catchError((error) => {
         let errorMessage = 'Error al registrar';
@@ -171,31 +204,33 @@ export class AuthService {
 
   // Logout con Firebase
   logout(): void {
-    signOut(this.auth).then(() => {
-      // Limpiar signals
-      this.currentUserRole.set(null);
-      this.currentUser.set(null);
-      
-      // Limpiar localStorage
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userId');
-      
-      // Limpiar sessionStorage
-      sessionStorage.removeItem('idToken');
-      sessionStorage.removeItem('refreshToken');
-      sessionStorage.removeItem('expiresAt');
-      sessionStorage.removeItem('localId');
-      sessionStorage.removeItem('email');
-      
-      // Redirigir al login
-      this.router.navigate(['/login']);
-    }).catch((error) => {
-      console.error('Error al cerrar sesión:', error);
-      // Intentar limpiar de todas formas
-      this.currentUserRole.set(null);
-      this.currentUser.set(null);
-      this.router.navigate(['/login']);
-    });
+    signOut(this.auth)
+      .then(() => {
+        // Limpiar signals
+        this.currentUserRole.set(null);
+        this.currentUser.set(null);
+
+        // Limpiar localStorage
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userId');
+
+        // Limpiar sessionStorage
+        sessionStorage.removeItem('idToken');
+        sessionStorage.removeItem('refreshToken');
+        sessionStorage.removeItem('expiresAt');
+        sessionStorage.removeItem('localId');
+        sessionStorage.removeItem('email');
+
+        // Redirigir al login
+        this.router.navigate(['/login']);
+      })
+      .catch((error) => {
+        console.error('Error al cerrar sesión:', error);
+        // Intentar limpiar de todas formas
+        this.currentUserRole.set(null);
+        this.currentUser.set(null);
+        this.router.navigate(['/login']);
+      });
   }
 
   // Verificar si el usuario está autenticado

@@ -12,10 +12,9 @@ interface Mood {
   selector: 'app-moods',
   templateUrl: './moods.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule]
+  imports: [CommonModule, FormsModule],
 })
 export class MoodsComponent implements OnInit {
-
   selectedMood = signal<string | null>('bien');
   showQuestions = signal(false);
   moodResponses = signal<{ [key: string]: string | number }>({});
@@ -24,7 +23,7 @@ export class MoodsComponent implements OnInit {
     { id: 'mal', emoji: '😔', label: '' },
     { id: 'regular', emoji: '😐', label: '' },
     { id: 'bien', emoji: '🙂', label: '' },
-    { id: 'genial', emoji: '😄', label: '' }
+    { id: 'genial', emoji: '😄', label: '' },
   ];
 
   moodQuestions: any[] = [
@@ -35,7 +34,7 @@ export class MoodsComponent implements OnInit {
       min: 1,
       max: 10,
       minLabel: 'Muy malo',
-      maxLabel: 'Excelente'
+      maxLabel: 'Excelente',
     },
     {
       id: 'energy',
@@ -44,7 +43,7 @@ export class MoodsComponent implements OnInit {
       min: 1,
       max: 10,
       minLabel: 'Muy bajo',
-      maxLabel: 'Muy alto'
+      maxLabel: 'Muy alto',
     },
     {
       id: 'stress',
@@ -53,7 +52,7 @@ export class MoodsComponent implements OnInit {
       min: 1,
       max: 10,
       minLabel: 'Sin estrés',
-      maxLabel: 'Muy estresado'
+      maxLabel: 'Muy estresado',
     },
     {
       id: 'anxiety',
@@ -62,14 +61,14 @@ export class MoodsComponent implements OnInit {
       min: 1,
       max: 10,
       minLabel: 'Sin ansiedad',
-      maxLabel: 'Muy ansiedad'
+      maxLabel: 'Muy ansiedad',
     },
     {
       id: 'notes',
       label: '',
       type: 'text',
-      placeholder: ''
-    }
+      placeholder: '',
+    },
   ];
 
   onMoodSelect(moodId: string) {
@@ -78,9 +77,9 @@ export class MoodsComponent implements OnInit {
   }
 
   updateResponse(questionId: string, value: string | number) {
-    this.moodResponses.update(responses => ({
+    this.moodResponses.update((responses) => ({
       ...responses,
-      [questionId]: value
+      [questionId]: value,
     }));
   }
 
@@ -91,7 +90,7 @@ export class MoodsComponent implements OnInit {
       { id: 'mal', emoji: '😔', label: 'Mal' },
       { id: 'regular', emoji: '😐', label: 'Regular' },
       { id: 'bien', emoji: '🙂', label: 'Bien' },
-      { id: 'genial', emoji: '😄', label: 'Genial' }
+      { id: 'genial', emoji: '😄', label: 'Genial' },
     ];
 
     // Initialize questions with Spanish labels
@@ -104,7 +103,7 @@ export class MoodsComponent implements OnInit {
         min: 1,
         max: 10,
         minLabel: 'Muy malo',
-        maxLabel: 'Excelente'
+        maxLabel: 'Excelente',
       },
       {
         id: 'energy',
@@ -113,7 +112,7 @@ export class MoodsComponent implements OnInit {
         min: 1,
         max: 10,
         minLabel: 'Muy bajo',
-        maxLabel: 'Muy alto'
+        maxLabel: 'Muy alto',
       },
       {
         id: 'stress',
@@ -122,7 +121,7 @@ export class MoodsComponent implements OnInit {
         min: 1,
         max: 10,
         minLabel: 'Sin estrés',
-        maxLabel: 'Muy estresado'
+        maxLabel: 'Muy estresado',
       },
       {
         id: 'anxiety',
@@ -131,14 +130,14 @@ export class MoodsComponent implements OnInit {
         min: 1,
         max: 10,
         minLabel: 'Sin ansiedad',
-        maxLabel: 'Muy ansiedad'
+        maxLabel: 'Muy ansiedad',
       },
       {
         id: 'notes',
         label: 'Notas adicionales',
         type: 'text',
-        placeholder: 'Cuéntanos algo más sobre tu estado emocional...'
-      }
+        placeholder: 'Cuéntanos algo más sobre tu estado emocional...',
+      },
     ];
   }
 
@@ -147,14 +146,14 @@ export class MoodsComponent implements OnInit {
   }
 
   getCurrentMood() {
-    return this.moods.find(m => m.id === this.selectedMood());
+    return this.moods.find((m) => m.id === this.selectedMood());
   }
 
   saveMoodEntry() {
     const entry = {
       mood: this.selectedMood(),
       responses: this.moodResponses(),
-      timestamp: new Date()
+      timestamp: new Date(),
     };
     console.log('Mood entry saved:', entry);
     // TODO: Enviar al servidor

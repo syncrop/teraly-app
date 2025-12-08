@@ -6,7 +6,7 @@ import { MoodsComponent } from '../../shared/moods/moods.component';
   selector: 'app-client-home',
   templateUrl: './client-home.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, MoodsComponent]
+  imports: [CommonModule, MoodsComponent],
 })
 export class ClientHomeComponent {
   userName = 'Alejandro';

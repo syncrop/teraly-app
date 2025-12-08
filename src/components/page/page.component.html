@@ -1,25 +1,36 @@
 <!-- Desktop Header -->
-<header class="hidden md:flex fixed top-0 left-0 right-0 bg-white border-b border-gray-200 h-20 px-6 justify-between items-center z-10">
+<header
+  class="hidden md:flex fixed top-0 left-0 right-0 bg-white border-b border-gray-200 h-20 px-6 justify-between items-center z-10"
+>
   <app-logo></app-logo>
   <div class="flex items-center space-x-8">
-    <a [routerLink]="userRole() === 'client' ? '/app/home-client' : '/app/home-doctor'"
-       routerLinkActive="text-indigo-600 font-semibold"
-       [routerLinkActiveOptions]="{exact: true}"
-       class="text-gray-600 hover:text-indigo-600 transition-colors">
+    <a
+      [routerLink]="userRole() === 'client' ? '/app/home-client' : '/app/home-doctor'"
+      routerLinkActive="text-indigo-600 font-semibold"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="text-gray-600 hover:text-indigo-600 transition-colors"
+    >
       <span i18n="@@navigation.home">Home</span>
     </a>
-    <a routerLink="/app/search"
-       routerLinkActive="text-indigo-600 font-semibold"
-       class="text-gray-600 hover:text-indigo-600 transition-colors">
+    <a
+      routerLink="/app/search"
+      routerLinkActive="text-indigo-600 font-semibold"
+      class="text-gray-600 hover:text-indigo-600 transition-colors"
+    >
       <span i18n="@@navigation.search">Search</span>
     </a>
-    <a routerLink="/app/profile"
-       routerLinkActive="text-indigo-600 font-semibold"
-       class="text-gray-600 hover:text-indigo-600 transition-colors">
+    <a
+      routerLink="/app/profile"
+      routerLinkActive="text-indigo-600 font-semibold"
+      class="text-gray-600 hover:text-indigo-600 transition-colors"
+    >
       <span i18n="@@navigation.profile">Profile</span>
     </a>
   </div>
-  <button (click)="logout()" class="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg shadow-sm">
+  <button
+    (click)="logout()"
+    class="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg shadow-sm"
+  >
     <span i18n="@@navigation.logout">Logout</span>
   </button>
 </header>

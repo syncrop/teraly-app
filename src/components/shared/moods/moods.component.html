@@ -20,7 +20,10 @@
   </div>
 
   <!-- Questions Modal/Drawer -->
-  <div *ngIf="showQuestions()" class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity"></div>
+  <div
+    *ngIf="showQuestions()"
+    class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity"
+  ></div>
 
   <div
     *ngIf="showQuestions()"
@@ -29,10 +32,17 @@
     <div class="px-6 py-6">
       <!-- Header -->
       <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold text-gray-900" i18n="@@moods.howYouFeel">Cuéntanos cómo te sientes</h2>
+        <h2 class="text-xl font-bold text-gray-900" i18n="@@moods.howYouFeel">
+          Cuéntanos cómo te sientes
+        </h2>
         <button (click)="closeQuestions()" class="text-gray-400 hover:text-gray-600">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
@@ -71,7 +81,9 @@
                 />
                 <div class="flex justify-between text-xs text-gray-500 px-1">
                   <span>{{ question.minLabel }}</span>
-                  <span class="font-semibold text-gray-900">{{ getResponse(question.id) || question.min }}</span>
+                  <span class="font-semibold text-gray-900">{{
+                    getResponse(question.id) || question.min
+                  }}</span>
                   <span>{{ question.maxLabel }}</span>
                 </div>
               </div>

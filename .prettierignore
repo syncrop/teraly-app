@@ -1,0 +1,6 @@
+dist
+node_modules
+.angular
+package-lock.json
+*.xlf
+messages.xlf

@@ -6,17 +6,22 @@
 
     <!-- Language Settings Card -->
     <div class="bg-white rounded-2xl shadow-sm p-6 mb-8">
-      <h2 class="text-xl font-semibold text-indigo-900" i18n="@@profile.languageCardTitle">Language</h2>
-      <p class="text-gray-600 mb-6" i18n="@@profile.languageCardSubtitle">Choose your preferred language for the application.</p>
+      <h2 class="text-xl font-semibold text-indigo-900" i18n="@@profile.languageCardTitle">
+        Language
+      </h2>
+      <p class="text-gray-600 mb-6" i18n="@@profile.languageCardSubtitle">
+        Choose your preferred language for the application.
+      </p>
       <div class="flex flex-col sm:flex-row sm:flex-wrap sm:gap-3 space-y-2 sm:space-y-0">
         @for (lang of i18nService.availableLanguages; track lang.code) {
-          <button 
+          <button
             (click)="changeLanguage(lang.code)"
             [class.bg-indigo-600]="i18nService.currentLang() === lang.code"
             [class.text-white]="i18nService.currentLang() === lang.code"
             [class.bg-gray-100]="i18nService.currentLang() !== lang.code"
             [class.text-gray-700]="i18nService.currentLang() !== lang.code"
-            class="w-full sm:flex-1 text-center px-4 py-3 rounded-xl font-medium transition-colors duration-200 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 min-w-[120px]">
+            class="w-full sm:flex-1 text-center px-4 py-3 rounded-xl font-medium transition-colors duration-200 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 min-w-[120px]"
+          >
             {{ lang.label }}
           </button>
         }
@@ -25,14 +30,20 @@
 
     <!-- Account Card -->
     <div class="bg-white rounded-2xl shadow-sm p-6">
-       <h2 class="text-xl font-semibold text-indigo-900" i18n="@@profile.accountCardTitle">Account</h2>
-       <div class="flex justify-between items-center">
-         <p class="text-gray-600" i18n="@@profile.accountCardSubtitle">Log out of your Teraly account.</p>
-         <button (click)="logout()" class="text-sm font-semibold text-white bg-red-500 hover:bg-red-600 px-5 py-2.5 rounded-lg shadow-sm">
-           <span i18n="@@profile.logoutButton">Logout</span>
-         </button>
-       </div>
+      <h2 class="text-xl font-semibold text-indigo-900" i18n="@@profile.accountCardTitle">
+        Account
+      </h2>
+      <div class="flex justify-between items-center">
+        <p class="text-gray-600" i18n="@@profile.accountCardSubtitle">
+          Log out of your Teraly account.
+        </p>
+        <button
+          (click)="logout()"
+          class="text-sm font-semibold text-white bg-red-500 hover:bg-red-600 px-5 py-2.5 rounded-lg shadow-sm"
+        >
+          <span i18n="@@profile.logoutButton">Logout</span>
+        </button>
+      </div>
     </div>
-    
   </div>
 </div>

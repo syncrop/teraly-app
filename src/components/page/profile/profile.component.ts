@@ -7,7 +7,7 @@ import { I18nService } from '../../../services/i18n.service';
   selector: 'app-profile',
   templateUrl: './profile.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: []
+  imports: [],
 })
 export class ProfileComponent {
   private authService = inject(AuthService);
