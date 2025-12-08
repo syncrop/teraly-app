@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ForgotPasswordComponent } from './forgot-password.component';
 import { AuthService } from '../../../services/auth.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { ReactiveFormsModule } from '@angular/forms';
 
@@ -12,19 +12,12 @@ describe('ForgotPasswordComponent', () => {
 
   beforeEach(async () => {
     mockAuthService = jasmine.createSpyObj('AuthService', ['resetPassword']);
-    const mockRouter = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
-    mockRouter.createUrlTree.and.returnValue({} as any);
-    mockRouter.serializeUrl.and.returnValue('');
 
     await TestBed.configureTestingModule({
       imports: [ForgotPasswordComponent, ReactiveFormsModule],
       providers: [
-        { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter },
-        {
-          provide: ActivatedRoute,
-          useValue: { params: of({}), snapshot: { params: {} } }
-        }
+        provideRouter([]),
+        { provide: AuthService, useValue: mockAuthService }
       ]
     }).compileComponents();
 
@@ -241,11 +234,10 @@ describe('ForgotPasswordComponent', () => {
       component.forgotPasswordForm.patchValue({
         email: '  test@example.com  '
       });
-      mockAuthService.resetPassword.and.returnValue(of({ success: true }));
-
-      component.sendResetLink();
-
-      expect(mockAuthService.resetPassword).toHaveBeenCalledWith('  test@example.com  ');
+      
+      // Email with whitespace is invalid, so form should be invalid
+      expect(component.forgotPasswordForm.invalid).toBe(true);
+      expect(component.forgotPasswordForm.get('email')?.hasError('email')).toBe(true);
     });
 
     it('should handle multiple submission attempts', () => {

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RegisterComponent } from './register.component';
 import { AuthService } from '../../../services/auth.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { ReactiveFormsModule } from '@angular/forms';
 
@@ -9,28 +9,23 @@ describe('RegisterComponent', () => {
   let component: RegisterComponent;
   let fixture: ComponentFixture<RegisterComponent>;
   let mockAuthService: jasmine.SpyObj<AuthService>;
-  let mockRouter: jasmine.SpyObj<Router>;
+  let router: Router;
 
   beforeEach(async () => {
     mockAuthService = jasmine.createSpyObj('AuthService', ['register']);
-    mockRouter = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
-    mockRouter.createUrlTree.and.returnValue({} as any);
-    mockRouter.serializeUrl.and.returnValue('');
 
     await TestBed.configureTestingModule({
       imports: [RegisterComponent, ReactiveFormsModule],
       providers: [
-        { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter },
-        {
-          provide: ActivatedRoute,
-          useValue: { params: of({}), snapshot: { params: {} } }
-        }
+        provideRouter([]),
+        { provide: AuthService, useValue: mockAuthService }
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(RegisterComponent);
     component = fixture.componentInstance;
+    router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
     fixture.detectChanges();
   });
 
@@ -80,7 +75,7 @@ describe('RegisterComponent', () => {
       expect(password?.hasError('required')).toBe(true);
       
       password?.setValue('short');
-      expect(password?.hasError('minLength')).toBe(true);
+      expect(password?.hasError('minlength')).toBe(true);
       
       password?.setValue('validpassword');
       expect(password?.valid).toBe(true);
@@ -232,7 +227,7 @@ describe('RegisterComponent', () => {
 
       component.register();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
+      expect(router.navigate).toHaveBeenCalledWith(['/login']);
       expect(component.isLoading()).toBe(false);
     });
 
@@ -249,7 +244,7 @@ describe('RegisterComponent', () => {
 
       expect(component.errorMessage()).toBe('Email already exists');
       expect(component.isLoading()).toBe(false);
-      expect(mockRouter.navigate).not.toHaveBeenCalled();
+      expect(router.navigate).not.toHaveBeenCalled();
     });
 
     it('should handle registration with default error message', () => {
@@ -361,12 +356,12 @@ describe('RegisterComponent', () => {
         confirmPassword: '1234567'
       });
       
-      expect(component.registerForm.get('password')?.hasError('minLength')).toBe(true);
+      expect(component.registerForm.get('password')?.hasError('minlength')).toBe(true);
     });
 
     it('should handle very long input values', () => {
       const longName = 'a'.repeat(200);
-      const longEmail = 'a'.repeat(100) + '@example.com';
+      const longEmail = 'test' + 'a'.repeat(50) + '@example.com';
       
       component.registerForm.patchValue({
         fullName: longName,

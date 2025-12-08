@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { LoginComponent } from './login.component';
 import { AuthService } from '../../../services/auth.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { ReactiveFormsModule } from '@angular/forms';
 
@@ -9,28 +9,23 @@ describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
   let mockAuthService: jasmine.SpyObj<AuthService>;
-  let mockRouter: jasmine.SpyObj<Router>;
+  let router: Router;
 
   beforeEach(async () => {
     mockAuthService = jasmine.createSpyObj('AuthService', ['login', 'currentUserRole']);
-    mockRouter = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
-    mockRouter.createUrlTree.and.returnValue({} as any);
-    mockRouter.serializeUrl.and.returnValue('');
 
     await TestBed.configureTestingModule({
       imports: [LoginComponent, ReactiveFormsModule],
       providers: [
-        { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter },
-        {
-          provide: ActivatedRoute,
-          useValue: { params: of({}), snapshot: { params: {} } }
-        }
+        provideRouter([]),
+        { provide: AuthService, useValue: mockAuthService }
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
+    router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
     fixture.detectChanges();
   });
 
@@ -159,7 +154,7 @@ describe('LoginComponent', () => {
 
       component.login();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/app/home-client']);
+      expect(router.navigate).toHaveBeenCalledWith(['/app/home-client']);
     });
 
     it('should navigate to /app/home-doctor for doctor role on success', () => {
@@ -172,7 +167,7 @@ describe('LoginComponent', () => {
 
       component.login();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/app/home-doctor']);
+      expect(router.navigate).toHaveBeenCalledWith(['/app/home-doctor']);
     });
 
     it('should set errorMessage on login failure', () => {
@@ -263,12 +258,10 @@ describe('LoginComponent', () => {
         email: '  test@example.com  ',
         password: '  password123  '
       });
-      mockAuthService.login.and.returnValue(of({ success: true, role: 'client' }));
-      mockAuthService.currentUserRole.and.returnValue('client');
-
-      component.login();
-
-      expect(mockAuthService.login).toHaveBeenCalledWith('  test@example.com  ', '  password123  ');
+      
+      // Email with whitespace is invalid, so form should be invalid
+      expect(component.loginForm.invalid).toBe(true);
+      expect(component.loginForm.get('email')?.hasError('email')).toBe(true);
     });
   });
 });
