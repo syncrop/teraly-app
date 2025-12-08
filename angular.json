@@ -16,13 +16,40 @@
               "base": "./dist",
               "browser": "."
             },
-            "polyfills": [],
+            "polyfills": [
+              "@angular/localize/init"
+            ],
             "browser": "index.tsx",
             "tsConfig": "tsconfig.json"
           },
           "configurations": {
             "production": {
               "outputHashing": "all",
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": true
+                },
+                "fonts": {
+                  "inline": false
+                }
+              },
+              "sourceMap": false,
+              "extractLicenses": true,
+              "namedChunks": false,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
               "assets": [
                 "src/assets"
               ]

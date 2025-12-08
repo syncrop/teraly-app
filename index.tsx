@@ -1,10 +1,8 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideRouter, withHashLocation } from '@angular/router';
-import { LOCALE_ID, provideZonelessChangeDetection, importProvidersFrom } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
-import { provideHttpClient } from '@angular/common/http';
+import { provideRouter, withHashLocation, withPreloading, PreloadAllModules } from '@angular/router';
+import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 
-import '@angular/localize/init';
 import { loadTranslations } from '@angular/localize';
 
 import { AppComponent } from './src/app.component';
@@ -76,9 +74,8 @@ async function bootstrapApp() {
     await bootstrapApplication(AppComponent, {
       providers: [
         provideZonelessChangeDetection(),
-        provideRouter(APP_ROUTES, withHashLocation()),
-        provideHttpClient(),
-        importProvidersFrom(ReactiveFormsModule),
+        provideRouter(APP_ROUTES, withHashLocation(), withPreloading(PreloadAllModules)),
+        provideHttpClient(withFetch()),
         { provide: LOCALE_ID, useValue: locale },
         {
           provide: TranslationService,

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgIf, NgFor, SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 
@@ -7,7 +7,7 @@ import { AuthService } from '../../../services/auth.service';
   selector: 'app-search',
   templateUrl: './search.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule]
+  imports: [NgIf, NgFor, SlicePipe, FormsModule]
 })
 export class SearchComponent {
   private authService = inject(AuthService);
