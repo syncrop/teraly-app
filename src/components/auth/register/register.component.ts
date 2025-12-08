@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, OnDestroy } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { LogoComponent } from '../../shared/logo/logo.component';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 import { AuthLayoutComponent } from '../auth-layout/auth-layout.component';
+import { CommonModule } from '@angular/common';
 
 function passwordMatchValidator(controlName: string, matchingControlName: string): ValidatorFn {
   return (formGroup: AbstractControl) => {
@@ -27,15 +28,16 @@ function passwordMatchValidator(controlName: string, matchingControlName: string
   selector: 'app-register',
   templateUrl: './register.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, LogoComponent, AuthLayoutComponent]
+  imports: [ReactiveFormsModule, RouterLink, LogoComponent, AuthLayoutComponent, CommonModule]
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnDestroy {
   private router = inject(Router);
   private authService = inject(AuthService);
 
   userType = signal<'client' | 'doctor'>('client');
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
+  private _subscriptions = new Subscription();
 
   registerForm = new FormGroup({
     fullName: new FormControl('', Validators.required),
@@ -45,7 +47,7 @@ export class RegisterComponent {
     licenseNumber: new FormControl('')
   }, { validators: passwordMatchValidator('password', 'confirmPassword') });
 
-  private formStatus = toSignal(this.registerForm.statusChanges, { initialValue: this.registerForm.status });
+  formStatus = signal(this.registerForm.status);
   isSubmittable = computed(() => this.formStatus() === 'VALID' && !this.isLoading());
 
   constructor() {
@@ -58,6 +60,22 @@ export class RegisterComponent {
       }
       licenseControl?.updateValueAndValidity();
     });
+    // initialize formStatus and subscribe to statusChanges so the computed updates
+    this.formStatus.set(this.registerForm.status);
+    const statusSub = this.registerForm.statusChanges.subscribe(status => this.formStatus.set(status));
+    this._subscriptions.add(statusSub);
+
+    // re-subscribe to control valueChanges to react to input updates (helps debugging)
+    Object.entries(this.registerForm.controls).forEach(([name, control]) => {
+      const sub = control.valueChanges.subscribe(value => {
+        console.log(`[Register] ${name} changed:`, value);
+      });
+      this._subscriptions.add(sub);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
   }
 
   toggleUserType() {

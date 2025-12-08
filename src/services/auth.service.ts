@@ -1,8 +1,9 @@
 import { Injectable, signal, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, user } from '@angular/fire/auth';
 import { Firestore, collection, doc, setDoc, getDoc, query, where, getDocs } from '@angular/fire/firestore';
 import { from, Observable } from 'rxjs';
-import { map, catchError, switchMap } from 'rxjs/operators';
+import { map, catchError, switchMap, tap } from 'rxjs/operators';
 
 export type UserRole = 'client' | 'doctor' | null;
 
@@ -23,6 +24,7 @@ export interface AppUser {
 export class AuthService {
   private auth = inject(Auth);
   private firestore = inject(Firestore);
+  private router = inject(Router);
   
   currentUserRole = signal<UserRole>(null);
   currentUser = signal<AppUser | null>(null);
@@ -42,19 +44,39 @@ export class AuthService {
       // Replace 'map(async ...)' with 'switchMap'
       // If switchMap is not imported, add: import { map, catchError, switchMap } from 'rxjs/operators';
       switchMap((credential) =>
-        from(getDoc(doc(this.firestore, 'users', credential.user.uid))).pipe(
-          map((userDoc) => {
-            const userData = userDoc.data() as AppUser;
-            if (userData) {
-              const role: UserRole = userData.role === 'doctor' ? 'doctor' : 'client';
-              this.currentUserRole.set(role);
-              this.currentUser.set(userData);
-              localStorage.setItem('userRole', role);
-              localStorage.setItem('userId', credential.user.uid);
-              return { success: true, role };
-            }
-            return { success: false, error: 'Usuario no encontrado en la base de datos' };
-          })
+        from(credential.user.getIdTokenResult()).pipe(
+          switchMap((tokenResult) =>
+            from(getDoc(doc(this.firestore, 'users', credential.user.uid))).pipe(
+              map((userDoc) => {
+                const userData = userDoc.data() as AppUser;
+                if (userData) {
+                  const role: UserRole = userData.role === 'doctor' ? 'doctor' : 'client';
+                  this.currentUserRole.set(role);
+                  this.currentUser.set(userData);
+                  localStorage.setItem('userRole', role);
+                  localStorage.setItem('userId', credential.user.uid);
+
+                  // store session token details
+                  try {
+                    const idToken = (tokenResult && (tokenResult.token as string)) || '';
+                    const expiresAt = tokenResult && tokenResult.expirationTime ? new Date(tokenResult.expirationTime).getTime() : (Date.now() + 3600 * 1000);
+                    const refreshToken = (credential.user as any)?.refreshToken || '';
+                    sessionStorage.setItem('idToken', idToken);
+                    sessionStorage.setItem('refreshToken', refreshToken);
+                    sessionStorage.setItem('expiresAt', String(expiresAt));
+                    sessionStorage.setItem('localId', credential.user.uid);
+                    sessionStorage.setItem('email', credential.user.email || '');
+                  } catch (e) {
+                    // swallow storage errors
+                    console.warn('Could not store session tokens', e);
+                  }
+
+                  return { success: true, role };
+                }
+                return { success: false, error: 'Usuario no encontrado en la base de datos' };
+              })
+            )
+          )
         )
       ),
       catchError((error) => {
@@ -98,7 +120,22 @@ export class AuthService {
           this.currentUser.set(userData);
           localStorage.setItem('userRole', userType);
           localStorage.setItem('userId', uid);
-          
+
+          // store session token details (idToken, refreshToken, expiresAt, localId, email)
+          try {
+            const tokenResult = await credential.user.getIdTokenResult();
+            const idToken = tokenResult?.token || '';
+            const expiresAt = tokenResult && tokenResult.expirationTime ? new Date(tokenResult.expirationTime).getTime() : (Date.now() + 3600 * 1000);
+            const refreshToken = (credential.user as any)?.refreshToken || '';
+            sessionStorage.setItem('idToken', idToken);
+            sessionStorage.setItem('refreshToken', refreshToken);
+            sessionStorage.setItem('expiresAt', String(expiresAt));
+            sessionStorage.setItem('localId', uid);
+            sessionStorage.setItem('email', credential.user.email || email || '');
+          } catch (e) {
+            console.warn('Could not store session tokens on register', e);
+          }
+
           return { success: true, uid };
         })())
       ),
@@ -132,20 +169,33 @@ export class AuthService {
     );
   }
 
-  // Logout
-  logout(): Observable<void> {
-    return from(signOut(this.auth)).pipe(
-      map(() => {
-        this.currentUserRole.set(null);
-        this.currentUser.set(null);
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('userId');
-      }),
-      catchError((error) => {
-        console.error('Error al cerrar sesión:', error);
-        return [undefined];
-      })
-    );
+  // Logout con Firebase
+  logout(): void {
+    signOut(this.auth).then(() => {
+      // Limpiar signals
+      this.currentUserRole.set(null);
+      this.currentUser.set(null);
+      
+      // Limpiar localStorage
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userId');
+      
+      // Limpiar sessionStorage
+      sessionStorage.removeItem('idToken');
+      sessionStorage.removeItem('refreshToken');
+      sessionStorage.removeItem('expiresAt');
+      sessionStorage.removeItem('localId');
+      sessionStorage.removeItem('email');
+      
+      // Redirigir al login
+      this.router.navigate(['/login']);
+    }).catch((error) => {
+      console.error('Error al cerrar sesión:', error);
+      // Intentar limpiar de todas formas
+      this.currentUserRole.set(null);
+      this.currentUser.set(null);
+      this.router.navigate(['/login']);
+    });
   }
 
   // Verificar si el usuario está autenticado

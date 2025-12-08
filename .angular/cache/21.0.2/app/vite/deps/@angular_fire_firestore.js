@@ -14,6 +14,8 @@ import {
   isSafari as isSafari2,
   registerVersion as registerVersion2
 } from "./chunk-TZ76I7GL.js";
+import "./chunk-NNOU6ZMU.js";
+import "./chunk-JWISOHWH.js";
 import {
   Component,
   FirebaseApp,
@@ -47,8 +49,6 @@ import {
   ɵzoneWrap
 } from "./chunk-GAW7L5CW.js";
 import "./chunk-QRGAW5U7.js";
-import "./chunk-FTU5V4JW.js";
-import "./chunk-SFYKWPCH.js";
 import {
   NgModule,
   Optional,
@@ -62,8 +62,8 @@ import {
   makeEnvironmentProviders,
   ɵɵdefineInjector
 } from "./chunk-JYXJYCGG.js";
-import "./chunk-XYFQ7QOX.js";
 import "./chunk-BZLT2HVW.js";
+import "./chunk-XYFQ7QOX.js";
 import {
   Observable,
   concatMap,
