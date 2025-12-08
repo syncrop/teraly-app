@@ -162,7 +162,7 @@ Este documento presenta un plan de acción priorizado para abordar las vulnerabi
       content="default-src 'self'; 
                script-src 'self' https://www.gstatic.com https://apis.google.com;
                style-src 'self' 'unsafe-inline';
-               img-src 'self' data: https: blob:;
+               img-src 'self' data: https://*.firebasestorage.googleapis.com https://via.placeholder.com blob:;
                font-src 'self' data:;
                connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com;
                frame-src 'self' https://*.firebaseapp.com;

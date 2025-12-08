@@ -61,7 +61,9 @@ service cloud.firestore {
       allow read: if isOwner(userId);
       allow create: if isAuthenticated();
       allow update: if isOwner(userId) && 
-                       !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'uid']);
+                       // Proteger campos críticos inmutables
+                       !request.resource.data.diff(resource.data).affectedKeys()
+                         .hasAny(['role', 'uid', 'createdAt', 'isVerified', 'email']);
       allow delete: if false;
     }
     

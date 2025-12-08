@@ -348,7 +348,9 @@ service cloud.firestore {
       allow create: if isAuthenticated();
       // Users can update their own data (except role)
       allow update: if isOwner(userId) && 
-                       !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'uid']);
+                       // Proteger campos críticos que no deben ser modificados por el usuario
+                       !request.resource.data.diff(resource.data).affectedKeys()
+                         .hasAny(['role', 'uid', 'createdAt', 'isVerified', 'email']);
       allow delete: if false; // Prevent deletion
     }
     
@@ -540,10 +542,18 @@ export function strongPasswordValidator(): ValidatorFn {
     }
     
     // Verificar contra contraseñas comunes
-    const commonPasswords = ['12345678', 'password', 'qwerty123'];
+    // NOTA: Para producción, usar una lista más completa (OWASP Top 10,000)
+    // o integrar con Have I Been Pwned API
+    const commonPasswords = [
+      '12345678', 'password', 'qwerty123', '11111111', 
+      'password123', 'admin123', 'letmein', 'welcome'
+    ];
     if (commonPasswords.includes(value.toLowerCase())) {
       return { commonPassword: true };
     }
+    
+    // MEJOR: Integrar con API de contraseñas comprometidas
+    // await this.checkPwnedPasswords(value);
     
     return null;
   };
@@ -797,12 +807,15 @@ exports.rateLimitLogin = functions.https.onCall(async (data, context) => {
 ### 1. Implementar Content Security Policy (CSP)
 
 Agregar en `index.html`:
+**NOTA:** El valor 'nonce-RANDOM_VALUE_HERE' debe ser generado dinámicamente en cada request del servidor.
+Para aplicaciones estáticas, puede omitirse el nonce pero será necesario permitir 'unsafe-inline' para scripts de Angular.
+
 ```html
 <meta http-equiv="Content-Security-Policy" 
       content="default-src 'self'; 
-               script-src 'self' 'nonce-{RANDOM}' https://www.gstatic.com https://apis.google.com;
+               script-src 'self' 'nonce-RANDOM_VALUE_HERE' https://www.gstatic.com https://apis.google.com;
                style-src 'self' 'unsafe-inline';
-               img-src 'self' data: https:;
+               img-src 'self' data: https://*.firebasestorage.googleapis.com https://via.placeholder.com;
                font-src 'self' data:;
                connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com;
                frame-src 'self' https://*.firebaseapp.com;
