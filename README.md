@@ -18,3 +18,26 @@ View your app in AI Studio: https://ai.studio/apps/drive/1lpGjQkwyFVMXre2vvyzFwv
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## Dependency Management
+
+For information about updating and managing dependencies safely:
+- 📚 [Dependency Update Guide](DEPENDENCY_UPDATE_GUIDE.md) - Comprehensive guide for updating dependencies
+- 🔒 [Security Policy](SECURITY.md) - Security practices and vulnerability reporting
+
+### Quick Commands
+
+```bash
+# Check for outdated packages
+npm run check-updates
+
+# Run security audit
+npm run security-audit
+
+# Safe update (recommended) - requires executable permissions
+chmod +x update-dependencies.sh  # Run once to make script executable
+./update-dependencies.sh conservative
+
+# Full update (test environment)
+./update-dependencies.sh full
+```

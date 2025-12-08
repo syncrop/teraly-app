@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "ng serve",
     "build": "ng build",
-    "preview": "ng serve --configuration=production"
+    "preview": "ng serve --configuration=production",
+    "check-updates": "npm outdated",
+    "security-audit": "npm audit"
   },
   "dependencies": {
     "@angular/build": "^21.0.0",
@@ -21,10 +23,10 @@
     "@angular/platform-browser": "^21.0.0",
     "@angular/router": "^21.0.3",
     "rxjs": "^7.8.2",
-    "tailwindcss": "latest"
+    "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
+    "@types/node": "^24.10.1",
     "typescript": "5.9",
     "vite": "^6.2.0"
   }
