@@ -11,18 +11,18 @@
 
     <!-- User Type Toggle Switch -->
     <div class="flex justify-center items-center space-x-4 mb-8 p-1.5 bg-gray-100 rounded-xl">
-        <button (click)="userType.set('patient')" type="button" 
+        <button (click)="userType.set('client')" type="button" 
             class="w-1/2 py-2.5 text-sm font-semibold rounded-lg transition-colors duration-300"
-            [class.bg-white]="userType() === 'patient'"
-            [class.text-indigo-600]="userType() === 'patient'"
-            [class.text-gray-500]="userType() !== 'patient'">
+            [class.bg-white]="userType() === 'client'"
+            [class.text-indigo-600]="userType() === 'client'"
+            [class.text-gray-500]="userType() !== 'client'">
             <span i18n="@@register.userTypePatient">Patient</span>
         </button>
-        <button (click)="userType.set('specialist')" type="button"
+        <button (click)="userType.set('doctor')" type="button"
             class="w-1/2 py-2.5 text-sm font-semibold rounded-lg transition-colors duration-300"
-            [class.bg-white]="userType() === 'specialist'"
-            [class.text-indigo-600]="userType() === 'specialist'"
-            [class.text-gray-500]="userType() !== 'specialist'">
+            [class.bg-white]="userType() === 'doctor'"
+            [class.text-indigo-600]="userType() === 'doctor'"
+            [class.text-gray-500]="userType() !== 'doctor'">
             <span i18n="@@register.userTypeSpecialist">Specialist</span>
         </button>
     </div>
@@ -57,7 +57,7 @@
           }
         </div>
         
-        @if (userType() === 'specialist') {
+        @if (userType() === 'doctor') {
           <div class="pt-2">
             <label for="licenseNumber" class="block text-sm font-medium text-gray-700 mb-1" i18n="@@register.licenseLabel">License / Diploma Number</label>
             <input formControlName="licenseNumber" id="licenseNumber" name="licenseNumber" type="text" required
@@ -67,8 +67,12 @@
         }
       </div>
 
+      @if (errorMessage()) {
+        <p class="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">{{ errorMessage() }}</p>
+      }
+
       <div class="pt-4">
-        <button type="submit" [disabled]="!isSubmittable()"
+        <button type="submit" [disabled]="!isSubmittable() || isLoading()"
                 class="group relative w-full flex justify-center py-4 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed">
           <span i18n="@@register.registerButton">Register</span>
         </button>

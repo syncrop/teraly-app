@@ -1,0 +1,118 @@
+<div class="px-6 py-6">
+  <p class="text-sm text-gray-600 mb-4" i18n="@@clientHome.howFeel">¿Cómo te sientes hoy?</p>
+  <div class="grid grid-cols-4 gap-3 mb-6">
+    <button
+      *ngFor="let mood of moods"
+      (click)="onMoodSelect(mood.id)"
+      class="flex flex-col items-center gap-2 p-3 rounded-2xl transition-all"
+      [class.bg-indigo-600]="selectedMood() === mood.id"
+      [class.bg-gray-100]="selectedMood() !== mood.id"
+    >
+      <span class="text-2xl">{{ mood.emoji }}</span>
+      <span
+        class="text-xs font-medium"
+        [class.text-white]="selectedMood() === mood.id"
+        [class.text-gray-700]="selectedMood() !== mood.id"
+      >
+        {{ mood.label }}
+      </span>
+    </button>
+  </div>
+
+  <!-- Questions Modal/Drawer -->
+  <div *ngIf="showQuestions()" class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity"></div>
+
+  <div
+    *ngIf="showQuestions()"
+    class="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 max-h-[90vh] overflow-y-auto transition-transform"
+  >
+    <div class="px-6 py-6">
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-gray-900" i18n="@@moods.howYouFeel">Cuéntanos cómo te sientes</h2>
+        <button (click)="closeQuestions()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Selected Mood Badge -->
+      <div class="mb-6 flex items-center gap-3 bg-indigo-50 p-3 rounded-lg">
+        <span class="text-3xl">
+          {{ getCurrentMood()?.emoji }}
+        </span>
+        <div>
+          <p class="text-sm text-gray-600" i18n="@@moods.selectedMood">Estado seleccionado</p>
+          <p class="font-semibold text-gray-900">
+            {{ getCurrentMood()?.label }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Questions -->
+      <div class="space-y-6">
+        <!-- Range Questions -->
+        <div *ngFor="let question of moodQuestions" [ngSwitch]="question.type">
+          <!-- Range Input -->
+          <div *ngSwitchCase="'range'">
+            <label class="block">
+              <span class="text-sm font-medium text-gray-900 block mb-3">
+                {{ question.label }}
+              </span>
+              <div class="space-y-2">
+                <input
+                  type="range"
+                  [min]="question.min"
+                  [max]="question.max"
+                  [value]="getResponse(question.id) || question.min"
+                  (change)="updateResponse(question.id, $event.target.value)"
+                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                />
+                <div class="flex justify-between text-xs text-gray-500 px-1">
+                  <span>{{ question.minLabel }}</span>
+                  <span class="font-semibold text-gray-900">{{ getResponse(question.id) || question.min }}</span>
+                  <span>{{ question.maxLabel }}</span>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <!-- Text Input -->
+          <div *ngSwitchCase="'text'">
+            <label class="block">
+              <span class="text-sm font-medium text-gray-900 block mb-2">
+                {{ question.label }}
+              </span>
+              <textarea
+                [value]="getResponse(question.id)"
+                (change)="updateResponse(question.id, $event.target.value)"
+                [placeholder]="question.placeholder"
+                rows="3"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+              ></textarea>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-3 mt-8 pb-4">
+        <button
+          (click)="closeQuestions()"
+          class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+          i18n="@@moods.cancel"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="saveMoodEntry()"
+          class="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+          i18n="@@moods.save"
+        >
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

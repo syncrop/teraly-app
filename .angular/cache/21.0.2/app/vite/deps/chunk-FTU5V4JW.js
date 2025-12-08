@@ -1,6 +1,6 @@
 import {
   PlatformLocation
-} from "./chunk-Q3QEF64O.js";
+} from "./chunk-SFYKWPCH.js";
 import {
   ApplicationRef,
   Attribute,
@@ -29,11 +29,13 @@ import {
   booleanAttribute,
   createNgModule,
   findLocaleData,
+  getLocaleCurrencyCode,
   getLocalePluralCase,
   isPromise,
   isSubscribable,
   numberAttribute,
   performanceMarkFeature,
+  registerLocaleData,
   setClassMetadata,
   unwrapSafeValue,
   ɵɵNgOnChangesFeature,
@@ -43,7 +45,7 @@ import {
   ɵɵdirectiveInject,
   ɵɵinjectAttribute,
   ɵɵstyleProp
-} from "./chunk-TZK47O5X.js";
+} from "./chunk-ZG2DWKOW.js";
 import {
   DOCUMENT,
   DestroyRef,
@@ -52,7 +54,6 @@ import {
   Injector,
   NgZone,
   RuntimeError,
-  Subject,
   Version,
   formatRuntimeError,
   inject,
@@ -61,7 +62,10 @@ import {
   ɵɵdefineInjectable,
   ɵɵdefineInjector,
   ɵɵinject
-} from "./chunk-DKOBQHZD.js";
+} from "./chunk-JYXJYCGG.js";
+import {
+  Subject
+} from "./chunk-QJQPERGE.js";
 import {
   __spreadProps,
   __spreadValues
@@ -616,6 +620,14 @@ function getLocaleEraNames(locale, width) {
   const erasData = data[LocaleDataIndex.Eras];
   return getLastDefinedValue(erasData, width);
 }
+function getLocaleFirstDayOfWeek(locale) {
+  const data = findLocaleData(locale);
+  return data[LocaleDataIndex.FirstDayOfWeek];
+}
+function getLocaleWeekEndRange(locale) {
+  const data = findLocaleData(locale);
+  return data[LocaleDataIndex.WeekendRange];
+}
 function getLocaleDateFormat(locale, width) {
   const data = findLocaleData(locale);
   return getLastDefinedValue(data[LocaleDataIndex.DateFormat], width);
@@ -645,6 +657,17 @@ function getLocaleNumberFormat(locale, type) {
   const data = findLocaleData(locale);
   return data[LocaleDataIndex.NumberFormats][type];
 }
+function getLocaleCurrencySymbol(locale) {
+  const data = findLocaleData(locale);
+  return data[LocaleDataIndex.CurrencySymbol] || null;
+}
+function getLocaleCurrencyName(locale) {
+  const data = findLocaleData(locale);
+  return data[LocaleDataIndex.CurrencyName] || null;
+}
+function getLocaleCurrencyCode2(locale) {
+  return getLocaleCurrencyCode(locale);
+}
 function getLocaleCurrencies(locale) {
   const data = findLocaleData(locale);
   return data[LocaleDataIndex.Currencies];
@@ -672,6 +695,10 @@ function getLocaleExtraDayPeriods(locale, formStyle, width) {
   const dayPeriodsData = [data[LocaleDataIndex.ExtraData][0], data[LocaleDataIndex.ExtraData][1]];
   const dayPeriods = getLastDefinedValue(dayPeriodsData, formStyle) || [];
   return getLastDefinedValue(dayPeriods, width) || [];
+}
+function getLocaleDirection(locale) {
+  const data = findLocaleData(locale);
+  return data[LocaleDataIndex.Directionality];
 }
 function getLastDefinedValue(data, index) {
   for (let i = index; i > -1; i--) {
@@ -3181,7 +3208,17 @@ var NavigationAdapterForLocation = class _NavigationAdapterForLocation extends L
     type: Injectable
   }], () => [], null);
 })();
+function registerLocaleData2(data, localeId, extraData) {
+  return registerLocaleData(data, localeId, extraData);
+}
 var PLATFORM_BROWSER_ID = "browser";
+var PLATFORM_SERVER_ID = "server";
+function isPlatformBrowser(platformId) {
+  return platformId === PLATFORM_BROWSER_ID;
+}
+function isPlatformServer(platformId) {
+  return platformId === PLATFORM_SERVER_ID;
+}
 var VERSION = new Version("21.0.3");
 var ViewportScroller = class _ViewportScroller {
   static ɵprov = ɵɵdefineInjectable({
@@ -3260,6 +3297,19 @@ function findAnchorFromDocument(document, target) {
   }
   return null;
 }
+var NullViewportScroller = class {
+  setOffset(offset) {
+  }
+  getScrollPosition() {
+    return [0, 0];
+  }
+  scrollToPosition(position) {
+  }
+  scrollToAnchor(anchor) {
+  }
+  setHistoryScrollRestoration(scrollRestoration) {
+  }
+};
 var PLACEHOLDER_QUALITY = "20";
 function getUrl(src, win) {
   return isAbsoluteUrl(src) ? new URL(src) : new URL(src, win.location.href);
@@ -3402,6 +3452,49 @@ var netlifyLoaderInfo = {
 var NETLIFY_LOADER_REGEX = /https?\:\/\/[^\/]+\.netlify\.app\/.+/;
 function isNetlifyUrl(url) {
   return NETLIFY_LOADER_REGEX.test(url);
+}
+function provideNetlifyLoader(path) {
+  if (path && !isValidPath(path)) {
+    throw new RuntimeError(2959, ngDevMode && `Image loader has detected an invalid path (\`${path}\`). To fix this, supply either the full URL to the Netlify site, or leave it empty to use the current site.`);
+  }
+  if (path) {
+    const url = new URL(path);
+    path = url.origin;
+  }
+  const loaderFn = (config) => {
+    return createNetlifyUrl(config, path);
+  };
+  const providers = [{
+    provide: IMAGE_LOADER,
+    useValue: loaderFn
+  }];
+  return providers;
+}
+var validParams = /* @__PURE__ */ new Map([["height", "h"], ["fit", "fit"], ["quality", "q"], ["q", "q"], ["position", "position"]]);
+function createNetlifyUrl(config, path) {
+  const url = new URL(path ?? "https://a/");
+  url.pathname = "/.netlify/images";
+  if (!isAbsoluteUrl(config.src) && !config.src.startsWith("/")) {
+    config.src = "/" + config.src;
+  }
+  url.searchParams.set("url", config.src);
+  if (config.width) {
+    url.searchParams.set("w", config.width.toString());
+  }
+  const configQuality = config.loaderParams?.["quality"] ?? config.loaderParams?.["q"];
+  if (config.isPlaceholder && !configQuality) {
+    url.searchParams.set("q", PLACEHOLDER_QUALITY);
+  }
+  for (const [param, value] of Object.entries(config.loaderParams ?? {})) {
+    if (validParams.has(param)) {
+      url.searchParams.set(validParams.get(param), value.toString());
+    } else {
+      if (ngDevMode) {
+        console.warn(formatRuntimeError(2959, `The Netlify image loader has detected an \`<img>\` tag with the unsupported attribute "\`${param}\`".`));
+      }
+    }
+  }
+  return url.hostname === "a" ? url.href.replace(url.origin, "") : url.href;
 }
 function imgDirectiveDetails(ngSrc, includeNgSrc = true) {
   const ngSrcInfo = includeNgSrc ? `(activated on an <img> element with the \`ngSrc="${ngSrc}"\`) ` : "";
@@ -4317,14 +4410,92 @@ function booleanOrUrlAttribute(value) {
 }
 
 export {
+  normalizeQueryParams,
   LocationStrategy,
+  APP_BASE_HREF,
   PathLocationStrategy,
   Location,
   HashLocationStrategy,
+  NumberFormatStyle,
+  Plural,
+  FormStyle,
+  TranslationWidth,
+  FormatWidth,
+  NumberSymbol,
+  WeekDay,
+  getLocaleId,
+  getLocaleDayPeriods,
+  getLocaleDayNames,
+  getLocaleMonthNames,
+  getLocaleEraNames,
+  getLocaleFirstDayOfWeek,
+  getLocaleWeekEndRange,
+  getLocaleDateFormat,
+  getLocaleTimeFormat,
+  getLocaleDateTimeFormat,
+  getLocaleNumberSymbol,
+  getLocaleNumberFormat,
+  getLocaleCurrencySymbol,
+  getLocaleCurrencyName,
+  getLocaleCurrencyCode2 as getLocaleCurrencyCode,
+  getLocalePluralCase2 as getLocalePluralCase,
+  getLocaleExtraDayPeriodRules,
+  getLocaleExtraDayPeriods,
+  getLocaleDirection,
+  getCurrencySymbol,
+  getNumberOfCurrencyDigits,
+  formatDate,
+  formatCurrency,
+  formatPercent,
+  formatNumber,
+  NgLocalization,
+  NgLocaleLocalization,
+  NgClass,
+  NgComponentOutlet,
+  NgForOfContext,
+  NgForOf,
+  NgIf,
+  NgIfContext,
+  NgSwitch,
+  NgSwitchCase,
+  NgSwitchDefault,
+  NgPlural,
+  NgPluralCase,
+  NgStyle,
+  NgTemplateOutlet,
+  AsyncPipe,
+  LowerCasePipe,
+  TitleCasePipe,
+  UpperCasePipe,
+  DATE_PIPE_DEFAULT_TIMEZONE,
+  DATE_PIPE_DEFAULT_OPTIONS,
+  DatePipe,
+  I18nPluralPipe,
+  I18nSelectPipe,
+  JsonPipe,
+  KeyValuePipe,
+  DecimalPipe,
+  PercentPipe,
+  CurrencyPipe,
+  SlicePipe,
   CommonModule,
   PlatformNavigation,
   NavigationAdapterForLocation,
+  registerLocaleData2 as registerLocaleData,
   PLATFORM_BROWSER_ID,
-  ViewportScroller
+  PLATFORM_SERVER_ID,
+  isPlatformBrowser,
+  isPlatformServer,
+  VERSION,
+  ViewportScroller,
+  NullViewportScroller,
+  IMAGE_LOADER,
+  provideCloudflareLoader,
+  provideCloudinaryLoader,
+  provideImageKitLoader,
+  provideImgixLoader,
+  provideNetlifyLoader,
+  PRECONNECT_CHECK_BLOCKLIST,
+  NgOptimizedImage
 };
-//# sourceMappingURL=chunk-KCIL4TNB.js.map
+//# sourceMappingURL=chunk-FTU5V4JW.js.map

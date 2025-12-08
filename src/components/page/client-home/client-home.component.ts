@@ -1,14 +1,13 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MoodsComponent } from '../../shared/moods/moods.component';
 
 @Component({
   selector: 'app-client-home',
-  template: `
-    <div class="p-6 bg-gray-50 min-h-screen">
-      <h1 class="text-3xl font-bold text-indigo-900" i18n="@@clientHome.title">Client Home</h1>
-      <p class="mt-2 text-gray-600" i18n="@@common.underConstruction">This page is under construction.</p>
-    </div>
-  `,
+  templateUrl: './client-home.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: []
+  imports: [CommonModule, MoodsComponent]
 })
-export class ClientHomeComponent {}
+export class ClientHomeComponent {
+  userName = 'Alejandro';
+}

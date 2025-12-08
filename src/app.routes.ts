@@ -1,40 +1,41 @@
 
 import { Routes } from '@angular/router';
-import { authGuard } from './guards/auth.guard';
-import { roleGuard } from './guards/role.guard';
-import { noAuthGuard } from './guards/no-auth.guard';
+import { accessGuard } from './guards/access.guard';
 
 export const APP_ROUTES: Routes = [
   {
     path: 'login',
     loadComponent: () => import('./components/auth/login/login.component').then(c => c.LoginComponent),
-    canActivate: [noAuthGuard],
+    canActivate: [accessGuard],
+    data: { noAuth: true }
   },
   {
     path: 'register',
     loadComponent: () => import('./components/auth/register/register.component').then(c => c.RegisterComponent),
-    canActivate: [noAuthGuard],
+    canActivate: [accessGuard],
+    data: { noAuth: true }
   },
   {
     path: 'forgot-password',
     loadComponent: () => import('./components/auth/forgot-password/forgot-password.component').then(c => c.ForgotPasswordComponent),
-    canActivate: [noAuthGuard],
+    canActivate: [accessGuard],
+    data: { noAuth: true }
   },
   {
     path: 'app',
     loadComponent: () => import('./components/page/page.component').then(c => c.PageComponent),
-    canActivate: [authGuard],
+    canActivate: [accessGuard],
     children: [
       {
         path: 'home-client',
         loadComponent: () => import('./components/page/client-home/client-home.component').then(c => c.ClientHomeComponent),
-        canActivate: [roleGuard],
+        canActivate: [accessGuard],
         data: { expectedRole: 'client' }
       },
       {
         path: 'home-doctor',
         loadComponent: () => import('./components/page/doctor-home/doctor-home.component').then(c => c.DoctorHomeComponent),
-        canActivate: [roleGuard],
+        canActivate: [accessGuard],
         data: { expectedRole: 'doctor' }
       },
       {

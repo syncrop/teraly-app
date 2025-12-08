@@ -1,0 +1,618 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="es" datatype="plaintext" original="ng2.template">
+    <body>
+      <trans-unit id="auth.layout.tagline" datatype="html">
+        <source>Find your balance, find your therapist.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/auth-layout/auth-layout.component.html</context>
+          <context context-type="linenumber">17,18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="auth.layout.description" datatype="html">
+        <source>Verified professionals ready to support your mental well-being across languages and cultures.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/auth-layout/auth-layout.component.html</context>
+          <context context-type="linenumber">18,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="forgotPassword.title" datatype="html">
+        <source>Forgot Password</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/forgot-password/forgot-password.component.html</context>
+          <context context-type="linenumber">9,11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="forgotPassword.subtitle" datatype="html">
+        <source> Enter the email associated with your account and we&apos;ll send a reset link. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/forgot-password/forgot-password.component.html</context>
+          <context context-type="linenumber">11,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="forgotPassword.emailLabel" datatype="html">
+        <source>Email</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/forgot-password/forgot-password.component.html</context>
+          <context context-type="linenumber">17,18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="forgotPassword.emailPlaceholder" datatype="html">
+        <source>Email</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/forgot-password/forgot-password.component.html</context>
+          <context context-type="linenumber">20,24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="forgotPassword.sendButton" datatype="html">
+        <source>Send Reset Link</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/forgot-password/forgot-password.component.html</context>
+          <context context-type="linenumber">26,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="forgotPassword.backToLogin" datatype="html">
+        <source>Back to Login</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/forgot-password/forgot-password.component.html</context>
+          <context context-type="linenumber">33,38</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/forgot-password/forgot-password.component.html</context>
+          <context context-type="linenumber">48,55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="forgotPassword.successTitle" datatype="html">
+        <source>Check your email</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/forgot-password/forgot-password.component.html</context>
+          <context context-type="linenumber">42,44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="forgotPassword.successMessage" datatype="html">
+        <source> If an account for <x id="INTERPOLATION" equiv-text="{{ forgotPasswordForm.value.email }}"/> exists, you will receive a password reset link. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/forgot-password/forgot-password.component.html</context>
+          <context context-type="linenumber">44,46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="login.welcome" datatype="html">
+        <source>Welcome</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/login/login.component.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="login.subtitle" datatype="html">
+        <source>Your trusted Psychology platform</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/login/login.component.html</context>
+          <context context-type="linenumber">9,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="login.emailLabel" datatype="html">
+        <source>Email</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/login/login.component.html</context>
+          <context context-type="linenumber">15,16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="login.emailPlaceholder" datatype="html">
+        <source>client@teraly.com</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/login/login.component.html</context>
+          <context context-type="linenumber">18,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="login.passwordLabel" datatype="html">
+        <source>Password</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/login/login.component.html</context>
+          <context context-type="linenumber">21,22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="login.passwordPlaceholder" datatype="html">
+        <source>pass</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/login/login.component.html</context>
+          <context context-type="linenumber">24,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="login.invalidCredentials" datatype="html">
+        <source>Invalid credentials. Please try again.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/login/login.component.html</context>
+          <context context-type="linenumber">29,34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="login.forgotPassword" datatype="html">
+        <source>Forgot your password?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/login/login.component.html</context>
+          <context context-type="linenumber">35,41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="login.loginButton" datatype="html">
+        <source>Login</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/login/login.component.html</context>
+          <context context-type="linenumber">43,48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="login.noAccount" datatype="html">
+        <source>Don&apos;t have an account?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/login/login.component.html</context>
+          <context context-type="linenumber">49,50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="login.registerLink" datatype="html">
+        <source>Register</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/login/login.component.html</context>
+          <context context-type="linenumber">51,57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="register.title" datatype="html">
+        <source>Registration</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/register/register.component.html</context>
+          <context context-type="linenumber">9,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="register.userTypePatient" datatype="html">
+        <source>Patient</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/register/register.component.html</context>
+          <context context-type="linenumber">19,22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="register.userTypeSpecialist" datatype="html">
+        <source>Specialist</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/register/register.component.html</context>
+          <context context-type="linenumber">26,30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="register.fullNameLabel" datatype="html">
+        <source>Full Name</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/register/register.component.html</context>
+          <context context-type="linenumber">33,34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="register.fullNamePlaceholder" datatype="html">
+        <source>Full Name</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/register/register.component.html</context>
+          <context context-type="linenumber">36,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="register.emailLabel" datatype="html">
+        <source>Email</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/register/register.component.html</context>
+          <context context-type="linenumber">39,40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="register.emailPlaceholder" datatype="html">
+        <source>Email</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/register/register.component.html</context>
+          <context context-type="linenumber">42,45</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="register.passwordLabel" datatype="html">
+        <source>Password</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/register/register.component.html</context>
+          <context context-type="linenumber">45,46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="register.passwordPlaceholder" datatype="html">
+        <source>Password</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/register/register.component.html</context>
+          <context context-type="linenumber">48,51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="register.confirmPasswordLabel" datatype="html">
+        <source>Confirm Password</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/register/register.component.html</context>
+          <context context-type="linenumber">51,52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="register.confirmPasswordPlaceholder" datatype="html">
+        <source>Confirm Password</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/register/register.component.html</context>
+          <context context-type="linenumber">54,55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="register.passwordMismatch" datatype="html">
+        <source>Passwords do not match.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/register/register.component.html</context>
+          <context context-type="linenumber">56,61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="register.licenseLabel" datatype="html">
+        <source>License / Diploma Number</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/register/register.component.html</context>
+          <context context-type="linenumber">62,63</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="register.licensePlaceholder" datatype="html">
+        <source>License / Diploma Number</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/register/register.component.html</context>
+          <context context-type="linenumber">65,70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="register.registerButton" datatype="html">
+        <source>Register</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/register/register.component.html</context>
+          <context context-type="linenumber">73,78</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="register.alreadyAccount" datatype="html">
+        <source>Already have an account?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/register/register.component.html</context>
+          <context context-type="linenumber">79,81</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="register.loginLink" datatype="html">
+        <source>Login</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/auth/register/register.component.html</context>
+          <context context-type="linenumber">81,87</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="clientHome.greeting" datatype="html">
+        <source>Buenos días,</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/client-home/client-home.component.html</context>
+          <context context-type="linenumber">6,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="clientHome.streak" datatype="html">
+        <source>Racha</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/client-home/client-home.component.html</context>
+          <context context-type="linenumber">27,29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="clientHome.days" datatype="html">
+        <source>Días</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/client-home/client-home.component.html</context>
+          <context context-type="linenumber">29,33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="clientHome.sessions" datatype="html">
+        <source>Sesiones</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/client-home/client-home.component.html</context>
+          <context context-type="linenumber">36,40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="clientHome.nextAppointment" datatype="html">
+        <source>PRÓXIMA CONSULTA</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/client-home/client-home.component.html</context>
+          <context context-type="linenumber">46,47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="clientHome.appointmentDate" datatype="html">
+        <source>Hoy, 24 de Octubre</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/client-home/client-home.component.html</context>
+          <context context-type="linenumber">56,61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="clientHome.doctorSpecialty" datatype="html">
+        <source>Psicología Clínica • Online</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/client-home/client-home.component.html</context>
+          <context context-type="linenumber">67,71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="clientHome.joinNow" datatype="html">
+        <source> Unirse ahora → </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/client-home/client-home.component.html</context>
+          <context context-type="linenumber">72,77</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="doctorHome.title" datatype="html">
+        <source>Doctor Home</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/doctor-home/doctor-home.component.ts</context>
+          <context context-type="linenumber">7,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="common.underConstruction" datatype="html">
+        <source>This page is under construction.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/doctor-home/doctor-home.component.ts</context>
+          <context context-type="linenumber">8,14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="navigation.home" datatype="html">
+        <source>Home</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/page.component.html</context>
+          <context context-type="linenumber">9,12</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/footer/footer.component.html</context>
+          <context context-type="linenumber">13,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="navigation.search" datatype="html">
+        <source>Search</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/page.component.html</context>
+          <context context-type="linenumber">14,17</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/footer/footer.component.html</context>
+          <context context-type="linenumber">26,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="navigation.profile" datatype="html">
+        <source>Profile</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/page.component.html</context>
+          <context context-type="linenumber">19,22</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/footer/footer.component.html</context>
+          <context context-type="linenumber">62,66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="navigation.logout" datatype="html">
+        <source>Logout</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/page.component.html</context>
+          <context context-type="linenumber">23,29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="profile.title" datatype="html">
+        <source>My Profile</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/profile/profile.component.html</context>
+          <context context-type="linenumber">4,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="profile.languageCardTitle" datatype="html">
+        <source>Language</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/profile/profile.component.html</context>
+          <context context-type="linenumber">9,10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="profile.languageCardSubtitle" datatype="html">
+        <source>Choose your preferred language for the application.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/profile/profile.component.html</context>
+          <context context-type="linenumber">10,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="profile.accountCardTitle" datatype="html">
+        <source>Account</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/profile/profile.component.html</context>
+          <context context-type="linenumber">28,30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="profile.accountCardSubtitle" datatype="html">
+        <source>Log out of your Teraly account.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/profile/profile.component.html</context>
+          <context context-type="linenumber">30,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="profile.logoutButton" datatype="html">
+        <source>Logout</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/profile/profile.component.html</context>
+          <context context-type="linenumber">32,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="search.title" datatype="html">
+        <source>Buscar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/search/search.component.html</context>
+          <context context-type="linenumber">4,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="search.placeholder" datatype="html">
+        <source>Buscar doctores...</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/search/search.component.html</context>
+          <context context-type="linenumber">13,14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="search.filters" datatype="html">
+        <source>Filtros</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/search/search.component.html</context>
+          <context context-type="linenumber">32,38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="search.searchType" datatype="html">
+        <source>Tipo de búsqueda</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/search/search.component.html</context>
+          <context context-type="linenumber">43,45</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="search.filterAll" datatype="html">
+        <source>Todos (Clientes y Doctores)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/search/search.component.html</context>
+          <context context-type="linenumber">52,55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="search.filterDoctors" datatype="html">
+        <source>Doctores</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/search/search.component.html</context>
+          <context context-type="linenumber">61,64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="search.filterClients" datatype="html">
+        <source>Clientes</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/search/search.component.html</context>
+          <context context-type="linenumber">70,76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="search.noResults" datatype="html">
+        <source>No se encontraron resultados</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/search/search.component.html</context>
+          <context context-type="linenumber">89,90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="search.tryAgain" datatype="html">
+        <source>Intenta con otras palabras clave</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/search/search.component.html</context>
+          <context context-type="linenumber">90,94</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="search.doctors" datatype="html">
+        <source>Doctores</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/search/search.component.html</context>
+          <context context-type="linenumber">139,140</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="search.clients" datatype="html">
+        <source>Clientes</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/page/search/search.component.html</context>
+          <context context-type="linenumber">154,155</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="navigation.appointments" datatype="html">
+        <source>Citas</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/footer/footer.component.html</context>
+          <context context-type="linenumber">49,55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="clientHome.howFeel" datatype="html">
+        <source>¿Cómo te sientes hoy?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/moods/moods.component.html</context>
+          <context context-type="linenumber">2,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="moods.howYouFeel" datatype="html">
+        <source>Cuéntanos cómo te sientes</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/moods/moods.component.html</context>
+          <context context-type="linenumber">32,34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="moods.selectedMood" datatype="html">
+        <source>Estado seleccionado</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/moods/moods.component.html</context>
+          <context context-type="linenumber">46,48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="moods.cancel" datatype="html">
+        <source> Cancelar </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/moods/moods.component.html</context>
+          <context context-type="linenumber">106,110</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="moods.save" datatype="html">
+        <source> Guardar </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/moods/moods.component.html</context>
+          <context context-type="linenumber">113,119</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5716907746758169537" datatype="html">
+        <source>@@clientHome.moodBad:Mal</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/moods/moods.component.ts</context>
+          <context context-type="linenumber">90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2280160870901114995" datatype="html">
+        <source>@@clientHome.moodRegular:Regular</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/moods/moods.component.ts</context>
+          <context context-type="linenumber">91</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="466562011129059887" datatype="html">
+        <source>@@clientHome.moodGood:Bien</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/moods/moods.component.ts</context>
+          <context context-type="linenumber">92</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7566808594430059479" datatype="html">
+        <source>@@clientHome.moodGreat:Genial</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/moods/moods.component.ts</context>
+          <context context-type="linenumber">93</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4491768793908005452" datatype="html">
+        <source>@@moods.sleepQuality:¿Cómo fue tu sueño?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/moods/moods.component.ts</context>
+          <context context-type="linenumber">99</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3307639432524060892" datatype="html">
+        <source>@@moods.energyLevel:¿Cuál es tu nivel de energía?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/moods/moods.component.ts</context>
+          <context context-type="linenumber">108</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1728495337421102446" datatype="html">
+        <source>@@moods.stressLevel:¿Cuál es tu nivel de estrés?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/moods/moods.component.ts</context>
+          <context context-type="linenumber">117</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5477922569564388922" datatype="html">
+        <source>@@moods.anxietyLevel:¿Cómo es tu ansiedad?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/moods/moods.component.ts</context>
+          <context context-type="linenumber">126</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6333818388273869875" datatype="html">
+        <source>@@moods.notes:Notas adicionales</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/moods/moods.component.ts</context>
+          <context context-type="linenumber">135</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2634783087678739188" datatype="html">
+        <source>@@moods.notesPlaceholder:Cuéntanos algo más sobre tu estado emocional...</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/components/shared/moods/moods.component.ts</context>
+          <context context-type="linenumber">137</context>
+        </context-group>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

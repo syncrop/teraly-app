@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { LogoComponent } from '../../shared/logo/logo.component';
+import { AuthService } from '../../../services/auth.service';
 import { AuthLayoutComponent } from '../auth-layout/auth-layout.component';
 
 @Component({
@@ -12,22 +13,46 @@ import { AuthLayoutComponent } from '../auth-layout/auth-layout.component';
   imports: [ReactiveFormsModule, RouterLink, LogoComponent, AuthLayoutComponent],
 })
 export class ForgotPasswordComponent {
+  private authService = inject(AuthService);
+
   submitted = signal(false);
+  isLoading = signal(false);
+  errorMessage = signal<string | null>(null);
 
   forgotPasswordForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
   });
 
   private formStatus = toSignal(this.forgotPasswordForm.statusChanges, { initialValue: this.forgotPasswordForm.status });
-  isSubmittable = computed(() => this.formStatus() === 'VALID');
+  isSubmittable = computed(() => this.formStatus() === 'VALID' && !this.isLoading());
 
   sendResetLink() {
-    if (this.forgotPasswordForm.valid) {
-      console.log('Password reset link sent to:', this.forgotPasswordForm.value.email);
-      this.submitted.set(true);
-    } else {
+    if (this.forgotPasswordForm.invalid) {
       console.log('Form is invalid');
       this.forgotPasswordForm.markAllAsTouched();
+      return;
     }
+
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+
+    const email = this.forgotPasswordForm.value.email!;
+    
+    this.authService.resetPassword(email).subscribe({
+      next: (result) => {
+        this.isLoading.set(false);
+        
+        if (result.success) {
+          this.submitted.set(true);
+        } else {
+          this.errorMessage.set(result.error || 'Error al enviar el email de recuperación');
+        }
+      },
+      error: (error) => {
+        this.isLoading.set(false);
+        this.errorMessage.set('Error al enviar el email. Intenta de nuevo.');
+        console.error('Password reset error:', error);
+      }
+    });
   }
 }

@@ -25,6 +25,10 @@
         </div>
       </div>
       
+      @if (errorMessage()) {
+        <p class="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">{{ errorMessage() }}</p>
+      }
+      
       @if (loginForm.hasError('invalidCredentials') && !loginForm.pristine) {
         <p class="text-red-500 text-sm text-center" i18n="@@login.invalidCredentials">Invalid credentials. Please try again.</p>
       }

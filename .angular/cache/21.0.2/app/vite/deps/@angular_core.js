@@ -418,7 +418,7 @@ import {
   ɵɵvalidateAttribute,
   ɵɵviewQuery,
   ɵɵviewQuerySignal
-} from "./chunk-TZK47O5X.js";
+} from "./chunk-ZG2DWKOW.js";
 import {
   CONTAINER_HEADER_OFFSET,
   ChangeDetectionScheduler,
@@ -500,7 +500,10 @@ import {
   ɵɵnamespaceSVG,
   ɵɵresetView,
   ɵɵrestoreView
-} from "./chunk-DKOBQHZD.js";
+} from "./chunk-JYXJYCGG.js";
+import "./chunk-XYFQ7QOX.js";
+import "./chunk-BZLT2HVW.js";
+import "./chunk-QJQPERGE.js";
 import "./chunk-GOMI4DH3.js";
 export {
   ANIMATION_MODULE_TYPE,
