@@ -5,6 +5,6 @@ import { LogoComponent } from '../../shared/logo/logo.component';
   selector: 'app-auth-layout',
   templateUrl: './auth-layout.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LogoComponent]
+  imports: [LogoComponent],
 })
 export class AuthLayoutComponent {}

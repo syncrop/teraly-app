@@ -1,6 +1,5 @@
 <app-auth-layout>
   <div class="w-full">
-
     <div class="md:hidden text-center mb-8">
       <app-logo></app-logo>
     </div>
@@ -11,83 +10,165 @@
 
     <!-- User Type Toggle Switch -->
     <div class="flex justify-center items-center space-x-4 mb-8 p-1.5 bg-gray-100 rounded-xl">
-        <button (click)="userType.set('client')" type="button" 
-            class="w-1/2 py-2.5 text-sm font-semibold rounded-lg transition-colors duration-300"
-            [class.bg-white]="userType() === 'client'"
-            [class.text-indigo-600]="userType() === 'client'"
-            [class.text-gray-500]="userType() !== 'client'">
-            <span i18n="@@register.userTypePatient">Patient</span>
-        </button>
-        <button (click)="userType.set('doctor')" type="button"
-            class="w-1/2 py-2.5 text-sm font-semibold rounded-lg transition-colors duration-300"
-            [class.bg-white]="userType() === 'doctor'"
-            [class.text-indigo-600]="userType() === 'doctor'"
-            [class.text-gray-500]="userType() !== 'doctor'">
-            <span i18n="@@register.userTypeSpecialist">Specialist</span>
-        </button>
+      <button
+        (click)="userType.set('client')"
+        type="button"
+        class="w-1/2 py-2.5 text-sm font-semibold rounded-lg transition-colors duration-300"
+        [class.bg-white]="userType() === 'client'"
+        [class.text-indigo-600]="userType() === 'client'"
+        [class.text-gray-500]="userType() !== 'client'"
+      >
+        <span i18n="@@register.userTypePatient">Patient</span>
+      </button>
+      <button
+        (click)="userType.set('doctor')"
+        type="button"
+        class="w-1/2 py-2.5 text-sm font-semibold rounded-lg transition-colors duration-300"
+        [class.bg-white]="userType() === 'doctor'"
+        [class.text-indigo-600]="userType() === 'doctor'"
+        [class.text-gray-500]="userType() !== 'doctor'"
+      >
+        <span i18n="@@register.userTypeSpecialist">Specialist</span>
+      </button>
     </div>
 
     <form [formGroup]="registerForm" (ngSubmit)="register()" class="space-y-4">
       <div class="space-y-4">
         <div>
-           <label for="fullName" class="block text-sm font-medium text-gray-700 mb-1" i18n="@@register.fullNameLabel">Full Name</label>
-          <input formControlName="fullName" id="fullName" name="fullName" type="text" autocomplete="name" required
-                 class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
-                 placeholder="Full Name" i18n-placeholder="@@register.fullNamePlaceholder">
+          <label
+            for="fullName"
+            class="block text-sm font-medium text-gray-700 mb-1"
+            i18n="@@register.fullNameLabel"
+            >Full Name</label
+          >
+          <input
+            formControlName="fullName"
+            id="fullName"
+            name="fullName"
+            type="text"
+            autocomplete="name"
+            required
+            class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
+            placeholder="Full Name"
+            i18n-placeholder="@@register.fullNamePlaceholder"
+          />
         </div>
         <div>
-           <label for="email-register" class="block text-sm font-medium text-gray-700 mb-1" i18n="@@register.emailLabel">Email</label>
-          <input formControlName="email" id="email-register" name="email" type="email" autocomplete="email" required
-                 class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
-                 placeholder="Email" i18n-placeholder="@@register.emailPlaceholder">
+          <label
+            for="email-register"
+            class="block text-sm font-medium text-gray-700 mb-1"
+            i18n="@@register.emailLabel"
+            >Email</label
+          >
+          <input
+            formControlName="email"
+            id="email-register"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+            class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
+            placeholder="Email"
+            i18n-placeholder="@@register.emailPlaceholder"
+          />
         </div>
         <div>
-           <label for="password-register" class="block text-sm font-medium text-gray-700 mb-1" i18n="@@register.passwordLabel">Password</label>
-          <input formControlName="password" id="password-register" name="password" type="password" required
-                 class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
-                 placeholder="Password" i18n-placeholder="@@register.passwordPlaceholder">
-          @if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched) {
-            <p class="text-red-500 text-xs mt-1" i18n="@@register.passwordTooShort">Password must be at least 8 characters.</p>
+          <label
+            for="password-register"
+            class="block text-sm font-medium text-gray-700 mb-1"
+            i18n="@@register.passwordLabel"
+            >Password</label
+          >
+          <input
+            formControlName="password"
+            id="password-register"
+            name="password"
+            type="password"
+            required
+            class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
+            placeholder="Password"
+            i18n-placeholder="@@register.passwordPlaceholder"
+          />
+          @if (
+            registerForm.get('password')?.hasError('minlength') &&
+            registerForm.get('password')?.touched
+          ) {
+            <p class="text-red-500 text-xs mt-1" i18n="@@register.passwordTooShort">
+              Password must be at least 8 characters.
+            </p>
           }
         </div>
         <div>
-           <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1" i18n="@@register.confirmPasswordLabel">Confirm Password</label>
-          <input formControlName="confirmPassword" id="confirmPassword" name="confirmPassword" type="password" required
-                 class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
-                 placeholder="Confirm Password" i18n-placeholder="@@register.confirmPasswordPlaceholder">
-          @if (registerForm.get('confirmPassword')?.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched) {
-            <p class="text-red-500 text-xs mt-1" i18n="@@register.passwordMismatch">Passwords do not match.</p>
+          <label
+            for="confirmPassword"
+            class="block text-sm font-medium text-gray-700 mb-1"
+            i18n="@@register.confirmPasswordLabel"
+            >Confirm Password</label
+          >
+          <input
+            formControlName="confirmPassword"
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            required
+            class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
+            placeholder="Confirm Password"
+            i18n-placeholder="@@register.confirmPasswordPlaceholder"
+          />
+          @if (
+            registerForm.get('confirmPassword')?.hasError('passwordMismatch') &&
+            registerForm.get('confirmPassword')?.touched
+          ) {
+            <p class="text-red-500 text-xs mt-1" i18n="@@register.passwordMismatch">
+              Passwords do not match.
+            </p>
           }
         </div>
-        
+
         @if (userType() === 'doctor') {
           <div class="pt-2">
-            <label for="licenseNumber" class="block text-sm font-medium text-gray-700 mb-1" i18n="@@register.licenseLabel">License / Diploma Number</label>
-            <input formControlName="licenseNumber" id="licenseNumber" name="licenseNumber" type="text" required
-                   class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
-                   placeholder="License / Diploma Number" i18n-placeholder="@@register.licensePlaceholder">
+            <label
+              for="licenseNumber"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              i18n="@@register.licenseLabel"
+              >License / Diploma Number</label
+            >
+            <input
+              formControlName="licenseNumber"
+              id="licenseNumber"
+              name="licenseNumber"
+              type="text"
+              required
+              class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm"
+              placeholder="License / Diploma Number"
+              i18n-placeholder="@@register.licensePlaceholder"
+            />
           </div>
         }
       </div>
 
       @if (errorMessage()) {
-        <p class="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">{{ errorMessage() }}</p>
+        <p class="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">
+          {{ errorMessage() }}
+        </p>
       }
 
       <div class="pt-4">
-        <button type="submit" [disabled]="!isSubmittable() || isLoading()"
-                class="group relative w-full flex justify-center py-4 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed">
+        <button
+          type="submit"
+          [disabled]="!isSubmittable() || isLoading()"
+          class="group relative w-full flex justify-center py-4 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed"
+        >
           <span i18n="@@register.registerButton">Register</span>
         </button>
       </div>
     </form>
-    
+
     <p class="mt-8 text-center text-sm text-gray-600">
       <span i18n="@@register.alreadyAccount">Already have an account?</span>
       <a routerLink="/login" class="font-medium text-indigo-600 hover:text-indigo-500">
         <span i18n="@@register.loginLink">Login</span>
       </a>
     </p>
-
   </div>
 </app-auth-layout>

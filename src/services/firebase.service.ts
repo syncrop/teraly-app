@@ -1,17 +1,23 @@
 import { Injectable, inject } from '@angular/core';
-import { 
-  Firestore, 
-  collection, 
-  doc, 
-  setDoc, 
-  addDoc, 
+import {
+  Firestore,
+  collection,
+  doc,
+  setDoc,
+  addDoc,
   getDoc,
-  query, 
-  where, 
+  query,
+  where,
   getDocs,
-  Timestamp 
+  Timestamp,
 } from '@angular/fire/firestore';
-import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, user } from '@angular/fire/auth';
+import {
+  Auth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  user,
+} from '@angular/fire/auth';
 import { Observable, from } from 'rxjs';
 
 // Definimos los Tipos de Datos (El esquema de tu DB)
@@ -37,7 +43,7 @@ export interface Appointment {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FirestoreService {
   private firestore = inject(Firestore);
@@ -57,7 +63,7 @@ export class FirestoreService {
       uid: uid,
       ...userData,
       createdAt: new Date(),
-      isVerified: userData.role === 'specialist' ? false : true // Los médicos requieren verificación
+      isVerified: userData.role === 'specialist' ? false : true, // Los médicos requieren verificación
     });
 
     return uid;
@@ -77,7 +83,7 @@ export class FirestoreService {
     return addDoc(appointmentsRef, {
       ...appointment,
       status: 'pending',
-      createdAt: new Date()
+      createdAt: new Date(),
     });
   }
 
@@ -85,23 +91,19 @@ export class FirestoreService {
   async getMyAppointments(uid: string, role: 'patient' | 'specialist') {
     const appointmentsRef = collection(this.firestore, 'appointments');
     const fieldToSearch = role === 'patient' ? 'patientId' : 'specialistId';
-    
+
     const q = query(appointmentsRef, where(fieldToSearch, '==', uid));
     const snapshot = await getDocs(q);
-    
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   }
 
   // Obtener todos los especialistas verificados (Para el directorio)
   async getVerifiedSpecialists() {
     const usersRef = collection(this.firestore, 'users');
-    const q = query(
-      usersRef, 
-      where('role', '==', 'specialist'), 
-      where('isVerified', '==', true)
-    );
-    
+    const q = query(usersRef, where('role', '==', 'specialist'), where('isVerified', '==', true));
+
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => doc.data() as AppUser);
+    return snapshot.docs.map((doc) => doc.data() as AppUser);
   }
 }

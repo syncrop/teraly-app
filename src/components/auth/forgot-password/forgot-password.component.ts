@@ -23,7 +23,9 @@ export class ForgotPasswordComponent {
     email: new FormControl('', [Validators.required, Validators.email]),
   });
 
-  private formStatus = toSignal(this.forgotPasswordForm.statusChanges, { initialValue: this.forgotPasswordForm.status });
+  private formStatus = toSignal(this.forgotPasswordForm.statusChanges, {
+    initialValue: this.forgotPasswordForm.status,
+  });
   isSubmittable = computed(() => this.formStatus() === 'VALID' && !this.isLoading());
 
   sendResetLink() {
@@ -37,11 +39,11 @@ export class ForgotPasswordComponent {
     this.errorMessage.set(null);
 
     const email = this.forgotPasswordForm.value.email!;
-    
+
     this.authService.resetPassword(email).subscribe({
       next: (result) => {
         this.isLoading.set(false);
-        
+
         if (result.success) {
           this.submitted.set(true);
         } else {
@@ -52,7 +54,7 @@ export class ForgotPasswordComponent {
         this.isLoading.set(false);
         this.errorMessage.set('Error al enviar el email. Intenta de nuevo.');
         console.error('Password reset error:', error);
-      }
+      },
     });
   }
 }

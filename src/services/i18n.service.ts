@@ -21,7 +21,7 @@ export class I18nService {
   currentLang = signal<string>(this.localeId);
 
   setLanguage(langCode: string) {
-    if (this.availableLanguages.some(l => l.code === langCode)) {
+    if (this.availableLanguages.some((l) => l.code === langCode)) {
       localStorage.setItem('teraly-lang', langCode);
       // Reload the page to apply the new locale which is loaded at bootstrap
       window.location.reload();

@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
   selector: 'app-footer',
   templateUrl: './footer.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink]
+  imports: [RouterLink],
 })
 export class FooterComponent {
   isActive(path: string): boolean {

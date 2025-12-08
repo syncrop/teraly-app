@@ -6,7 +6,12 @@
   "scripts": {
     "dev": "ng serve",
     "build": "ng build",
-    "preview": "ng serve --configuration=production"
+    "preview": "ng serve --configuration=production",
+    "lint": "eslint src --ext .ts,.html",
+    "lint:fix": "eslint src --ext .ts,.html --fix",
+    "format": "prettier --write \"src/**/*.{ts,html,css,scss,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,html,css,scss,json}\"",
+    "code-review": "npm run format:check && npm run lint"
   },
   "dependencies": {
     "@angular/build": "^21.0.0",
@@ -24,7 +29,19 @@
     "tailwindcss": "latest"
   },
   "devDependencies": {
+    "@angular-eslint/builder": "^21.1.0",
+    "@angular-eslint/eslint-plugin": "^21.1.0",
+    "@angular-eslint/eslint-plugin-template": "^21.1.0",
+    "@angular-eslint/schematics": "^21.1.0",
+    "@angular-eslint/template-parser": "^21.1.0",
+    "@eslint/js": "^9.39.1",
     "@types/node": "^22.14.0",
+    "@typescript-eslint/eslint-plugin": "^8.49.0",
+    "@typescript-eslint/parser": "^8.49.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.7.4",
     "typescript": "5.9",
     "vite": "^6.2.0"
   }

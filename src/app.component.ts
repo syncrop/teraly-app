@@ -7,7 +7,7 @@ import { I18nService } from './services/i18n.service';
   template: `<router-outlet></router-outlet>`,
   styles: [':host { display: block; }'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet]
+  imports: [RouterOutlet],
 })
 export class AppComponent {
   constructor() {

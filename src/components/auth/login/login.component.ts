@@ -10,7 +10,7 @@ import { AuthLayoutComponent } from '../auth-layout/auth-layout.component';
   selector: 'app-login',
   templateUrl: './login.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, LogoComponent, AuthLayoutComponent]
+  imports: [ReactiveFormsModule, RouterLink, LogoComponent, AuthLayoutComponent],
 })
 export class LoginComponent {
   private router = inject(Router);
@@ -21,10 +21,12 @@ export class LoginComponent {
 
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
-    password: new FormControl('', [Validators.required])
+    password: new FormControl('', [Validators.required]),
   });
 
-  private formStatus = toSignal(this.loginForm.statusChanges, { initialValue: this.loginForm.status });
+  private formStatus = toSignal(this.loginForm.statusChanges, {
+    initialValue: this.loginForm.status,
+  });
   isSubmittable = computed(() => this.formStatus() === 'VALID' && !this.isLoading());
 
   login() {
@@ -37,11 +39,11 @@ export class LoginComponent {
     this.errorMessage.set(null);
 
     const { email, password } = this.loginForm.value;
-    
+
     this.authService.login(email!, password!).subscribe({
       next: (result) => {
         this.isLoading.set(false);
-        
+
         if (result.success) {
           const role = this.authService.currentUserRole();
           if (role === 'client') {
@@ -57,7 +59,7 @@ export class LoginComponent {
         this.isLoading.set(false);
         this.errorMessage.set('Error al iniciar sesión. Intenta de nuevo.');
         console.error('Login error:', error);
-      }
+      },
     });
   }
 }
