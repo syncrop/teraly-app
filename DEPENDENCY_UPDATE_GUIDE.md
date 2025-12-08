@@ -318,43 +318,34 @@ El proyecto usa Angular 21, que es una versión reciente. Asegúrate de:
 
 ## 8. Script de Actualización Rápida
 
-Crear un archivo `update-dependencies.sh`:
+El proyecto incluye un script automatizado `update-dependencies.sh` que facilita las actualizaciones.
 
-```bash
-#!/bin/bash
-set -e
+### Uso del Script
 
-echo "🔍 Verificando estado actual..."
-npm outdated || true
-
-echo ""
-echo "🔒 Ejecutando auditoría de seguridad..."
-npm audit
-
-echo ""
-echo "💾 Creando backup de package.json..."
-cp package.json package.json.backup
-
-echo ""
-echo "📦 Actualizando dependencias seguras..."
-npm install --save-dev @types/node@^24.10.1
-
-echo ""
-echo "🔨 Construyendo proyecto..."
-npm run build
-
-echo ""
-echo "✅ Actualización completada!"
-echo "Si todo funciona correctamente, puedes hacer commit con:"
-echo "  git add package.json package-lock.json"
-echo "  git commit -m 'chore: update dependencies'"
-```
-
-Hacer el script ejecutable:
+Asegúrate de que el script tiene permisos de ejecución:
 ```bash
 chmod +x update-dependencies.sh
-./update-dependencies.sh
 ```
+
+Para usar el script integrado en el proyecto:
+
+```bash
+./update-dependencies.sh check        # Verificar actualizaciones disponibles
+./update-dependencies.sh conservative # Actualización segura (recomendado)
+./update-dependencies.sh full        # Actualización completa (testing)
+```
+
+### Características del Script
+
+El script `update-dependencies.sh` incluido en el proyecto ofrece:
+- ✅ **Backups automáticos** de package.json y package-lock.json
+- ✅ **Rollback automático** si el build falla
+- ✅ **Validación de build** después de actualizar
+- ✅ **3 modos de operación**: check, conservative, full
+- ✅ **Output con colores** para fácil lectura
+- ✅ **Confirmación requerida** para actualizaciones completas
+
+El script ya está configurado y listo para usar en el proyecto
 
 ---
 

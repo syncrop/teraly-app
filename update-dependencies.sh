@@ -1,10 +1,20 @@
 #!/bin/bash
 # Script de actualización segura de dependencias para Teraly App
+#
+# IMPORTANTE: Si este script no es ejecutable, ejecuta primero:
+#   chmod +x update-dependencies.sh
+#
 # Uso: ./update-dependencies.sh [opcion]
 # Opciones:
 #   conservative - Actualización conservadora (solo @types/node)
 #   full - Actualización completa (incluye Vite 7)
-#   check - Solo verifica actualizaciones disponibles
+#   check - Solo verifica actualizaciones disponibles (default)
+#
+# Ejemplos:
+#   ./update-dependencies.sh                # Muestra estado actual
+#   ./update-dependencies.sh check          # Igual que anterior
+#   ./update-dependencies.sh conservative   # Actualización segura
+#   ./update-dependencies.sh full           # Actualización completa
 
 set -e
 

@@ -34,7 +34,8 @@ npm run check-updates
 # Run security audit
 npm run security-audit
 
-# Safe update (recommended)
+# Safe update (recommended) - requires executable permissions
+chmod +x update-dependencies.sh  # Run once to make script executable
 ./update-dependencies.sh conservative
 
 # Full update (test environment)
