@@ -24,7 +24,7 @@ export class UserService {
    */
   async getUserProfile(uid: string): Promise<AppUser | undefined> {
     const userDoc = await getDoc(doc(this.firestore, 'users', uid));
-    return userDoc.data() as AppUser;
+    return userDoc.exists() ? userDoc.data() as AppUser : undefined;
   }
 
   /**

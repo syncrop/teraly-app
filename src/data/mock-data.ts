@@ -1,7 +1,10 @@
+import { Doctor } from '../models/doctor.model';
+import { Client } from '../models/client.model';
+
 /**
  * Mock data for doctors
  */
-export const MOCK_DOCTORS = [
+export const MOCK_DOCTORS: Doctor[] = [
   {
     id: 1,
     name: 'Dr. Javier Perez',
@@ -37,7 +40,7 @@ export const MOCK_DOCTORS = [
 /**
  * Mock data for clients
  */
-export const MOCK_CLIENTS = [
+export const MOCK_CLIENTS: Client[] = [
   {
     id: 1,
     name: 'Juan Martinez',

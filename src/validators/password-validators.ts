@@ -11,7 +11,7 @@ export function passwordMatchValidator(controlName: string, matchingControlName:
     const control = formGroup.get(controlName);
     const matchingControl = formGroup.get(matchingControlName);
     
-    if (matchingControl?.errors && !matchingControl.errors['passwordMismatch']) {
+    if (matchingControl?.errors && !matchingControl.errors?.['passwordMismatch']) {
       return null;
     }
     

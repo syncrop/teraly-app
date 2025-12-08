@@ -1,9 +1,11 @@
 import { UserRole } from '../services/auth.service';
+import { Doctor } from '../models/doctor.model';
+import { Client } from '../models/client.model';
 
 /**
  * Filters doctors based on search query
  */
-export function filterDoctors(doctors: any[], query: string): any[] {
+export function filterDoctors(doctors: Doctor[], query: string): Doctor[] {
   const lowerQuery = query.toLowerCase();
   return doctors.filter(doc =>
     doc.name.toLowerCase().includes(lowerQuery) ||
@@ -14,7 +16,7 @@ export function filterDoctors(doctors: any[], query: string): any[] {
 /**
  * Filters clients based on search query
  */
-export function filterClients(clients: any[], query: string): any[] {
+export function filterClients(clients: Client[], query: string): Client[] {
   const lowerQuery = query.toLowerCase();
   return clients.filter(client =>
     client.name.toLowerCase().includes(lowerQuery)
@@ -28,9 +30,9 @@ export function getFilteredResults(
   userRole: UserRole,
   searchQuery: string,
   selectedFilter: string,
-  doctors: any[],
-  clients: any[]
-): any[] {
+  doctors: Doctor[],
+  clients: Client[]
+): (Doctor | Client)[] {
   if (userRole === 'client') {
     // Clients search for doctors only
     return filterDoctors(doctors, searchQuery);

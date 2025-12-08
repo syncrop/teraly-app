@@ -48,7 +48,7 @@ export const MOOD_QUESTIONS: MoodQuestion[] = [
     min: 1,
     max: 10,
     minLabel: 'Sin ansiedad',
-    maxLabel: 'Muy ansiedad'
+    maxLabel: 'Mucha ansiedad'
   },
   {
     id: 'notes',
