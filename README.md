@@ -63,7 +63,7 @@ The workflow includes:
 
 ### Configuration Files
 
-- `.eslintrc.json` - ESLint configuration for Angular/TypeScript
+- `eslint.config.js` - ESLint configuration for Angular/TypeScript (ESLint v9 flat config)
 - `.prettierrc.json` - Prettier formatting rules
 - `.prettierignore` - Files to exclude from formatting
 - `.github/workflows/code-review.yml` - Automated CI/CD pipeline

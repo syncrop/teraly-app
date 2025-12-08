@@ -10,7 +10,7 @@ import prettierConfig from 'eslint-config-prettier';
 export default [
   // Global ignores
   {
-    ignores: ['dist/**', 'node_modules/**', '.angular/**', '*.config.js'],
+    ignores: ['dist/**', 'node_modules/**', '.angular/**', 'vite.config.js'],
   },
 
   // TypeScript files configuration
