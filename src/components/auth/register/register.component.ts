@@ -1,28 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, OnDestroy } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { LogoComponent } from '../../shared/logo/logo.component';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 import { AuthLayoutComponent } from '../auth-layout/auth-layout.component';
 import { CommonModule } from '@angular/common';
-
-function passwordMatchValidator(controlName: string, matchingControlName: string): ValidatorFn {
-  return (formGroup: AbstractControl) => {
-    const control = formGroup.get(controlName);
-    const matchingControl = formGroup.get(matchingControlName);
-    if (matchingControl?.errors && !matchingControl.errors['passwordMismatch']) {
-      return null;
-    }
-    if (control?.value !== matchingControl?.value) {
-      matchingControl?.setErrors({ passwordMismatch: true });
-      return { passwordMismatch: true };
-    } else {
-      matchingControl?.setErrors(null);
-      return null;
-    }
-  };
-}
+import { passwordMatchValidator } from '../../../validators/password-validators';
 
 @Component({
   selector: 'app-register',
