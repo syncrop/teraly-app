@@ -52,6 +52,17 @@
             }
           },
           "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "polyfills": [],
+            "tsConfig": "tsconfig.json",
+            "karmaConfig": "karma.conf.js",
+            "assets": ["src/assets"],
+            "styles": [],
+            "scripts": []
+          }
         }
       }
     }
