@@ -45,9 +45,8 @@ async function bootstrapApp() {
     const translations = JSON.parse(responseText);
     translationsData = translations.translations || {};
     
-    if (locale !== 'en') {
-      loadTranslations(translationsData);
-    }
+    // Always load translations (including English) to ensure $localize works properly
+    loadTranslations(translationsData);
   } catch (error) {
     console.error(`Failed to load translations for '${locale}'. Falling back to 'en'.`, error);
     locale = 'en';

@@ -1,4 +1,6 @@
 import { Injectable, LOCALE_ID, inject, signal } from '@angular/core';
+import { TranslationService } from './translation.service';
+import { loadTranslations } from '@angular/localize';
 
 export interface Language {
   code: string;
@@ -10,6 +12,7 @@ export interface Language {
 })
 export class I18nService {
   private localeId = inject(LOCALE_ID);
+  private translationService = inject(TranslationService);
 
   availableLanguages: Language[] = [
     { code: 'en', label: 'English' },
@@ -20,11 +23,29 @@ export class I18nService {
 
   currentLang = signal<string>(this.localeId);
 
-  setLanguage(langCode: string) {
+  async setLanguage(langCode: string) {
     if (this.availableLanguages.some(l => l.code === langCode)) {
-      localStorage.setItem('teraly-lang', langCode);
-      // Reload the page to apply the new locale which is loaded at bootstrap
-      window.location.reload();
+      try {
+        // Load new translations
+        const response = await fetch(`/src/assets/i18n/${langCode}.json`);
+        const data = await response.json();
+        const translations = data.translations || {};
+        
+        // Update translation service
+        this.translationService.setTranslations(translations);
+        
+        // Load into $localize
+        loadTranslations(translations);
+        
+        // Update current language
+        this.currentLang.set(langCode);
+        localStorage.setItem('teraly-lang', langCode);
+        
+        // Reload to apply $localize changes (needed for i18n attributes)
+        window.location.reload();
+      } catch (error) {
+        console.error(`Failed to load translations for ${langCode}`, error);
+      }
     }
   }
 }

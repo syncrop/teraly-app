@@ -5,6 +5,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { LogoComponent } from '../../shared/logo/logo.component';
 import { AuthService } from '../../../services/auth.service';
 import { AuthLayoutComponent } from '../auth-layout/auth-layout.component';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -15,6 +16,7 @@ import { AuthLayoutComponent } from '../auth-layout/auth-layout.component';
 export class LoginComponent {
   private router = inject(Router);
   private authService = inject(AuthService);
+  private toastService = inject(ToastService);
 
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
@@ -43,6 +45,7 @@ export class LoginComponent {
         this.isLoading.set(false);
         
         if (result.success) {
+          this.toastService.success('¡Bienvenido! Inicio de sesión exitoso');
           const role = this.authService.currentUserRole();
           if (role === 'client') {
             this.router.navigate(['/app/home-client']);
@@ -51,11 +54,13 @@ export class LoginComponent {
           }
         } else {
           this.errorMessage.set(result.error || 'Error al iniciar sesión');
+          this.toastService.error(result.error || 'Error al iniciar sesión');
         }
       },
       error: (error) => {
         this.isLoading.set(false);
         this.errorMessage.set('Error al iniciar sesión. Intenta de nuevo.');
+        this.toastService.error('Error al iniciar sesión. Intenta de nuevo.');
         console.error('Login error:', error);
       }
     });

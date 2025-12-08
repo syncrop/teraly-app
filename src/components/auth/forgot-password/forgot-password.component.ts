@@ -5,6 +5,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { LogoComponent } from '../../shared/logo/logo.component';
 import { AuthService } from '../../../services/auth.service';
 import { AuthLayoutComponent } from '../auth-layout/auth-layout.component';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-forgot-password',
@@ -14,6 +15,7 @@ import { AuthLayoutComponent } from '../auth-layout/auth-layout.component';
 })
 export class ForgotPasswordComponent {
   private authService = inject(AuthService);
+  private toastService = inject(ToastService);
 
   submitted = signal(false);
   isLoading = signal(false);
@@ -44,13 +46,16 @@ export class ForgotPasswordComponent {
         
         if (result.success) {
           this.submitted.set(true);
+          this.toastService.success('Email de recuperación enviado. Revisa tu bandeja');
         } else {
           this.errorMessage.set(result.error || 'Error al enviar el email de recuperación');
+          this.toastService.error(result.error || 'Error al enviar el email de recuperación');
         }
       },
       error: (error) => {
         this.isLoading.set(false);
         this.errorMessage.set('Error al enviar el email. Intenta de nuevo.');
+        this.toastService.error('Error al enviar el email. Intenta de nuevo.');
         console.error('Password reset error:', error);
       }
     });

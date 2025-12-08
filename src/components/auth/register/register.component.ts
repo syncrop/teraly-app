@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 import { AuthLayoutComponent } from '../auth-layout/auth-layout.component';
 import { CommonModule } from '@angular/common';
+import { ToastService } from '../../../services/toast.service';
 
 function passwordMatchValidator(controlName: string, matchingControlName: string): ValidatorFn {
   return (formGroup: AbstractControl) => {
@@ -33,6 +34,7 @@ function passwordMatchValidator(controlName: string, matchingControlName: string
 export class RegisterComponent implements OnDestroy {
   private router = inject(Router);
   private authService = inject(AuthService);
+  private toastService = inject(ToastService);
 
   userType = signal<'client' | 'doctor'>('client');
   isLoading = signal(false);
@@ -105,14 +107,17 @@ export class RegisterComponent implements OnDestroy {
         this.isLoading.set(false);
         
         if (result.success) {
+          this.toastService.success('¡Registro exitoso! Ahora puedes iniciar sesión');
           this.router.navigate(['/login']);
         } else {
           this.errorMessage.set(result.error || 'Error al registrarse');
+          this.toastService.error(result.error || 'Error al registrarse');
         }
       },
       error: (error) => {
         this.isLoading.set(false);
         this.errorMessage.set('Error al registrarse. Intenta de nuevo.');
+        this.toastService.error('Error al registrarse. Intenta de nuevo.');
         console.error('Register error:', error);
       }
     });
