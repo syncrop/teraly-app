@@ -5,7 +5,6 @@ import { LogoComponent } from '../../shared/logo/logo.component';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 import { AuthLayoutComponent } from '../auth-layout/auth-layout.component';
-import { CommonModule } from '@angular/common';
 
 function passwordMatchValidator(controlName: string, matchingControlName: string): ValidatorFn {
   return (formGroup: AbstractControl) => {
@@ -28,7 +27,7 @@ function passwordMatchValidator(controlName: string, matchingControlName: string
   selector: 'app-register',
   templateUrl: './register.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, LogoComponent, AuthLayoutComponent, CommonModule]
+  imports: [ReactiveFormsModule, RouterLink, LogoComponent, AuthLayoutComponent]
 })
 export class RegisterComponent implements OnDestroy {
   private router = inject(Router);

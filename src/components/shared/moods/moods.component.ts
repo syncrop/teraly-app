@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgIf, NgFor, NgSwitch, NgSwitchCase } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 interface Mood {
@@ -12,7 +12,7 @@ interface Mood {
   selector: 'app-moods',
   templateUrl: './moods.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule]
+  imports: [NgIf, NgFor, NgSwitch, NgSwitchCase, FormsModule]
 })
 export class MoodsComponent implements OnInit {
 
