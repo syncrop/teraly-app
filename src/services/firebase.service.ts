@@ -1,3 +1,15 @@
+/**
+ * @deprecated This service has been refactored and split into smaller, more focused services.
+ * 
+ * Please use the following services instead:
+ * - Authentication: Use AuthService (src/services/auth.service.ts)
+ * - User profiles: Use UserService (src/services/user.service.ts)
+ * - Appointments: Use AppointmentService (src/services/appointment.service.ts)
+ * 
+ * This file is kept for reference but should not be used in new code.
+ * It will be removed in a future version once all dependencies are migrated.
+ */
+
 import { Injectable, inject } from '@angular/core';
 import { 
   Firestore, 
@@ -8,34 +20,17 @@ import {
   getDoc,
   query, 
   where, 
-  getDocs,
-  Timestamp 
+  getDocs
 } from '@angular/fire/firestore';
-import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, user } from '@angular/fire/auth';
-import { Observable, from } from 'rxjs';
+import { Auth, createUserWithEmailAndPassword } from '@angular/fire/auth';
 
-// Definimos los Tipos de Datos (El esquema de tu DB)
-export interface AppUser {
-  uid: string;
-  email: string;
-  fullName: string;
-  role: 'patient' | 'specialist' | 'admin';
-  createdAt: any;
-  // Campos opcionales para especialistas
-  specialty?: string;
-  licenseNumber?: string;
-  isVerified?: boolean;
-}
+// Note: These types are maintained in their respective model files:
+// - AppUser is in auth.service.ts
+// - Appointment is in models/appointment.model.ts
 
-export interface Appointment {
-  id?: string;
-  patientId: string;
-  specialistId: string;
-  date: any;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
-  notes?: string;
-}
-
+/**
+ * @deprecated Use AppointmentService instead
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -43,36 +38,36 @@ export class FirestoreService {
   private firestore = inject(Firestore);
   private auth = inject(Auth);
 
-  // --- AUTENTICACIÓN ---
-
-  // Registro (Crea el usuario en Auth y guarda sus datos en Firestore)
-  async registerUser(email: string, pass: string, userData: Omit<AppUser, 'uid' | 'createdAt'>) {
-    // 1. Crear cuenta de seguridad (Email/Pass)
+  /**
+   * @deprecated Use AuthService.register() instead
+   */
+  async registerUser(email: string, pass: string, userData: any) {
     const credential = await createUserWithEmailAndPassword(this.auth, email, pass);
     const uid = credential.user.uid;
 
-    // 2. Guardar ficha de perfil en base de datos
     const userRef = doc(this.firestore, 'users', uid);
     await setDoc(userRef, {
       uid: uid,
       ...userData,
       createdAt: new Date(),
-      isVerified: userData.role === 'specialist' ? false : true // Los médicos requieren verificación
+      isVerified: userData.role === 'specialist' ? false : true
     });
 
     return uid;
   }
 
-  // --- BASE DE DATOS (CRUD) ---
-
-  // Obtener perfil de un usuario
-  async getUserProfile(uid: string): Promise<AppUser | undefined> {
+  /**
+   * @deprecated Use UserService.getUserProfile() instead
+   */
+  async getUserProfile(uid: string): Promise<any> {
     const userDoc = await getDoc(doc(this.firestore, 'users', uid));
-    return userDoc.data() as AppUser;
+    return userDoc.data();
   }
 
-  // Crear una cita nueva
-  async createAppointment(appointment: Omit<Appointment, 'id' | 'status'>) {
+  /**
+   * @deprecated Use AppointmentService.createAppointment() instead
+   */
+  async createAppointment(appointment: any) {
     const appointmentsRef = collection(this.firestore, 'appointments');
     return addDoc(appointmentsRef, {
       ...appointment,
@@ -81,7 +76,9 @@ export class FirestoreService {
     });
   }
 
-  // Obtener mis citas (Si soy paciente busco por patientId, si soy médico por specialistId)
+  /**
+   * @deprecated Use AppointmentService.getUserAppointments() instead
+   */
   async getMyAppointments(uid: string, role: 'patient' | 'specialist') {
     const appointmentsRef = collection(this.firestore, 'appointments');
     const fieldToSearch = role === 'patient' ? 'patientId' : 'specialistId';
@@ -92,7 +89,9 @@ export class FirestoreService {
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 
-  // Obtener todos los especialistas verificados (Para el directorio)
+  /**
+   * @deprecated Use UserService.getVerifiedDoctors() instead
+   */
   async getVerifiedSpecialists() {
     const usersRef = collection(this.firestore, 'users');
     const q = query(
@@ -102,6 +101,6 @@ export class FirestoreService {
     );
     
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => doc.data() as AppUser);
+    return snapshot.docs.map(doc => doc.data());
   }
 }
