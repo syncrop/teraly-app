@@ -4,6 +4,8 @@ import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendP
 import { Firestore, collection, doc, setDoc, getDoc, query, where, getDocs } from '@angular/fire/firestore';
 import { from, Observable } from 'rxjs';
 import { map, catchError, switchMap, tap } from 'rxjs/operators';
+import { TokenStorageService } from './token-storage.service';
+import { AuthErrorHandler } from '../utils/auth-error-handler';
 
 export type UserRole = 'client' | 'doctor' | null;
 
@@ -25,6 +27,7 @@ export class AuthService {
   private auth = inject(Auth);
   private firestore = inject(Firestore);
   private router = inject(Router);
+  private tokenStorage = inject(TokenStorageService);
   
   currentUserRole = signal<UserRole>(null);
   currentUser = signal<AppUser | null>(null);
@@ -56,20 +59,20 @@ export class AuthService {
                   localStorage.setItem('userRole', role);
                   localStorage.setItem('userId', credential.user.uid);
 
-                  // store session token details
-                  try {
-                    const idToken = (tokenResult && (tokenResult.token as string)) || '';
-                    const expiresAt = tokenResult && tokenResult.expirationTime ? new Date(tokenResult.expirationTime).getTime() : (Date.now() + 3600 * 1000);
-                    const refreshToken = (credential.user as any)?.refreshToken || '';
-                    sessionStorage.setItem('idToken', idToken);
-                    sessionStorage.setItem('refreshToken', refreshToken);
-                    sessionStorage.setItem('expiresAt', String(expiresAt));
-                    sessionStorage.setItem('localId', credential.user.uid);
-                    sessionStorage.setItem('email', credential.user.email || '');
-                  } catch (e) {
-                    // swallow storage errors
-                    console.warn('Could not store session tokens', e);
-                  }
+                  // Store session token details using TokenStorageService
+                  const idToken = (tokenResult && (tokenResult.token as string)) || '';
+                  const expiresAt = tokenResult && tokenResult.expirationTime 
+                    ? new Date(tokenResult.expirationTime).getTime() 
+                    : (Date.now() + 3600 * 1000);
+                  const refreshToken = (credential.user as any)?.refreshToken || '';
+                  
+                  this.tokenStorage.storeTokens({
+                    idToken,
+                    refreshToken,
+                    expiresAt,
+                    localId: credential.user.uid,
+                    email: credential.user.email || ''
+                  });
 
                   return { success: true, role };
                 }
@@ -80,14 +83,7 @@ export class AuthService {
         )
       ),
       catchError((error) => {
-        let errorMessage = 'Error al iniciar sesión';
-        if (error.code === 'auth/user-not-found') {
-          errorMessage = 'Usuario no encontrado';
-        } else if (error.code === 'auth/wrong-password') {
-          errorMessage = 'Contraseña incorrecta';
-        } else if (error.code === 'auth/invalid-email') {
-          errorMessage = 'Email inválido';
-        }
+        const errorMessage = AuthErrorHandler.getLoginErrorMessage(error.code);
         return from([{ success: false, error: errorMessage }]);
       })
     );
@@ -121,17 +117,22 @@ export class AuthService {
           localStorage.setItem('userRole', userType);
           localStorage.setItem('userId', uid);
 
-          // store session token details (idToken, refreshToken, expiresAt, localId, email)
+          // Store session token details using TokenStorageService
           try {
             const tokenResult = await credential.user.getIdTokenResult();
             const idToken = tokenResult?.token || '';
-            const expiresAt = tokenResult && tokenResult.expirationTime ? new Date(tokenResult.expirationTime).getTime() : (Date.now() + 3600 * 1000);
+            const expiresAt = tokenResult && tokenResult.expirationTime 
+              ? new Date(tokenResult.expirationTime).getTime() 
+              : (Date.now() + 3600 * 1000);
             const refreshToken = (credential.user as any)?.refreshToken || '';
-            sessionStorage.setItem('idToken', idToken);
-            sessionStorage.setItem('refreshToken', refreshToken);
-            sessionStorage.setItem('expiresAt', String(expiresAt));
-            sessionStorage.setItem('localId', uid);
-            sessionStorage.setItem('email', credential.user.email || email || '');
+            
+            this.tokenStorage.storeTokens({
+              idToken,
+              refreshToken,
+              expiresAt,
+              localId: uid,
+              email: credential.user.email || email || ''
+            });
           } catch (e) {
             console.warn('Could not store session tokens on register', e);
           }
@@ -140,14 +141,7 @@ export class AuthService {
         })())
       ),
       catchError((error) => {
-        let errorMessage = 'Error al registrar';
-        if (error.code === 'auth/email-already-in-use') {
-          errorMessage = 'El email ya está registrado';
-        } else if (error.code === 'auth/weak-password') {
-          errorMessage = 'La contraseña es muy débil';
-        } else if (error.code === 'auth/invalid-email') {
-          errorMessage = 'Email inválido';
-        }
+        const errorMessage = AuthErrorHandler.getRegisterErrorMessage(error.code);
         return [{ success: false, error: errorMessage }];
       })
     );
@@ -158,12 +152,7 @@ export class AuthService {
     return from(sendPasswordResetEmail(this.auth, email)).pipe(
       map(() => ({ success: true })),
       catchError((error) => {
-        let errorMessage = 'Error al enviar email de recuperación';
-        if (error.code === 'auth/user-not-found') {
-          errorMessage = 'Usuario no encontrado';
-        } else if (error.code === 'auth/invalid-email') {
-          errorMessage = 'Email inválido';
-        }
+        const errorMessage = AuthErrorHandler.getPasswordResetErrorMessage(error.code);
         return [{ success: false, error: errorMessage }];
       })
     );
@@ -180,12 +169,8 @@ export class AuthService {
       localStorage.removeItem('userRole');
       localStorage.removeItem('userId');
       
-      // Limpiar sessionStorage
-      sessionStorage.removeItem('idToken');
-      sessionStorage.removeItem('refreshToken');
-      sessionStorage.removeItem('expiresAt');
-      sessionStorage.removeItem('localId');
-      sessionStorage.removeItem('email');
+      // Limpiar sessionStorage using TokenStorageService
+      this.tokenStorage.clearTokens();
       
       // Redirigir al login
       this.router.navigate(['/login']);
