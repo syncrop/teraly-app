@@ -5,8 +5,24 @@ import { Firestore, collection, doc, setDoc, getDoc, query, where, getDocs } fro
 import { from, Observable } from 'rxjs';
 import { map, catchError, switchMap, tap } from 'rxjs/operators';
 
+/**
+ * Tipo de rol de usuario en la aplicación.
+ * @typedef {('client' | 'doctor' | null)} UserRole
+ */
 export type UserRole = 'client' | 'doctor' | null;
 
+/**
+ * Interfaz que representa un usuario de la aplicación.
+ * @interface AppUser
+ * @property {string} uid - Identificador único del usuario
+ * @property {string} email - Correo electrónico del usuario
+ * @property {string} fullName - Nombre completo del usuario
+ * @property {('client' | 'doctor')} role - Rol del usuario en la aplicación
+ * @property {any} createdAt - Fecha de creación de la cuenta
+ * @property {string} [specialty] - Especialidad médica (solo para doctores)
+ * @property {string} [licenseNumber] - Número de licencia médica (solo para doctores)
+ * @property {boolean} [isVerified] - Indica si el usuario ha sido verificado
+ */
 export interface AppUser {
   uid: string;
   email: string;
@@ -18,6 +34,37 @@ export interface AppUser {
   isVerified?: boolean;
 }
 
+/**
+ * Servicio de autenticación que gestiona el inicio de sesión, registro y cierre de sesión
+ * de usuarios utilizando Firebase Authentication y Firestore.
+ * 
+ * @example
+ * ```typescript
+ * // Inyectar el servicio
+ * constructor(private authService: AuthService) {}
+ * 
+ * // Iniciar sesión
+ * this.authService.login('user@example.com', 'password123')
+ *   .subscribe(result => {
+ *     if (result.success) {
+ *       console.log('Usuario autenticado con rol:', result.role);
+ *     } else {
+ *       console.error('Error:', result.error);
+ *     }
+ *   });
+ * 
+ * // Registrar usuario
+ * this.authService.register('user@example.com', 'password123', 'John Doe', 'client')
+ *   .subscribe(result => {
+ *     if (result.success) {
+ *       console.log('Usuario registrado con uid:', result.uid);
+ *     }
+ *   });
+ * 
+ * // Cerrar sesión
+ * this.authService.logout();
+ * ```
+ */
 @Injectable({
   providedIn: 'root',
 })
@@ -36,7 +83,25 @@ export class AuthService {
     }
   }
 
-  // Login con Firebase
+  /**
+   * Inicia sesión con email y contraseña utilizando Firebase Authentication.
+   * Obtiene los datos del usuario desde Firestore y almacena el rol y tokens de sesión.
+   * 
+   * @param {string} email - Correo electrónico del usuario
+   * @param {string} password - Contraseña del usuario
+   * @returns {Observable<{success: boolean, role?: UserRole, error?: string}>} Observable con el resultado de la operación
+   * 
+   * @example
+   * ```typescript
+   * this.authService.login('user@example.com', 'password123').subscribe(result => {
+   *   if (result.success) {
+   *     console.log('Login exitoso, rol:', result.role);
+   *   } else {
+   *     console.error('Error de login:', result.error);
+   *   }
+   * });
+   * ```
+   */
   login(email: string, password: string): Observable<{ success: boolean; role?: UserRole; error?: string }> {
     return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
       // Use switchMap to handle the promise and emit the correct type
@@ -93,7 +158,36 @@ export class AuthService {
     );
   }
 
-  // Registro con Firebase
+  /**
+   * Registra un nuevo usuario en Firebase Authentication y crea su perfil en Firestore.
+   * Los clientes quedan verificados automáticamente, los doctores requieren verificación.
+   * 
+   * @param {string} email - Correo electrónico del usuario
+   * @param {string} password - Contraseña del usuario (mínimo 6 caracteres)
+   * @param {string} fullName - Nombre completo del usuario
+   * @param {('client' | 'doctor')} userType - Tipo de usuario a registrar
+   * @param {string} [licenseNumber] - Número de licencia médica (requerido para doctores)
+   * @returns {Observable<{success: boolean, uid?: string, error?: string}>} Observable con el resultado de la operación
+   * 
+   * @example
+   * ```typescript
+   * // Registrar un cliente
+   * this.authService.register('client@example.com', 'password123', 'Juan Pérez', 'client')
+   *   .subscribe(result => {
+   *     if (result.success) {
+   *       console.log('Cliente registrado con uid:', result.uid);
+   *     }
+   *   });
+   * 
+   * // Registrar un doctor
+   * this.authService.register('doctor@example.com', 'password123', 'Dra. María López', 'doctor', 'LIC-12345')
+   *   .subscribe(result => {
+   *     if (result.success) {
+   *       console.log('Doctor registrado, requiere verificación');
+   *     }
+   *   });
+   * ```
+   */
   register(email: string, password: string, fullName: string, userType: 'client' | 'doctor', licenseNumber?: string): Observable<{ success: boolean; uid?: string; error?: string }> {
     return from(createUserWithEmailAndPassword(this.auth, email, password)).pipe(
       switchMap((credential) =>
@@ -153,7 +247,23 @@ export class AuthService {
     );
   }
 
-  // Recuperar contraseña
+  /**
+   * Envía un correo electrónico para restablecer la contraseña del usuario.
+   * 
+   * @param {string} email - Correo electrónico del usuario
+   * @returns {Observable<{success: boolean, error?: string}>} Observable con el resultado de la operación
+   * 
+   * @example
+   * ```typescript
+   * this.authService.resetPassword('user@example.com').subscribe(result => {
+   *   if (result.success) {
+   *     console.log('Correo de recuperación enviado');
+   *   } else {
+   *     console.error('Error:', result.error);
+   *   }
+   * });
+   * ```
+   */
   resetPassword(email: string): Observable<{ success: boolean; error?: string }> {
     return from(sendPasswordResetEmail(this.auth, email)).pipe(
       map(() => ({ success: true })),
@@ -169,7 +279,18 @@ export class AuthService {
     );
   }
 
-  // Logout con Firebase
+  /**
+   * Cierra la sesión del usuario actual, limpia el estado local y redirige al login.
+   * Limpia los signals, localStorage y sessionStorage.
+   * 
+   * @returns {void}
+   * 
+   * @example
+   * ```typescript
+   * this.authService.logout();
+   * // Usuario será redirigido a /login
+   * ```
+   */
   logout(): void {
     signOut(this.auth).then(() => {
       // Limpiar signals
@@ -198,12 +319,36 @@ export class AuthService {
     });
   }
 
-  // Verificar si el usuario está autenticado
+  /**
+   * Verifica si hay un usuario autenticado actualmente.
+   * 
+   * @returns {boolean} true si hay un usuario autenticado, false en caso contrario
+   * 
+   * @example
+   * ```typescript
+   * if (this.authService.isAuthenticated()) {
+   *   console.log('Usuario autenticado');
+   * }
+   * ```
+   */
   isAuthenticated(): boolean {
     return this.currentUserRole() !== null;
   }
 
-  // Obtener el usuario actual
+  /**
+   * Obtiene los datos completos del usuario actual desde Firestore.
+   * 
+   * @returns {Observable<AppUser | null>} Observable con los datos del usuario o null si no está autenticado
+   * 
+   * @example
+   * ```typescript
+   * this.authService.getCurrentUser().subscribe(user => {
+   *   if (user) {
+   *     console.log('Usuario:', user.fullName, 'Rol:', user.role);
+   *   }
+   * });
+   * ```
+   */
   getCurrentUser(): Observable<AppUser | null> {
     return from(user(this.auth)).pipe(
       switchMap((firebaseUser) => {

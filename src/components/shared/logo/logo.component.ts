@@ -1,6 +1,30 @@
 
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
+/**
+ * Componente que muestra el logo de Teraly con su icono y texto.
+ * Es un componente de presentación sin estado.
+ * 
+ * @selector app-logo
+ * 
+ * @example
+ * ```html
+ * <!-- Uso básico -->
+ * <app-logo></app-logo>
+ * ```
+ * 
+ * @example
+ * ```typescript
+ * // En un componente padre
+ * import { LogoComponent } from './components/shared/logo/logo.component';
+ * 
+ * @Component({
+ *   imports: [LogoComponent],
+ *   template: '<app-logo></app-logo>'
+ * })
+ * export class HeaderComponent {}
+ * ```
+ */
 @Component({
   selector: 'app-logo',
   template: `
