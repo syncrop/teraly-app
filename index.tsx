@@ -1,6 +1,6 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter, withHashLocation } from '@angular/router';
-import { LOCALE_ID, provideZoneChangeDetection, importProvidersFrom } from '@angular/core';
+import { LOCALE_ID, provideZonelessChangeDetection, importProvidersFrom } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { provideHttpClient } from '@angular/common/http';
 
@@ -51,7 +51,7 @@ async function bootstrapApp() {
   try {
     await bootstrapApplication(AppComponent, {
       providers: [
-        provideZoneChangeDetection({ eventCoalescing: true }),
+        provideZonelessChangeDetection(),
         provideRouter(APP_ROUTES, withHashLocation()),
         provideHttpClient(),
         importProvidersFrom(ReactiveFormsModule),
