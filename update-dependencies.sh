@@ -147,7 +147,9 @@ full_update() {
     npm install --save-dev vite@^7.2.7
     
     print_color "$BLUE" "🧹 Limpiando caché..."
-    rm -rf .angular/cache
+    if [ -d .angular/cache ]; then
+        rm -rf .angular/cache
+    fi
     
     print_color "$BLUE" "📦 Reinstalando dependencias..."
     npm install
