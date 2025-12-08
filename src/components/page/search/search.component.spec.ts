@@ -11,8 +11,9 @@ describe('SearchComponent', () => {
   let mockAuthService: jasmine.SpyObj<AuthService>;
 
   beforeEach(async () => {
-    mockAuthService = jasmine.createSpyObj('AuthService', ['currentUserRole']);
-    mockAuthService.currentUserRole = jasmine.createSpy().and.returnValue('client');
+    mockAuthService = jasmine.createSpyObj('AuthService', [], {
+      currentUserRole: jasmine.createSpy().and.returnValue('client')
+    });
 
     await TestBed.configureTestingModule({
       imports: [SearchComponent, CommonModule, FormsModule],

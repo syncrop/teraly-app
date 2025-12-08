@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FooterComponent } from './footer.component';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
+import { of } from 'rxjs';
 
 describe('FooterComponent', () => {
   let component: FooterComponent;
@@ -10,7 +11,13 @@ describe('FooterComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FooterComponent, RouterLink]
+      imports: [FooterComponent, RouterLink],
+      providers: [
+        {
+          provide: ActivatedRoute,
+          useValue: { params: of({}), snapshot: { params: {} } }
+        }
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(FooterComponent);
