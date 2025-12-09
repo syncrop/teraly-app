@@ -25,9 +25,11 @@
 </header>
 
 <!-- Main Content -->
-<main class="md:pt-20 pb-24">
+<main class="md:pt-20" [class.pb-24]="showFooter()">
   <router-outlet></router-outlet>
 </main>
 
 <!-- Footer (Shared Component) -->
-<app-footer></app-footer>
+@if (showFooter()) {
+  <app-footer></app-footer>
+}

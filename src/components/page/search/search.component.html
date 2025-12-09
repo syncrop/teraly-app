@@ -242,7 +242,9 @@
     }
 
     @for (doctor of filteredDoctors(); track doctor.id) {
-      <div class="bg-white rounded-2xl p-4 border border-gray-200 hover:shadow-lg transition-shadow">
+      <div 
+        (click)="viewDoctorDetail(doctor.id)"
+        class="bg-white rounded-2xl p-4 border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer">
         <!-- Doctor Header -->
         <div class="flex gap-3 mb-3">
           <!-- Profile Image with Flag Badge -->

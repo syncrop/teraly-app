@@ -49,28 +49,8 @@
     <h2 class="text-2xl font-bold text-gray-900 mb-1">{{ userName() }}</h2>
     
     <!-- User Role Badge -->
-    <span class="px-4 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium mb-4" i18n="@@profile.userRole">
+    <span class="px-4 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium" i18n="@@profile.userRole">
       {{ userRole() }}
     </span>
-
-    <!-- Action Buttons -->
-    @if (profileImage()) {
-      <div class="flex gap-3 w-full max-w-xs">
-        <button 
-          (click)="triggerFileInput()"
-          class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          [disabled]="isLoading()"
-          i18n="@@profile.changePhoto">
-          Cambiar foto
-        </button>
-        <button 
-          (click)="removeProfilePicture()"
-          class="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-          [disabled]="isLoading()"
-          i18n="@@profile.removePhoto">
-          Eliminar
-        </button>
-      </div>
-    }
   </div>
 </div>

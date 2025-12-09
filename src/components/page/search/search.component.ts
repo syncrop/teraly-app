@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 
 interface Doctor {
@@ -43,6 +44,7 @@ interface Language {
 })
 export class SearchComponent {
   private authService = inject(AuthService);
+  private router = inject(Router);
 
   searchQuery = signal('Ansiedad');
   showFiltersModal = signal(false);
@@ -252,5 +254,9 @@ export class SearchComponent {
       return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
+  }
+
+  viewDoctorDetail(doctorId: number) {
+    this.router.navigate(['/app/doctor', doctorId]);
   }
 }

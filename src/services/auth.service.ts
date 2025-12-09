@@ -16,6 +16,8 @@ export interface AppUser {
   specialty?: string;
   licenseNumber?: string;
   isVerified?: boolean;
+  languages?: string[];
+  completed?: boolean;
 }
 
 @Injectable({
@@ -94,7 +96,7 @@ export class AuthService {
   }
 
   // Registro con Firebase
-  register(email: string, password: string, fullName: string, userType: 'client' | 'doctor', licenseNumber?: string): Observable<{ success: boolean; uid?: string; error?: string }> {
+  register(email: string, password: string, fullName: string, userType: 'client' | 'doctor', licenseNumber?: string, languages?: string[]): Observable<{ success: boolean; uid?: string; error?: string }> {
     return from(createUserWithEmailAndPassword(this.auth, email, password)).pipe(
       switchMap((credential) =>
         from((async () => {
@@ -108,10 +110,11 @@ export class AuthService {
             role: userType,
             createdAt: new Date(),
             isVerified: userType === 'client',
+            languages: languages || [],
             ...(userType === 'doctor' && { 
-              licenseNumber, 
               isVerified: false,
-              specialty: ''
+              specialty: '',
+              completed: false
             })
           };
           
@@ -215,6 +218,28 @@ export class AuthService {
         return from([null]);
       }),
       catchError(() => from([null]))
+    );
+  }
+
+  // Refrescar datos del usuario desde Firestore
+  refreshUserData(): Observable<AppUser | null> {
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      return from([null]);
+    }
+
+    return from(getDoc(doc(this.firestore, 'users', userId))).pipe(
+      tap((userDoc) => {
+        if (userDoc.exists()) {
+          const userData = userDoc.data() as AppUser;
+          this.currentUser.set(userData);
+        }
+      }),
+      map((userDoc) => userDoc.exists() ? userDoc.data() as AppUser : null),
+      catchError((error) => {
+        console.error('Error al refrescar datos del usuario:', error);
+        return from([null]);
+      })
     );
   }
 }

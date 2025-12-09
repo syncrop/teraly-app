@@ -1,9 +1,42 @@
-<div class="bg-gray-50 min-h-screen pb-20">
-  <div class="max-w-2xl mx-auto px-4 py-6">
-    <h1 class="text-3xl font-bold text-indigo-900 mb-6" i18n="@@profile.title">My Profile</h1>
+<!-- Show Doctor Profile -->
+@if (isDoctor) {
+  <app-doctor-profile></app-doctor-profile>
+} @else {
+  <!-- Show Client Profile -->
+  <div class="bg-gray-50 min-h-screen pb-20">
+    <div class="max-w-2xl mx-auto px-4 py-6">
+      <h1 class="text-3xl font-bold text-indigo-900 mb-6" i18n="@@profile.title">My Profile</h1>
 
-    <!-- Profile Picture Component -->
-    <app-profile-picture></app-profile-picture>
+      <!-- Profile Picture Component -->
+      <app-profile-picture></app-profile-picture>
+
+      <!-- Edit/Complete Profile Button for Doctors -->
+    @if (isDoctor) {
+      <div class="mb-6">
+        @if (!isProfileComplete) {
+          <button 
+            (click)="editDoctorProfile()"
+            class="w-full bg-orange-500 text-white font-semibold py-4 px-6 rounded-2xl hover:bg-orange-600 transition-colors flex items-center justify-center gap-2 shadow-md">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span i18n="@@profile.completeProfile">Completar Perfil Profesional</span>
+          </button>
+          <p class="text-center text-sm text-orange-600 mt-2 font-medium" i18n="@@profile.mustCompleteProfile">
+            ⚠️ Debes completar tu perfil para poder ofrecer tus servicios
+          </p>
+        } @else {
+          <button 
+            (click)="editDoctorProfile()"
+            class="w-full bg-indigo-600 text-white font-semibold py-4 px-6 rounded-2xl hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <span i18n="@@profile.editProfile">Editar Perfil Profesional</span>
+          </button>
+        }
+      </div>
+    }
 
     <!-- Historial de Citas -->
     <div class="bg-white rounded-2xl shadow-sm p-4 mb-4 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer">
@@ -130,5 +163,6 @@
 
     <!-- Version -->
     <p class="text-center text-gray-400 text-sm mt-6">Teraly v1.0.2</p>
+    </div>
   </div>
-</div>
+}

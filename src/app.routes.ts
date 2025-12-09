@@ -43,8 +43,18 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./components/page/search/search.component').then(c => c.SearchComponent)
       },
       {
+        path: 'doctor/:id',
+        loadComponent: () => import('./components/page/doctor-detail/doctor-detail.component').then(c => c.DoctorDetailComponent)
+      },
+      {
         path: 'profile',
         loadComponent: () => import('./components/page/profile/profile.component').then(c => c.ProfileComponent)
+      },
+      {
+        path: 'edit-doctor-profile',
+        loadComponent: () => import('./components/page/profile/edit-doctor-profile/edit-doctor-profile.component').then(c => c.EditDoctorProfileComponent),
+        canActivate: [accessGuard],
+        data: { expectedRole: 'doctor' }
       },
       {
         path: '',

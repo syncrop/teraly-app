@@ -47,10 +47,20 @@ export class LoginComponent {
         if (result.success) {
           this.toastService.success('¡Bienvenido! Inicio de sesión exitoso');
           const role = this.authService.currentUserRole();
+          const currentUser = this.authService.currentUser();
+          
           if (role === 'client') {
             this.router.navigate(['/app/home-client']);
           } else if (role === 'doctor') {
-            this.router.navigate(['/app/home-doctor']);
+            // Check if doctor profile is complete
+            const isProfileComplete = currentUser?.completed === true;
+            
+            if (!isProfileComplete) {
+              this.router.navigate(['/app/profile']);
+              this.toastService.show('Por favor, completa tu perfil para comenzar', 'info');
+            } else {
+              this.router.navigate(['/app/home-doctor']);
+            }
           }
         } else {
           this.errorMessage.set(result.error || 'Error al iniciar sesión');

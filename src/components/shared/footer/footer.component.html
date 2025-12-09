@@ -1,65 +1,113 @@
 <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-3 sm:px-6">
-  <div class="flex justify-around items-center max-w-md mx-auto">
-    <!-- Home -->
-    <a
-      routerLink="/app"
-      class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors min-w-0"
-      [class.text-indigo-600]="isActive('/app')"
-      [class.text-gray-400]="!isActive('/app')"
-    >
-      <svg class="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-      </svg>
-      <span class="text-[10px] font-medium leading-tight text-center truncate max-w-full" i18n="@@navigation.home">Inicio</span>
-    </a>
+  @if (isDoctor) {
+    <!-- Doctor Footer: Panel, Pacientes, +, Agenda, Perfil -->
+    <div class="flex justify-around items-center max-w-md mx-auto">
+      <!-- Panel -->
+      <a
+        routerLink="/app"
+        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors min-w-0"
+        [class.text-indigo-600]="isActive('/app')"
+        [class.text-gray-400]="!isActive('/app')"
+      >
+        <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+        </svg>
+        <span class="text-[10px] font-medium leading-tight text-center truncate max-w-full" i18n="@@navigation.panel">Panel</span>
+      </a>
 
-    <!-- Search -->
-    <a
-      routerLink="/app/search"
-      class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors min-w-0"
-      [class.text-indigo-600]="isActive('/search')"
-      [class.text-gray-400]="!isActive('/search')"
-    >
-      <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
-      <span class="text-[10px] font-medium leading-tight text-center truncate max-w-full" i18n="@@navigation.search">Buscar</span>
-    </a>
+      <!-- Pacientes -->
+      <a
+        routerLink="/app/patients"
+        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors min-w-0"
+        [class.text-indigo-600]="isActive('/patients')"
+        [class.text-gray-400]="!isActive('/patients')"
+      >
+        <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <span class="text-[10px] font-medium leading-tight text-center truncate max-w-full" i18n="@@navigation.patients">Pacientes</span>
+      </a>
 
-    <!-- Create/Action Button -->
-    <button
-      class="w-12 h-12 rounded-full bg-indigo-600 text-white shadow-lg flex items-center justify-center hover:bg-indigo-700 transition-colors flex-shrink-0"
-      aria-label="Crear"
-    >
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-      </svg>
-    </button>
+      <!-- Agenda -->
+      <a
+        routerLink="/app/appointments"
+        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors min-w-0"
+        [class.text-indigo-600]="isActive('/appointments')"
+        [class.text-gray-400]="!isActive('/appointments')"
+      >
+        <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span class="text-[10px] font-medium leading-tight text-center truncate max-w-full" i18n="@@navigation.agenda">Agenda</span>
+      </a>
 
-    <!-- Calendar/Appointments -->
-    <a
-      routerLink="/app/appointments"
-      class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors min-w-0"
-      [class.text-indigo-600]="isActive('/appointments')"
-      [class.text-gray-400]="!isActive('/appointments')"
-    >
-      <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-      <span class="text-[10px] font-medium leading-tight text-center truncate max-w-full" i18n="@@navigation.appointments">Citas</span>
-    </a>
+      <!-- Perfil -->
+      <a
+        routerLink="/app/profile"
+        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors min-w-0"
+        [class.text-indigo-600]="isActive('/profile')"
+        [class.text-gray-400]="!isActive('/profile')"
+      >
+        <svg class="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+        </svg>
+        <span class="text-[10px] font-medium leading-tight text-center truncate max-w-full" i18n="@@navigation.profile">Perfil</span>
+      </a>
+    </div>
+  } @else {
+    <!-- Patient Footer: Inicio, Buscar, +, Citas, Perfil -->
+    <div class="flex justify-around items-center max-w-md mx-auto">
+      <!-- Home -->
+      <a
+        routerLink="/app"
+        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors min-w-0"
+        [class.text-indigo-600]="isActive('/app')"
+        [class.text-gray-400]="!isActive('/app')"
+      >
+        <svg class="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+        </svg>
+        <span class="text-[10px] font-medium leading-tight text-center truncate max-w-full" i18n="@@navigation.home">Inicio</span>
+      </a>
 
-    <!-- Profile -->
-    <a
-      routerLink="/app/profile"
-      class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors min-w-0"
-      [class.text-indigo-600]="isActive('/profile')"
-      [class.text-gray-400]="!isActive('/profile')"
-    >
-      <svg class="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-      </svg>
-      <span class="text-[10px] font-medium leading-tight text-center truncate max-w-full" i18n="@@navigation.profile">Perfil</span>
-    </a>
-  </div>
+      <!-- Search -->
+      <a
+        routerLink="/app/search"
+        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors min-w-0"
+        [class.text-indigo-600]="isActive('/search')"
+        [class.text-gray-400]="!isActive('/search')"
+      >
+        <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <span class="text-[10px] font-medium leading-tight text-center truncate max-w-full" i18n="@@navigation.search">Buscar</span>
+      </a>
+
+      <!-- Calendar/Appointments -->
+      <a
+        routerLink="/app/appointments"
+        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors min-w-0"
+        [class.text-indigo-600]="isActive('/appointments')"
+        [class.text-gray-400]="!isActive('/appointments')"
+      >
+        <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span class="text-[10px] font-medium leading-tight text-center truncate max-w-full" i18n="@@navigation.appointments">Citas</span>
+      </a>
+
+      <!-- Profile -->
+      <a
+        routerLink="/app/profile"
+        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors min-w-0"
+        [class.text-indigo-600]="isActive('/profile')"
+        [class.text-gray-400]="!isActive('/profile')"
+      >
+        <svg class="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+        </svg>
+        <span class="text-[10px] font-medium leading-tight text-center truncate max-w-full" i18n="@@navigation.profile">Perfil</span>
+      </a>
+    </div>
+  }
 </nav>
