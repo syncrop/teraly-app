@@ -12,10 +12,9 @@ import {
   Timestamp 
 } from '@angular/fire/firestore';
 import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, user } from '@angular/fire/auth';
-import { Observable, from } from 'rxjs';
 
 // Definimos los Tipos de Datos (El esquema de tu DB)
-export interface AppUser {
+export interface AppUserLegacy {
   uid: string;
   email: string;
   fullName: string;
@@ -46,7 +45,7 @@ export class FirestoreService {
   // --- AUTENTICACIÓN ---
 
   // Registro (Crea el usuario en Auth y guarda sus datos en Firestore)
-  async registerUser(email: string, pass: string, userData: Omit<AppUser, 'uid' | 'createdAt'>) {
+  async registerUser(email: string, pass: string, userData: Omit<AppUserLegacy, 'uid' | 'createdAt'>) {
     // 1. Crear cuenta de seguridad (Email/Pass)
     const credential = await createUserWithEmailAndPassword(this.auth, email, pass);
     const uid = credential.user.uid;
@@ -66,9 +65,9 @@ export class FirestoreService {
   // --- BASE DE DATOS (CRUD) ---
 
   // Obtener perfil de un usuario
-  async getUserProfile(uid: string): Promise<AppUser | undefined> {
+  async getUserProfile(uid: string): Promise<AppUserLegacy | undefined> {
     const userDoc = await getDoc(doc(this.firestore, 'users', uid));
-    return userDoc.data() as AppUser;
+    return userDoc.data() as AppUserLegacy;
   }
 
   // Crear una cita nueva
@@ -102,6 +101,6 @@ export class FirestoreService {
     );
     
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => doc.data() as AppUser);
+    return snapshot.docs.map(doc => doc.data() as AppUserLegacy);
   }
 }

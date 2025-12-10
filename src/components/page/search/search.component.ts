@@ -1,11 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../../services/auth.service';
+import { UserService } from '../../../services/user.service';
+import { CurrencySymbolPipe } from '../../shared/pipes/currency-symbol.pipe';
+import { AppUser } from '@/src/models/user.model';
 
 interface Doctor {
-  id: number;
+  id: string;
   name: string;
   specialty: string;
   tags: string[];
@@ -40,16 +42,71 @@ interface Language {
   selector: 'app-search',
   templateUrl: './search.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule]
+  imports: [CommonModule, FormsModule, CurrencySymbolPipe]
 })
-export class SearchComponent {
-  private authService = inject(AuthService);
+export class SearchComponent implements OnInit {
+  private userService = inject(UserService);
   private router = inject(Router);
 
-  searchQuery = signal('Ansiedad');
+  searchQuery = signal('');
   showFiltersModal = signal(false);
   showLanguageDropdown = signal(false);
   showPriceDropdown = signal(false);
+  isLoading = signal(true);
+
+  ngOnInit() {
+    this.loadDoctors();
+  }
+
+  loadDoctors() {
+    this.isLoading.set(true);
+    this.userService.getDoctors().subscribe({
+      next: (users) => {
+        console.log('Usuarios obtenidos:', users);
+        // Mapear usuarios de Firestore a formato Doctor del componente
+        const mappedDoctors = users
+          .filter(user => user.completed === true) // Solo mostrar doctores con perfil completo
+          .map((user: AppUser) => ({
+            id: user.uid,
+            name: user.fullName || 'Doctor',
+            specialty: user.specialty || 'Psicología',
+            tags: user.specialties || (user.specialty ? [user.specialty] : []),
+            rating: user.ratings, // Esto vendría de un campo en el futuro
+            reviews: user.reviewsCount || 0, // Esto se calculará en el futuro
+            image: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.fullName || 'Doctor') + '&background=818cf8&clor=fff&size=200',
+            available: true,
+            priceAmount: user.price,
+            priceCurrency: user.currency || 'EUR',
+            pricePerSession: user.pricePerSession,
+            languages: user.languages?.map(lang => this.getLanguageFlag(lang)) || ['🇪🇸'],
+            verified: user.isVerified || false
+          }));
+        
+        this.doctors.set(mappedDoctors);
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Error al cargar doctores:', error);
+        this.isLoading.set(false);
+        // Mantener doctores vacíos en caso de error
+        this.doctors.set([]);
+      }
+    });
+  }
+
+  private getLanguageFlag(langCode: string): string {
+    const flags: Record<string, string> = {
+      'es': '🇪🇸',
+      'en': '🇬🇧',
+      'pl': '🇵🇱',
+      'uk': '🇺🇦',
+      'español': '🇪🇸',
+      'english': '🇬🇧',
+      'polski': '🇵🇱',
+      'українська': '🇺🇦'
+    };
+    return flags[langCode.toLowerCase()] || '🇪🇸';
+  }
   
   filterChips = signal<FilterChip[]>([
     { id: 'language', label: 'Idioma', icon: '🌍', active: false, type: 'dropdown' },
@@ -67,56 +124,8 @@ export class SearchComponent {
   priceRange = signal<{ min: number; max: number }>({ min: 0, max: 500 });
   selectedPriceRange = signal<{ min: number; max: number }>({ min: 0, max: 500 });
 
-  // Mock data - doctors
-  doctors = signal<Doctor[]>([
-    {
-      id: 1,
-      name: 'Dr. Javier Perez',
-      specialty: 'Psicología Clínica',
-      tags: ['Ansiedad'],
-      rating: 4.9,
-      reviews: 124,
-      image: 'https://randomuser.me/api/portraits/men/32.jpg',
-      available: true,
-      availabilityText: 'Disponible hoy',
-      priceAmount: 50,
-      priceCurrency: '€',
-      pricePerSession: '/50min',
-      languages: ['🇪🇸'],
-      verified: false
-    },
-    {
-      id: 2,
-      name: 'Dra. Anna Kowalska',
-      specialty: 'Terapia Cognitiva',
-      tags: ['Depresión'],
-      rating: 5.0,
-      reviews: 89,
-      image: 'https://randomuser.me/api/portraits/women/44.jpg',
-      available: true,
-      nextSlots: ['Mañana 10:00', 'Mañana 14:30'],
-      priceAmount: 240,
-      priceCurrency: 'zł',
-      pricePerSession: '/50min',
-      languages: ['🇵🇱', '🇬🇧'],
-      verified: true
-    },
-    {
-      id: 3,
-      name: 'Dr. Carlos Méndez',
-      specialty: 'Psicología Infantil',
-      tags: ['Ansiedad', 'Niños'],
-      rating: 4.8,
-      reviews: 203,
-      image: 'https://randomuser.me/api/portraits/men/45.jpg',
-      available: false,
-      priceAmount: 65,
-      priceCurrency: '€',
-      pricePerSession: '/50min',
-      languages: ['🇪🇸', '🇬🇧'],
-      verified: true
-    }
-  ]);
+  // Doctors list from Firestore
+  doctors = signal<Doctor[]>([]);
 
   filteredDoctors = computed(() => {
     const query = this.searchQuery().toLowerCase();

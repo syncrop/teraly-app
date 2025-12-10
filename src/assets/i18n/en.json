@@ -160,7 +160,7 @@
     "editProfile.specialties": "Areas of Specialization",
     "editProfile.selectSpecialties": "Select specialties",
     "editProfile.specialtiesRequired": "You must select at least one specialty",
-    "editProfile.price": "Price per Session (€)",
+    "editProfile.price": "Price per Session",
     "editProfile.priceRequired": "Price is required",
     "editProfile.priceMin": "Price must be greater than 0",
     "editProfile.experience": "Years of Experience",
@@ -181,6 +181,22 @@
     "doctorProfile.ratesDesc": "/ session",
     "doctorProfile.reputation": "REPUTATION",
     "doctorProfile.patientReviews": "Patient Reviews",
-    "doctorProfile.newReviews": "new this week"
+    "doctorProfile.newReviews": "new this week",
+    "favorites.title": "My Specialists",
+    "favorites.favoritesTab": "Favorites",
+    "favorites.historyTab": "History",
+    "favorites.loading": "Loading specialists...",
+    "favorites.noFavorites": "You don't have favorite specialists",
+    "favorites.noFavoritesDesc": "Search for specialists and add them to favorites for quick access",
+    "favorites.noHistory": "You don't have specialists in history",
+    "favorites.noHistoryDesc": "Search for specialists and book an appointment",
+    "favorites.searchSpecialists": "Search specialists",
+    "favorites.sessions": "sessions with you",
+    "favorites.savedForLater": "Saved for later",
+    "favorites.reserveAgain": "Reserve again",
+    "favorites.viewAvailability": "View availability",
+    "favorites.firstAppointment": "First Appointment",
+    "favorites.removed": "Removed from favorites",
+    "favorites.addedToFavorites": "Added to favorites"
   }
 }

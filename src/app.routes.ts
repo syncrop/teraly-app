@@ -47,6 +47,10 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./components/page/doctor-detail/doctor-detail.component').then(c => c.DoctorDetailComponent)
       },
       {
+        path: 'favorites',
+        loadComponent: () => import('./components/page/favorites/favorites.component').then(c => c.FavoritesComponent)
+      },
+      {
         path: 'profile',
         loadComponent: () => import('./components/page/profile/profile.component').then(c => c.ProfileComponent)
       },

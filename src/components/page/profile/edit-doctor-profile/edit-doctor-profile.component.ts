@@ -64,7 +64,9 @@ export class EditDoctorProfileComponent implements OnInit {
     description: new FormControl('', [Validators.required, Validators.minLength(50), Validators.maxLength(500)]),
     languages: new FormControl<string[]>([], Validators.required),
     specialties: new FormControl<string[]>([], Validators.required),
+    currency: new FormControl<string>('EUR', Validators.required),
     price: new FormControl<number>(50, [Validators.required, Validators.min(1)]),
+    sessionDuration: new FormControl<number>(50, Validators.required),
     experience: new FormControl<number>(1, [Validators.required, Validators.min(0)])
   });
 
@@ -78,7 +80,9 @@ export class EditDoctorProfileComponent implements OnInit {
         description: (currentUser as any).description || '',
         languages: currentUser.languages || [],
         specialties: (currentUser as any).specialties || [],
+        currency: (currentUser as any).currency || 'EUR',
         price: (currentUser as any).price || 50,
+        sessionDuration: (currentUser as any).sessionDuration || 50,
         experience: (currentUser as any).experience || 1
       });
     }
@@ -174,7 +178,9 @@ export class EditDoctorProfileComponent implements OnInit {
         description: formValue.description,
         languages: formValue.languages,
         specialties: formValue.specialties,
+        currency: formValue.currency,
         price: formValue.price,
+        sessionDuration: formValue.sessionDuration,
         experience: formValue.experience,
         completed: true, // Mark profile as completed
         updatedAt: new Date()

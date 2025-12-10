@@ -4,21 +4,7 @@ import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendP
 import { Firestore, collection, doc, setDoc, getDoc, query, where, getDocs } from '@angular/fire/firestore';
 import { from, Observable } from 'rxjs';
 import { map, catchError, switchMap, tap } from 'rxjs/operators';
-
-export type UserRole = 'client' | 'doctor' | null;
-
-export interface AppUser {
-  uid: string;
-  email: string;
-  fullName: string;
-  role: 'client' | 'doctor';
-  createdAt: any;
-  specialty?: string;
-  licenseNumber?: string;
-  isVerified?: boolean;
-  languages?: string[];
-  completed?: boolean;
-}
+import { UserRole, AppUser } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root',
@@ -206,6 +192,25 @@ export class AuthService {
     return this.currentUserRole() !== null;
   }
 
+  // Obtener el UID del usuario actual desde sessionStorage o signal
+  getCurrentUserId(): string | null {
+    // Primero intentar desde el signal (más rápido)
+    const currentUser = this.currentUser();
+    if (currentUser?.uid) {
+      return currentUser.uid;
+    }
+
+    // Fallback a sessionStorage (donde guardas localId al hacer login)
+    const localId = sessionStorage.getItem('localId');
+    if (localId) {
+      return localId;
+    }
+
+    // Último fallback a localStorage
+    const userId = localStorage.getItem('userId');
+    return userId;
+  }
+
   // Obtener el usuario actual
   getCurrentUser(): Observable<AppUser | null> {
     return from(user(this.auth)).pipe(
@@ -221,25 +226,4 @@ export class AuthService {
     );
   }
 
-  // Refrescar datos del usuario desde Firestore
-  refreshUserData(): Observable<AppUser | null> {
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-      return from([null]);
-    }
-
-    return from(getDoc(doc(this.firestore, 'users', userId))).pipe(
-      tap((userDoc) => {
-        if (userDoc.exists()) {
-          const userData = userDoc.data() as AppUser;
-          this.currentUser.set(userData);
-        }
-      }),
-      map((userDoc) => userDoc.exists() ? userDoc.data() as AppUser : null),
-      catchError((error) => {
-        console.error('Error al refrescar datos del usuario:', error);
-        return from([null]);
-      })
-    );
-  }
 }

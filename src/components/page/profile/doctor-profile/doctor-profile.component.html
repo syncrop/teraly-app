@@ -88,20 +88,21 @@
       </svg>
     </button>
 
-    <!-- Editar Perfil Público -->
+    <!-- Ver Perfil Público -->
     <button 
-      (click)="navigateToEditProfile()"
+      (click)="navigateToPublicProfile()"
       class="w-full bg-white rounded-2xl shadow-sm p-4 mb-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
     >
       <div class="flex items-center gap-4">
         <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
           <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
           </svg>
         </div>
         <div class="text-left">
-          <h3 class="text-base font-semibold text-gray-900" i18n="@@doctorProfile.editPublicProfile">Editar Perfil Público</h3>
-          <p class="text-sm text-gray-500" i18n="@@doctorProfile.editPublicDesc">Bio, fotos, especialidades</p>
+          <h3 class="text-base font-semibold text-gray-900">Ver Perfil Público</h3>
+          <p class="text-sm text-gray-500">Cómo te ven los pacientes</p>
         </div>
       </div>
       <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,7 +123,7 @@
         </div>
         <div class="text-left">
           <h3 class="text-base font-semibold text-gray-900" i18n="@@doctorProfile.ratesPayments">Tarifas y Pagos</h3>
-          <p class="text-sm text-gray-500">{{ price }}€ <span i18n="@@doctorProfile.ratesDesc">/ sesión</span></p>
+          <p class="text-sm text-gray-500">{{ priceWithCurrency }} <span i18n="@@doctorProfile.ratesDesc">/ sesión</span></p>
         </div>
       </div>
       <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

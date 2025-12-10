@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../../services/auth.service';
+import { UserService } from '../../../../services/user.service';
 import { ToastService } from '../../../../services/toast.service';
 import { I18nService } from '../../../../services/i18n.service';
 import { ProfilePictureComponent } from '../profile-picture/profile-picture.component';
@@ -13,21 +14,44 @@ import { ProfilePictureComponent } from '../profile-picture/profile-picture.comp
   templateUrl: './doctor-profile.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DoctorProfileComponent {
+export class DoctorProfileComponent implements OnInit {
   private authService = inject(AuthService);
+  private userService = inject(UserService);
   private router = inject(Router);
   private toastService = inject(ToastService);
   private i18nService = inject(I18nService);
 
   isAvailable = signal(true);
   showProfilePictureModal = signal(false);
+  isProfileCompleteSignal = signal(false);
 
   get currentUser() {
     return this.authService.currentUser();
   }
 
+  ngOnInit() {
+    // Scroll al inicio de la página
+    window.scrollTo(0, 0);
+    
+    // Refrescar datos del usuario desde el backend
+    const userId = this.authService.getCurrentUserId();
+    if (userId) {
+      this.userService.refreshUserData(userId).subscribe({
+        next: (userData) => {
+          if (userData) {
+            this.authService.currentUser.set(userData);
+            this.isProfileCompleteSignal.set(userData.completed === true);
+          }
+        },
+        error: (error) => {
+          console.error('Error al cargar datos del usuario:', error);
+        }
+      });
+    }
+  }
+
   get isProfileComplete(): boolean {
-    return this.currentUser?.completed === true;
+    return this.isProfileCompleteSignal();
   }
 
   get availableLanguages() {
@@ -69,6 +93,26 @@ export class DoctorProfileComponent {
     return (user as any)?.price || 50;
   }
 
+  get currency() {
+    const user = this.currentUser;
+    return (user as any)?.currency || 'EUR';
+  }
+
+  get priceWithCurrency() {
+    return `${this.price}${this.getCurrencySymbol()}`;
+  }
+
+  getCurrencySymbol(): string {
+    const currencyMap: { [key: string]: string } = {
+      'EUR': '€',
+      'USD': '$',
+      'GBP': '£',
+      'PLN': 'zł',
+      'UAH': '₴'
+    };
+    return currencyMap[this.currency] || this.currency;
+  }
+
   get newReviewsCount() {
     // Mock data - should come from backend
     return 3;
@@ -87,6 +131,13 @@ export class DoctorProfileComponent {
 
   navigateToEditProfile() {
     this.router.navigate(['/app/edit-doctor-profile']);
+  }
+
+  navigateToPublicProfile() {
+    const userId = this.authService.getCurrentUserId();
+    if (userId) {
+      this.router.navigate(['/app/doctor', userId]);
+    }
   }
 
   navigateToPayments() {

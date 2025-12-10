@@ -160,7 +160,7 @@
     "editProfile.specialties": "Obszary specjalizacji",
     "editProfile.selectSpecialties": "Wybierz specjalizacje",
     "editProfile.specialtiesRequired": "Musisz wybrać co najmniej jedną specjalizację",
-    "editProfile.price": "Cena za sesję (€)",
+    "editProfile.price": "Cena za Sesję",
     "editProfile.priceRequired": "Cena jest wymagana",
     "editProfile.priceMin": "Cena musi być większa niż 0",
     "editProfile.experience": "Lata doświadczenia",
@@ -181,6 +181,22 @@
     "doctorProfile.ratesDesc": "/ sesja",
     "doctorProfile.reputation": "REPUTACJA",
     "doctorProfile.patientReviews": "Opinie Pacjentów",
-    "doctorProfile.newReviews": "nowych w tym tygodniu"
+    "doctorProfile.newReviews": "nowe w tym tygodniu",
+    "favorites.title": "Moi Specjaliści",
+    "favorites.favoritesTab": "Ulubione",
+    "favorites.historyTab": "Historia",
+    "favorites.loading": "Ładowanie specjalistów...",
+    "favorites.noFavorites": "Nie masz ulubionych specjalistów",
+    "favorites.noFavoritesDesc": "Wyszukaj specjalistów i dodaj ich do ulubionych, aby uzyskać szybki dostęp",
+    "favorites.noHistory": "Nie masz specjalistów w historii",
+    "favorites.noHistoryDesc": "Wyszukaj specjalistów i zarezerwuj wizytę",
+    "favorites.searchSpecialists": "Szukaj specjalistów",
+    "favorites.sessions": "sesje z tobą",
+    "favorites.savedForLater": "Zapisane na później",
+    "favorites.reserveAgain": "Zarezerwuj ponownie",
+    "favorites.viewAvailability": "Zobacz dostępność",
+    "favorites.firstAppointment": "Pierwsza Wizyta",
+    "favorites.removed": "Usunięte z ulubionych",
+    "favorites.addedToFavorites": "Dodane do ulubionych"
   }
 }

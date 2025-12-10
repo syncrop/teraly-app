@@ -1,35 +1,44 @@
 <div class="min-h-screen bg-white pb-32">
-  <!-- Header with Back and Favorite -->
-  <div class="sticky top-0 z-10 bg-white border-b border-gray-100">
-    <div class="flex items-center justify-between px-4 py-4">
-      <button 
-        (click)="goBack()"
-        class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-      >
-        <svg class="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-
-      <button 
-        (click)="toggleFavorite()"
-        class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-      >
-        @if (isFavorite()) {
-          <svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-          </svg>
-        } @else {
-          <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-        }
-      </button>
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="flex items-center justify-center min-h-screen">
+      <div class="text-center">
+        <div class="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-gray-600">Cargando información del doctor...</p>
+      </div>
     </div>
-  </div>
+  } @else if (doctor()) {
+    <!-- Header with Back and Favorite -->
+    <div class="sticky top-0 z-10 bg-white border-b border-gray-100">
+      <div class="flex items-center justify-between px-4 py-4">
+        <button 
+          (click)="goBack()"
+          class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <svg class="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
 
-  <!-- Doctor Profile Section -->
-  <div class="px-4 py-6">
+        <button 
+          (click)="toggleFavorite()"
+          class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+        >
+          @if (isFavorite()) {
+            <svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+          } @else {
+            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          }
+        </button>
+      </div>
+    </div>
+
+    <!-- Doctor Profile Section -->
+    <div class="px-4 py-6">
     <!-- Profile Image -->
     <div class="flex justify-center mb-4">
       <div class="relative">
@@ -59,7 +68,7 @@
         }
       </div>
 
-      <p class="text-indigo-600 font-medium mb-4">{{ doctor().specialty }} • Terapia Cognitiva</p>
+      <p class="text-indigo-600 font-medium mb-4">{{ doctor().specialty }}</p>
 
       <!-- Stats -->
       <div class="flex justify-center gap-8">
@@ -213,8 +222,9 @@
         class="flex-1 bg-indigo-600 text-white rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-colors flex items-center justify-between px-6 py-4"
       >
         <span>Reservar Cita</span>
-        <span class="text-xl">{{ doctor().price }}{{ doctor().currency }}</span>
+        <span class="text-xl">{{ doctor().price }}{{ doctor().currency | currencySymbol }}</span>
       </button>
     </div>
   </div>
+  }
 </div>

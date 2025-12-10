@@ -160,7 +160,7 @@
     "editProfile.specialties": "Області спеціалізації",
     "editProfile.selectSpecialties": "Виберіть спеціалізації",
     "editProfile.specialtiesRequired": "Ви повинні вибрати принаймні одну спеціалізацію",
-    "editProfile.price": "Ціна за сеанс (€)",
+    "editProfile.price": "Ціна за сеанс",
     "editProfile.priceRequired": "Ціна обов'язкова",
     "editProfile.priceMin": "Ціна повинна бути більше 0",
     "editProfile.experience": "Роки досвіду",
@@ -181,6 +181,22 @@
     "doctorProfile.ratesDesc": "/ сесія",
     "doctorProfile.reputation": "РЕПУТАЦІЯ",
     "doctorProfile.patientReviews": "Відгуки Пацієнтів",
-    "doctorProfile.newReviews": "нових цього тижня"
+    "doctorProfile.newReviews": "нових цього тижня",
+    "favorites.title": "Мої Спеціалісти",
+    "favorites.favoritesTab": "Обране",
+    "favorites.historyTab": "Історія",
+    "favorites.loading": "Завантаження спеціалістів...",
+    "favorites.noFavorites": "У вас немає обраних спеціалістів",
+    "favorites.noFavoritesDesc": "Шукайте спеціалістів і додавайте їх до обраного для швидкого доступу",
+    "favorites.noHistory": "У вас немає спеціалістів в історії",
+    "favorites.noHistoryDesc": "Шукайте спеціалістів і забронюйте візит",
+    "favorites.searchSpecialists": "Шукати спеціалістів",
+    "favorites.sessions": "сесій з вами",
+    "favorites.savedForLater": "Збережено на потім",
+    "favorites.reserveAgain": "Забронювати знову",
+    "favorites.viewAvailability": "Переглянути доступність",
+    "favorites.firstAppointment": "Перша Зустріч",
+    "favorites.removed": "Видалено з обраного",
+    "favorites.addedToFavorites": "Додано до обраного"
   }
 }
