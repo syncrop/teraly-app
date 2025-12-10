@@ -61,6 +61,10 @@ export const APP_ROUTES: Routes = [
         data: { expectedRole: 'doctor' }
       },
       {
+        path: 'help-support',
+        loadComponent: () => import('./components/page/help-support/help-support.component').then(c => c.HelpSupportComponent)
+      },
+      {
         path: '',
         redirectTo: 'home-client',
         pathMatch: 'full'

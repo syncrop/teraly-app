@@ -69,4 +69,8 @@ export class ProfileComponent implements OnInit {
   editDoctorProfile() {
     this.router.navigate(['/app/edit-doctor-profile']);
   }
+
+  navigateToHelpSupport() {
+    this.router.navigate(['/app/help-support']);
+  }
 }

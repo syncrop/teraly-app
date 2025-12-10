@@ -140,6 +140,10 @@ export class DoctorProfileComponent implements OnInit {
     }
   }
 
+  navigateToHelpSupport() {
+    this.router.navigate(['/app/help-support']);
+  }
+
   navigateToPayments() {
     this.toastService.info('Función en desarrollo');
     // this.router.navigate(['/app/payments']);

@@ -1,0 +1,106 @@
+<div class="bg-gray-50 min-h-screen pb-24">
+  <!-- Header -->
+  <div class="bg-white shadow-sm sticky top-0 z-10">
+    <div class="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
+      <button (click)="goBack()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+        <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <h1 class="text-2xl font-bold text-gray-900">Ayuda y Soporte</h1>
+    </div>
+  </div>
+
+  <div class="max-w-2xl mx-auto px-4 py-6 space-y-6">
+    
+    <!-- ACCESOS RÁPIDOS Section -->
+    <div>
+      <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">ACCESOS RÁPIDOS</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <!-- Pagos -->
+        <button 
+          (click)="navigateToPayments()"
+          class="bg-white rounded-2xl p-6 flex flex-col items-center justify-center gap-3 hover:bg-gray-50 transition-colors shadow-sm"
+        >
+          <div class="w-14 h-14 bg-indigo-50 rounded-full flex items-center justify-center">
+            <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+          </div>
+          <span class="text-base font-semibold text-gray-900">Pagos</span>
+        </button>
+
+        <!-- Video -->
+        <button 
+          class="bg-white rounded-2xl p-6 flex flex-col items-center justify-center gap-3 hover:bg-gray-50 transition-colors shadow-sm"
+        >
+          <div class="w-14 h-14 bg-purple-50 rounded-full flex items-center justify-center">
+            <svg class="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <span class="text-base font-semibold text-gray-900">Video</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- PREGUNTAS FRECUENTES Section -->
+    <div>
+      <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">PREGUNTAS FRECUENTES</h2>
+      <div class="space-y-3">
+        @for (faq of faqs(); track $index) {
+          <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <button
+              (click)="toggleFAQ($index)"
+              class="w-full px-4 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+            >
+              <span class="text-base font-medium text-gray-900 text-left">{{ faq.question }}</span>
+              <svg 
+                class="w-5 h-5 text-gray-400 transition-transform"
+                [class.rotate-180]="faq.isOpen"
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            
+            @if (faq.isOpen) {
+              <div class="px-4 pb-4 pt-0">
+                <p class="text-sm text-gray-600 leading-relaxed">{{ faq.answer }}</p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- CONTÁCTANOS Section -->
+    <div>
+      <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">CONTÁCTANOS</h2>
+      
+      <!-- Enviar Correo -->
+      <button
+        (click)="sendEmail()"
+        class="w-full bg-white rounded-2xl shadow-sm p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+      >
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div class="text-left">
+            <h3 class="text-base font-semibold text-gray-900">Enviar Correo</h3>
+            <p class="text-sm text-gray-500">Respuesta en 24h</p>
+          </div>
+        </div>
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+
+  </div>
+</div>
