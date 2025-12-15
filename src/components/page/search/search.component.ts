@@ -55,6 +55,7 @@ export class SearchComponent implements OnInit {
   isLoading = signal(true);
 
   ngOnInit() {
+    window.scrollTo(0, 0);
     this.loadDoctors();
   }
 

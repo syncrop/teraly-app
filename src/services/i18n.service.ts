@@ -1,5 +1,4 @@
 import { Injectable, LOCALE_ID, inject, signal } from '@angular/core';
-import { TranslationService } from './translation.service';
 import { loadTranslations } from '@angular/localize';
 
 export interface Language {
@@ -12,7 +11,6 @@ export interface Language {
 })
 export class I18nService {
   private localeId = inject(LOCALE_ID);
-  private translationService = inject(TranslationService);
 
   availableLanguages: Language[] = [
     { code: 'en', label: 'English' },
@@ -30,9 +28,6 @@ export class I18nService {
         const response = await fetch(`/src/assets/i18n/${langCode}.json`);
         const data = await response.json();
         const translations = data.translations || {};
-        
-        // Update translation service
-        this.translationService.setTranslations(translations);
         
         // Load into $localize
         loadTranslations(translations);

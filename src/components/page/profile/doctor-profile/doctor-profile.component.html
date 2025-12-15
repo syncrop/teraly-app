@@ -4,7 +4,64 @@
     <!-- Header -->
     <h1 class="text-3xl font-bold text-indigo-900 mb-6" i18n="@@profile.title">Mi Perfil</h1>
 
-    <!-- Profile Picture Card (Client Style) -->
+    @if (isLoadingProfile()) {
+      <!-- Skeleton Loader -->
+      
+      <!-- Profile Picture Skeleton -->
+      <div class="bg-white rounded-3xl shadow-sm p-6 mb-6 animate-pulse">
+        <div class="flex flex-col items-center">
+          <div class="w-24 h-24 bg-gray-300 rounded-full mb-4"></div>
+          <div class="h-6 bg-gray-300 rounded w-32 mb-2"></div>
+          <div class="h-4 bg-gray-200 rounded w-48"></div>
+        </div>
+      </div>
+
+      <!-- Button Skeleton -->
+      <div class="h-14 bg-gray-200 rounded-2xl mb-6 animate-pulse"></div>
+
+      <!-- Stats Card Skeleton -->
+      <div class="bg-white rounded-3xl shadow-sm p-6 mb-6 animate-pulse">
+        <div class="bg-gray-300 rounded-2xl p-6">
+          <div class="grid grid-cols-3 gap-6">
+            <div class="flex flex-col">
+              <div class="h-3 bg-gray-400 rounded w-20 mb-2"></div>
+              <div class="h-6 bg-gray-400 rounded w-16"></div>
+            </div>
+            <div class="flex flex-col">
+              <div class="h-3 bg-gray-400 rounded w-16 mb-2"></div>
+              <div class="h-6 bg-gray-400 rounded w-12"></div>
+            </div>
+            <div class="flex flex-col">
+              <div class="h-3 bg-gray-400 rounded w-16 mb-2"></div>
+              <div class="h-6 bg-gray-400 rounded w-14"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Title Skeleton -->
+      <div class="h-3 bg-gray-300 rounded w-24 mb-4 animate-pulse"></div>
+
+      <!-- Cards Skeleton -->
+      @for (item of [1,2,3,4,5,6]; track item) {
+        <div class="bg-white rounded-2xl shadow-sm p-4 mb-3 animate-pulse">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-gray-200 rounded-xl"></div>
+              <div>
+                <div class="h-4 bg-gray-300 rounded w-32 mb-2"></div>
+                <div class="h-3 bg-gray-200 rounded w-24"></div>
+              </div>
+            </div>
+            <div class="w-5 h-5 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      }
+
+    } @else {
+      <!-- Contenido Real -->
+      
+      <!-- Profile Picture Card (Client Style) -->
       <app-profile-picture (close)="closeProfilePictureModal()"></app-profile-picture>
 
 
@@ -209,7 +266,9 @@
     </div>
 
     <!-- Privacidad y Seguridad -->
-    <div class="bg-white rounded-2xl shadow-sm p-4 mb-4 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer">
+    <div 
+      (click)="navigateToPrivacySecurity()"
+      class="bg-white rounded-2xl shadow-sm p-4 mb-4 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer">
       <div class="flex items-center gap-4">
         <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
           <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -259,5 +318,6 @@
 
     <!-- Version -->
     <p class="text-center text-gray-400 text-sm mt-6">Teraly v1.0.2</p>
+    }
   </div>
 </div>

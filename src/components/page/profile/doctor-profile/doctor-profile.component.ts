@@ -24,6 +24,7 @@ export class DoctorProfileComponent implements OnInit {
   isAvailable = signal(true);
   showProfilePictureModal = signal(false);
   isProfileCompleteSignal = signal(false);
+  isLoadingProfile = signal(true);
 
   get currentUser() {
     return this.authService.currentUser();
@@ -36,17 +37,22 @@ export class DoctorProfileComponent implements OnInit {
     // Refrescar datos del usuario desde el backend
     const userId = this.authService.getCurrentUserId();
     if (userId) {
+      this.isLoadingProfile.set(true);
       this.userService.refreshUserData(userId).subscribe({
         next: (userData) => {
           if (userData) {
             this.authService.currentUser.set(userData);
             this.isProfileCompleteSignal.set(userData.completed === true);
           }
+          this.isLoadingProfile.set(false);
         },
         error: (error) => {
           console.error('Error al cargar datos del usuario:', error);
+          this.isLoadingProfile.set(false);
         }
       });
+    } else {
+      this.isLoadingProfile.set(false);
     }
   }
 
@@ -124,11 +130,6 @@ export class DoctorProfileComponent implements OnInit {
     this.toastService.success(`Estado cambiado a ${status}`);
   }
 
-  navigateToSchedule() {
-    this.toastService.info('Función en desarrollo');
-    // this.router.navigate(['/app/schedule']);
-  }
-
   navigateToEditProfile() {
     this.router.navigate(['/app/edit-doctor-profile']);
   }
@@ -142,6 +143,14 @@ export class DoctorProfileComponent implements OnInit {
 
   navigateToHelpSupport() {
     this.router.navigate(['/app/help-support']);
+  }
+
+  navigateToSchedule() {
+    this.router.navigate(['/app/availability']);
+  }
+
+  navigateToPrivacySecurity() {
+    this.router.navigate(['/app/privacy-security']);
   }
 
   navigateToPayments() {

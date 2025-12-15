@@ -50,6 +50,7 @@ export class FavoritesComponent implements OnInit {
   favoritesCount = computed(() => this.favoriteDoctors().length);
 
   ngOnInit() {
+    window.scrollTo(0, 0);
     // Verificar si hay un tab específico en los query params
     this.route.queryParams.subscribe(params => {
       if (params['tab'] === 'history') {

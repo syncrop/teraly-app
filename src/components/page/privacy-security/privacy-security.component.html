@@ -1,0 +1,236 @@
+<div class="min-h-screen bg-gray-50 pb-20">
+  <!-- Header -->
+  <div class="bg-white shadow-sm sticky top-0 z-10">
+    <div class="max-w-2xl mx-auto px-4 py-4 flex items-center">
+      <button 
+        (click)="goBack()"
+        class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+        <svg class="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      <h1 class="text-xl font-bold text-gray-900 ml-4">Privacidad y Seguridad</h1>
+    </div>
+    <p class="text-center text-sm text-gray-500 px-4 pb-4">
+      Gestiona cómo protegemos tu cuenta y tus datos personales.
+    </p>
+  </div>
+
+  <div class="max-w-2xl mx-auto px-4 py-6">
+    
+    <!-- SEGURIDAD DE ACCESO -->
+    <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">SEGURIDAD DE ACCESO</h2>
+
+    <!-- Contraseña -->
+    <button 
+      (click)="navigateToChangePassword()"
+      class="w-full bg-white rounded-2xl shadow-sm p-4 mb-3 flex items-center justify-between hover:bg-gray-50 transition-colors">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+          </svg>
+        </div>
+        <div class="text-left">
+          <h3 class="text-base font-semibold text-gray-900">Contraseña</h3>
+        </div>
+      </div>
+      <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+      </svg>
+    </button>
+
+    <!-- Face ID -->
+    <div class="bg-white rounded-2xl shadow-sm p-4 mb-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path>
+          </svg>
+        </div>
+        <div class="text-left">
+          <h3 class="text-base font-semibold text-gray-900">Face ID</h3>
+          <p class="text-sm text-gray-500">Acceso biométrico rápido</p>
+        </div>
+      </div>
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input 
+          type="checkbox" 
+          [checked]="faceIdEnabled()"
+          (change)="toggleFaceId()"
+          class="sr-only peer">
+        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+      </label>
+    </div>
+
+    <!-- Autenticación en 2 pasos -->
+    <button 
+      (click)="navigateToTwoFactor()"
+      class="w-full bg-white rounded-2xl shadow-sm p-4 mb-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+          </svg>
+        </div>
+        <div class="text-left">
+          <h3 class="text-base font-semibold text-gray-900">Autenticación en 2 pasos</h3>
+          <p class="text-sm text-green-600 font-medium">Activado</p>
+        </div>
+      </div>
+      <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+      </svg>
+    </button>
+
+    <!-- TUS DATOS -->
+    <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 mt-6">TUS DATOS</h2>
+
+    <!-- Preferencias de Cookies -->
+    <button 
+      (click)="navigateToCookies()"
+      class="w-full bg-white rounded-2xl shadow-sm p-4 mb-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+          </svg>
+        </div>
+        <div class="text-left">
+          <h3 class="text-base font-semibold text-gray-900">Preferencias de Cookies</h3>
+          <p class="text-sm text-gray-500">Gestionar permisos</p>
+        </div>
+      </div>
+      <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+      </svg>
+    </button>
+
+    <!-- TODO: DISPOSITIVOS ACTIVOS (oculto por ahora) -->
+    <!-- 
+    <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 mt-6">DISPOSITIVOS ACTIVOS</h2>
+
+    <div class="bg-white rounded-2xl shadow-sm p-4 mb-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        <div class="flex-1 text-left">
+          <h3 class="text-base font-semibold text-gray-900">iPhone 13 Pro</h3>
+          <p class="text-sm text-gray-500">Varsovia, PL • Hace 1 min</p>
+        </div>
+        <span class="text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">Este dispositivo</span>
+      </div>
+    </div>
+
+    <button 
+      (click)="navigateToActiveDevices()"
+      class="w-full bg-white rounded-2xl shadow-sm p-4 mb-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        <div class="flex-1 text-left">
+          <h3 class="text-base font-semibold text-gray-900">Chrome en Windows</h3>
+          <p class="text-sm text-gray-500">Cracovia, PL • Ayer</p>
+        </div>
+        <button class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+          </svg>
+        </button>
+      </div>
+    </button>
+    -->
+
+    <!-- ZONA PELIGROSA -->
+    <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 mt-6">ZONA PELIGROSA</h2>
+
+    <!-- Eliminar Cuenta -->
+    <button 
+      (click)="showDeleteAccountModal()"
+      class="w-full bg-red-50 text-red-600 font-semibold py-4 px-6 rounded-2xl hover:bg-red-100 transition-colors flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+        <span>Eliminar Cuenta</span>
+      </div>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+      </svg>
+    </button>
+
+    <!-- Modal de Confirmación -->
+    @if (showDeleteModal()) {
+      <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-md p-6">
+          <!-- Icon -->
+          <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+          </div>
+
+          <!-- Título -->
+          <h2 class="text-2xl font-bold text-gray-900 text-center mb-2">¿Eliminar cuenta?</h2>
+          
+          <!-- Descripción -->
+          <p class="text-gray-600 text-center mb-6">
+            Esta acción es <span class="font-semibold text-red-600">permanente e irreversible</span>. 
+            Se eliminarán todos tus datos, citas, mensajes y configuraciones.
+          </p>
+
+          <!-- Lista de consecuencias -->
+          <div class="bg-red-50 rounded-2xl p-4 mb-6">
+            <ul class="space-y-2 text-sm text-red-900">
+              <li class="flex items-start gap-2">
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span>Perderás acceso a tu cuenta inmediatamente</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span>Se cancelarán todas las citas programadas</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span>Se eliminarán todos tus datos personales</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span>No podrás recuperar tu cuenta después</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Botones -->
+          <div class="flex flex-col gap-3">
+            <button 
+              (click)="deleteAccount()"
+              class="w-full py-3 px-6 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-colors">
+              Sí, eliminar mi cuenta
+            </button>
+            <button 
+              (click)="closeDeleteAccountModal()"
+              class="w-full py-3 px-6 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

@@ -30,6 +30,7 @@ export class ProfileComponent implements OnInit {
   }
 
   ngOnInit() {
+    window.scrollTo(0, 0);
     // Si es doctor, refrescar datos del perfil desde backend para verificar completed
     if (this.isDoctor) {
       const userId = this.authService.currentUser()?.uid;
@@ -72,5 +73,9 @@ export class ProfileComponent implements OnInit {
 
   navigateToHelpSupport() {
     this.router.navigate(['/app/help-support']);
+  }
+
+  navigateToPrivacySecurity() {
+    this.router.navigate(['/app/privacy-security']);
   }
 }

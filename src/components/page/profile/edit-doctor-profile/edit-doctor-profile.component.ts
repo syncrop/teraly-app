@@ -71,6 +71,7 @@ export class EditDoctorProfileComponent implements OnInit {
   });
 
   ngOnInit() {
+    window.scrollTo(0, 0);
     const currentUser = this.authService.currentUser();
     if (currentUser) {
       this.profileForm.patchValue({

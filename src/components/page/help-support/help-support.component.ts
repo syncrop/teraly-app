@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
@@ -15,9 +15,13 @@ interface FAQ {
   imports: [CommonModule],
   templateUrl: './help-support.component.html'
 })
-export class HelpSupportComponent {
+export class HelpSupportComponent implements OnInit {
   private router = inject(Router);
   private location = inject(Location);
+
+  ngOnInit() {
+    window.scrollTo(0, 0);
+  }
 
   faqs = signal<FAQ[]>([
     {

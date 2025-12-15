@@ -65,6 +65,36 @@ export const APP_ROUTES: Routes = [
         loadComponent: () => import('./components/page/help-support/help-support.component').then(c => c.HelpSupportComponent)
       },
       {
+        path: 'availability',
+        loadComponent: () => import('./components/page/availability/availability.component').then(c => c.AvailabilityComponent),
+        canActivate: [accessGuard],
+        data: { expectedRole: 'doctor' }
+      },
+      {
+        path: 'calendar',
+        loadComponent: () => import('./components/page/calendar/calendar.component').then(c => c.CalendarComponent),
+        canActivate: [accessGuard],
+        data: { expectedRole: 'doctor' }
+      },
+      {
+        path: 'patients',
+        loadComponent: () => import('./components/page/patients/patients.component').then(c => c.PatientsComponent),
+        canActivate: [accessGuard],
+        data: { expectedRole: 'doctor' }
+      },
+      {
+        path: 'privacy-security',
+        loadComponent: () => import('./components/page/privacy-security/privacy-security.component').then(c => c.PrivacySecurityComponent)
+      },
+      {
+        path: 'two-factor',
+        loadComponent: () => import('./components/page/two-factor/two-factor.component').then(c => c.TwoFactorComponent)
+      },
+      {
+        path: 'change-password',
+        loadComponent: () => import('./components/page/change-password/change-password.component').then(c => c.ChangePasswordComponent)
+      },
+      {
         path: '',
         redirectTo: 'home-client',
         pathMatch: 'full'

@@ -1,0 +1,111 @@
+<div class="min-h-screen bg-gray-50 pb-20">
+  <!-- Header -->
+  <div class="bg-white shadow-sm sticky top-0 z-10">
+    <div class="max-w-2xl mx-auto px-4 py-4 flex items-center">
+      <button 
+        (click)="goBack()"
+        class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+        <svg class="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      <h1 class="text-xl font-bold text-gray-900 ml-4">Autenticación en 2 pasos</h1>
+    </div>
+  </div>
+
+  <div class="max-w-2xl mx-auto px-4 py-6">
+    
+    <!-- Estado Activo -->
+    <div class="bg-green-50 rounded-2xl p-6 mb-6 flex items-start gap-4">
+      <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <div class="flex-1">
+        <h3 class="text-lg font-semibold text-green-900 mb-2">Protección Activada</h3>
+        <p class="text-sm text-green-700">
+          Tu cuenta está protegida con autenticación en dos pasos. Cada vez que inicies sesión desde un nuevo dispositivo, necesitarás verificar tu identidad.
+        </p>
+      </div>
+    </div>
+
+    <!-- Información -->
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">¿Cómo funciona?</h3>
+      <div class="space-y-4">
+        <div class="flex gap-4">
+          <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <span class="text-sm font-bold text-indigo-600">1</span>
+          </div>
+          <div>
+            <h4 class="font-semibold text-gray-900 mb-1">Inicia sesión normalmente</h4>
+            <p class="text-sm text-gray-600">Introduce tu correo y contraseña como siempre.</p>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <span class="text-sm font-bold text-indigo-600">2</span>
+          </div>
+          <div>
+            <h4 class="font-semibold text-gray-900 mb-1">Verificación adicional</h4>
+            <p class="text-sm text-gray-600">Recibirás un código por SMS o email que deberás introducir.</p>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <span class="text-sm font-bold text-indigo-600">3</span>
+          </div>
+          <div>
+            <h4 class="font-semibold text-gray-900 mb-1">Acceso seguro</h4>
+            <p class="text-sm text-gray-600">Una vez verificado, accederás a tu cuenta de forma segura.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Métodos de Verificación -->
+    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">MÉTODOS DE VERIFICACIÓN</h3>
+
+    <div class="bg-white rounded-2xl shadow-sm p-4 mb-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        <div class="text-left">
+          <h3 class="text-base font-semibold text-gray-900">Email</h3>
+          <p class="text-sm text-gray-500">tu***@email.com</p>
+        </div>
+      </div>
+      <span class="text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">Principal</span>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm p-4 mb-6 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        <div class="text-left">
+          <h3 class="text-base font-semibold text-gray-900">SMS</h3>
+          <p class="text-sm text-gray-500">+48 *** *** 123</p>
+        </div>
+      </div>
+      <span class="text-xs font-semibold text-gray-600 bg-gray-100 px-3 py-1 rounded-full">Alternativo</span>
+    </div>
+
+    <!-- Desactivar 2FA -->
+    <button 
+      (click)="disableTwoFactor()"
+      class="w-full bg-red-50 text-red-600 font-semibold py-4 px-6 rounded-2xl hover:bg-red-100 transition-colors flex items-center justify-center gap-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+      </svg>
+      <span>Desactivar Autenticación en 2 Pasos</span>
+    </button>
+
+  </div>
+</div>
