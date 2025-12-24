@@ -2,10 +2,10 @@
 <header class="hidden md:flex fixed top-0 left-0 right-0 bg-white border-b border-gray-200 h-20 px-6 justify-between items-center z-10">
   <app-logo></app-logo>
   <div class="flex items-center space-x-8">
-    <a [routerLink]="userRole() === 'client' ? '/app/home-client' : '/app/home-doctor'"
-       routerLinkActive="text-indigo-600 font-semibold"
-       [routerLinkActiveOptions]="{exact: true}"
-       class="text-gray-600 hover:text-indigo-600 transition-colors">
+    <a (click)="navigateToHome($event)"
+       [class.text-indigo-600]="isHomeActive()"
+       [class.font-semibold]="isHomeActive()"
+       class="text-gray-600 hover:text-indigo-600 transition-colors cursor-pointer">
       <span i18n="@@navigation.home">Home</span>
     </a>
     <a routerLink="/app/search"

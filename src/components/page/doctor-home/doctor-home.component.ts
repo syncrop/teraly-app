@@ -82,6 +82,7 @@ export class DoctorHomeComponent implements OnInit {
   }
 
   private loadTodayAppointments(): void {
+    debugger;
     const currentUser = this.authService.currentUser();
     const doctorId = currentUser?.uid;
     
@@ -146,6 +147,7 @@ export class DoctorHomeComponent implements OnInit {
   }
 
   private loadPendingAppointments(): void {
+    debugger;
     const currentUser = this.authService.currentUser();
     const doctorId = currentUser?.uid;
     

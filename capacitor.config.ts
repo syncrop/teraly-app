@@ -1,3 +1,5 @@
+/// <reference types="@capacitor-firebase/authentication" />
+
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
@@ -10,6 +12,17 @@ const config: CapacitorConfig = {
   },
   ios: {
     contentInset: 'automatic'
+  },
+  plugins: {
+    StatusBar: {
+      style: 'Light',
+      backgroundColor: '#ffffff',
+      overlaysWebView: false
+    },
+    FirebaseAuthentication: {
+      skipNativeAuth: false,
+      providers: ['apple.com']
+    }
   }
 };
 

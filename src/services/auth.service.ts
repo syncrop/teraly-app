@@ -1,4 +1,3 @@
-import { FirestoreHelperService } from './firestore-helper.service';
 import { Injectable, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, user } from '@angular/fire/auth';
@@ -8,6 +7,8 @@ import { map, catchError, switchMap, tap } from 'rxjs/operators';
 import { UserRole, AppUser } from '../models/user.model';
 import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+import { FirestoreHelperService } from './firestore-helper.service';
+import { LoaderService } from './loader.service';
 
 @Injectable({
   providedIn: 'root',
@@ -17,9 +18,12 @@ export class AuthService {
   private firestore = inject(Firestore);
   private router = inject(Router);
   private firestoreHelper = inject(FirestoreHelperService);
+  private loaderService = inject(LoaderService);
   
   currentUserRole = signal<UserRole>(null);
   currentUser = signal<AppUser | null>(null);
+  isInitialized = signal<boolean>(false);
+  private initializationPromise: Promise<void> | null = null;
 
   constructor() {
     const storedRole = localStorage.getItem('userRole');
@@ -28,60 +32,94 @@ export class AuthService {
     }
     
     // Inicializar el usuario actual si hay una sesión activa
-    this.initializeCurrentUser();
+    this.initializationPromise = this.initializeCurrentUser();
+  }
+
+  /**
+   * Esperar a que el servicio termine de inicializarse
+   */
+  async waitForInitialization(): Promise<void> {
+    if (this.initializationPromise) {
+      await this.initializationPromise;
+    }
   }
 
   /**
    * Helper para obtener documento de Firestore que funciona en web e iOS
    */
   private async getFirestoreUser(uid: string): Promise<AppUser | null> {
-    return this.firestoreHelper.getDocument<AppUser>('users', uid);
+    try {
+      // Crear una promesa con timeout de 10 segundos
+      const timeoutPromise = new Promise<null>((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout de 10s al obtener usuario de Firestore')), 10000);
+      });
+
+      // Ejecutar con timeout
+      const userData = await Promise.race([
+        this.firestoreHelper.getDocument<AppUser>('users', uid),
+        timeoutPromise
+      ]);
+      
+      return userData;
+    } catch (error: any) {
+      return null;
+    }
   }
 
   /**
    * Inicializar el usuario actual desde Firebase Auth
    */
   private async initializeCurrentUser(): Promise<void> {
-    const userId = localStorage.getItem('userId');
-    if (userId) {
-      const userData = await this.getFirestoreUser(userId);
-      if (userData) {
-        this.currentUser.set(userData);
-        console.log('Usuario inicializado:', userData);
-      } else {
-        console.log('Usuario no encontrado en Firestore');
+    try {
+      const userId = localStorage.getItem('userId');
+      if (userId) {
+        const userData = await this.getFirestoreUser(userId);
+        
+        if (userData) {
+          this.currentUser.set(userData);
+        } else {
+          localStorage.removeItem('userId');
+          localStorage.removeItem('userRole');
+          localStorage.removeItem('idToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('expiresAt');
+          localStorage.removeItem('localId');
+          localStorage.removeItem('email');
+          this.currentUserRole.set(null);
+          this.currentUser.set(null);
+        }
       }
+    } catch (error) {
+      this.currentUserRole.set(null);
+      this.currentUser.set(null);
+    } finally {
+      this.isInitialized.set(true);
     }
   }
 
   // Login con Firebase
   login(email: string, password: string): Observable<{ success: boolean; role?: UserRole; error?: string }> {
-    console.log('Attempting login for email:', email);
+    this.loaderService.show();
     
     // Usar plugin nativo en iOS/Android
     if (Capacitor.isNativePlatform()) {
-      console.log('Using native Firebase plugin');
       return from(
         (async () => {
           try {
-            console.log('Step 1: Calling FirebaseAuthentication.signInWithEmailAndPassword');
             const result = await FirebaseAuthentication.signInWithEmailAndPassword({ email, password });
-            console.log('Step 2: Auth result received');
             
             const uid = result.user?.uid;
-            console.log('Step 3: UID extracted:', uid);
             
             if (!uid) {
-              console.error('No UID in result');
               return { success: false, error: 'No se pudo obtener el UID del usuario' };
             }
             
-            console.log('Step 4: Fetching user from Firestore...');
             const userData = await this.getFirestoreUser(uid);
-            console.log('Step 5: User data received:', userData);
             
             if (!userData) {
-              return { success: false, error: 'Usuario no encontrado en la base de datos' };
+              await FirebaseAuthentication.signOut();
+              this.loaderService.hide();
+              return { success: false, error: 'Usuario no encontrado en la base de datos. Por favor, regístrate primero.' };
             }
             
             const role: UserRole = userData.role === 'doctor' ? 'doctor' : 'client';
@@ -90,10 +128,10 @@ export class AuthService {
             localStorage.setItem('userRole', role);
             localStorage.setItem('userId', uid);
             
-            console.log('Step 6: Login successful, role:', role);
+            this.loaderService.hide();
             return { success: true, role };
           } catch (error: any) {
-            console.error('Native login error:', error);
+            this.loaderService.hide();
             let errorMessage = 'Error al iniciar sesión';
             if (error.code === 'auth/user-not-found') {
               errorMessage = 'Usuario no encontrado';
@@ -110,7 +148,9 @@ export class AuthService {
     
     // Usar @angular/fire en web
     return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
-      tap(() => console.log('signInWithEmailAndPassword successful')),
+      tap(() => {
+        this.loaderService.hide();
+      }),
       // Use switchMap to handle the promise and emit the correct type
       // Import switchMap from 'rxjs/operators' if not already imported
       // Replace 'map(async ...)' with 'switchMap'
@@ -119,8 +159,7 @@ export class AuthService {
         from(credential.user.getIdTokenResult()).pipe(
           switchMap((tokenResult) =>
             from(getDoc(doc(this.firestore, 'users', credential.user.uid))).pipe(
-              map((userDoc) => {
-                debugger;
+              switchMap(async (userDoc) => {
                 const userData = userDoc.data() as AppUser;
                 if (userData) {
                   const role: UserRole = userData.role === 'doctor' ? 'doctor' : 'client';
@@ -134,11 +173,11 @@ export class AuthService {
                     const idToken = (tokenResult && (tokenResult.token as string)) || '';
                     const expiresAt = tokenResult && tokenResult.expirationTime ? new Date(tokenResult.expirationTime).getTime() : (Date.now() + 3600 * 1000);
                     const refreshToken = (credential.user as any)?.refreshToken || '';
-                    sessionStorage.setItem('idToken', idToken);
-                    sessionStorage.setItem('refreshToken', refreshToken);
-                    sessionStorage.setItem('expiresAt', String(expiresAt));
-                    sessionStorage.setItem('localId', credential.user.uid);
-                    sessionStorage.setItem('email', credential.user.email || '');
+                    localStorage.setItem('idToken', idToken);
+                    localStorage.setItem('refreshToken', refreshToken);
+                    localStorage.setItem('expiresAt', String(expiresAt));
+                    localStorage.setItem('localId', credential.user.uid);
+                    localStorage.setItem('email', credential.user.email || '');
                   } catch (e) {
                     // swallow storage errors
                     console.warn('Could not store session tokens', e);
@@ -146,13 +185,17 @@ export class AuthService {
 
                   return { success: true, role };
                 }
-                return { success: false, error: 'Usuario no encontrado en la base de datos' };
+                
+                // Usuario no encontrado en Firestore, hacer logout de Firebase Auth
+                await signOut(this.auth);
+                return { success: false, error: 'Usuario no encontrado en la base de datos. Por favor, regístrate primero.' };
               })
             )
           )
         )
       ),
       catchError((error) => {
+        this.loaderService.hide();
         let errorMessage = 'Error al iniciar sesión';
         if (error.code === 'auth/user-not-found') {
           errorMessage = 'Usuario no encontrado';
@@ -168,6 +211,7 @@ export class AuthService {
 
   // Registro con Firebase
   register(email: string, password: string, fullName: string, userType: 'client' | 'doctor', licenseNumber?: string, languages?: string[]): Observable<{ success: boolean; uid?: string; error?: string }> {
+    this.loaderService.show();
     return from(createUserWithEmailAndPassword(this.auth, email, password)).pipe(
       switchMap((credential) =>
         from((async () => {
@@ -201,19 +245,21 @@ export class AuthService {
             const idToken = tokenResult?.token || '';
             const expiresAt = tokenResult && tokenResult.expirationTime ? new Date(tokenResult.expirationTime).getTime() : (Date.now() + 3600 * 1000);
             const refreshToken = (credential.user as any)?.refreshToken || '';
-            sessionStorage.setItem('idToken', idToken);
-            sessionStorage.setItem('refreshToken', refreshToken);
-            sessionStorage.setItem('expiresAt', String(expiresAt));
-            sessionStorage.setItem('localId', uid);
-            sessionStorage.setItem('email', credential.user.email || email || '');
+            localStorage.setItem('idToken', idToken);
+            localStorage.setItem('refreshToken', refreshToken);
+            localStorage.setItem('expiresAt', String(expiresAt));
+            localStorage.setItem('localId', uid);
+            localStorage.setItem('email', credential.user.email || email || '');
           } catch (e) {
-            console.warn('Could not store session tokens on register', e);
+            // Error al guardar tokens
           }
 
+          this.loaderService.hide();
           return { success: true, uid };
         })())
       ),
       catchError((error) => {
+        this.loaderService.hide();
         let errorMessage = 'Error al registrar';
         if (error.code === 'auth/email-already-in-use') {
           errorMessage = 'El email ya está registrado';
@@ -244,8 +290,11 @@ export class AuthService {
   }
 
   // Logout con Firebase
-  logout(): void {
-    signOut(this.auth).then(() => {
+  async logout(): Promise<void> {
+    try {
+      // Esperar a que signOut se complete
+      await signOut(this.auth);
+      
       // Limpiar signals
       this.currentUserRole.set(null);
       this.currentUser.set(null);
@@ -253,23 +302,21 @@ export class AuthService {
       // Limpiar localStorage
       localStorage.removeItem('userRole');
       localStorage.removeItem('userId');
-      
-      // Limpiar sessionStorage
-      sessionStorage.removeItem('idToken');
-      sessionStorage.removeItem('refreshToken');
-      sessionStorage.removeItem('expiresAt');
-      sessionStorage.removeItem('localId');
-      sessionStorage.removeItem('email');
+      localStorage.removeItem('idToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('expiresAt');
+      localStorage.removeItem('localId');
+      localStorage.removeItem('email');
       
       // Redirigir al login
-      this.router.navigate(['/login']);
-    }).catch((error) => {
+      await this.router.navigate(['/login']);
+    } catch (error) {
       console.error('Error al cerrar sesión:', error);
       // Intentar limpiar de todas formas
       this.currentUserRole.set(null);
       this.currentUser.set(null);
-      this.router.navigate(['/login']);
-    });
+      await this.router.navigate(['/login']);
+    }
   }
 
   // Verificar si el usuario está autenticado
@@ -291,8 +338,8 @@ export class AuthService {
       return userId;
     }
 
-    // Fallback a sessionStorage (donde guardas localId al hacer login)
-    const localId = sessionStorage.getItem('localId');
+    // Fallback a localStorage (donde guardas localId al hacer login)
+    const localId = localStorage.getItem('localId');
     if (localId) {
       return localId;
     }

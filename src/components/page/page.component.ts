@@ -28,6 +28,28 @@ export class PageComponent {
     });
   }
 
+  isHomeActive(): boolean {
+    const homeRoute = this.userRole() === 'client' ? '/app/home-client' : '/app/home-doctor';
+    return this.router.url === homeRoute;
+  }
+
+  navigateToHome(event: Event) {
+    event.preventDefault();
+    const homeRoute = this.userRole() === 'client' ? '/app/home-client' : '/app/home-doctor';
+    
+    // Si ya estamos en home, solo hacer scroll
+    if (this.router.url === homeRoute) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // Navegar y luego hacer scroll
+      this.router.navigate([homeRoute]).then(() => {
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
+      });
+    }
+  }
+
   logout() {
     this.authService.logout();
   }

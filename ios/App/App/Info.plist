@@ -45,5 +45,46 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Teraly necesita acceso a tu cámara para tomar fotos de perfil</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Teraly necesita acceso a tus fotos para seleccionar una imagen de perfil</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Teraly necesita permiso para guardar fotos en tu biblioteca</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>firestore.googleapis.com</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+				<key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
+				<false/>
+				<key>NSTemporaryExceptionMinimumTLSVersion</key>
+				<string>TLSv1.2</string>
+			</dict>
+			<key>firebaseio.com</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+				<key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
+				<false/>
+				<key>NSTemporaryExceptionMinimumTLSVersion</key>
+				<string>TLSv1.2</string>
+			</dict>
+			<key>googleapis.com</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+				<key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
+				<false/>
+				<key>NSTemporaryExceptionMinimumTLSVersion</key>
+				<string>TLSv1.2</string>
+			</dict>
+		</dict>
+	</dict>
 </dict>
 </plist>

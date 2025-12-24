@@ -113,11 +113,17 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: '',
-    redirectTo: 'login',
-    pathMatch: 'full'
+    canActivate: [accessGuard],
+    children: [
+      {
+        path: '',
+        redirectTo: 'app',
+        pathMatch: 'full'
+      }
+    ]
   },
   {
     path: '**',
-    redirectTo: 'login'
+    redirectTo: ''
   }
 ];

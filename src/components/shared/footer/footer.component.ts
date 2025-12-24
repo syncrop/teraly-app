@@ -47,4 +47,24 @@ export class FooterComponent implements OnInit, OnDestroy {
     // Match if current URL includes the path
     return currentUrl.includes(path);
   }
+
+  /**
+   * Navegar a home y hacer scroll al principio
+   */
+  navigateToHome(event: Event) {
+    event.preventDefault();
+    const homeRoute = this.isDoctor ? '/app/home-doctor' : '/app/home-client';
+    
+    // Si ya estamos en home, solo hacer scroll
+    if (this.router.url === homeRoute) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // Navegar y luego hacer scroll
+      this.router.navigate([homeRoute]).then(() => {
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
+      });
+    }
+  }
 }

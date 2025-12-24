@@ -4,8 +4,8 @@
     <div class="flex justify-around items-center max-w-md mx-auto">
       <!-- Panel -->
       <a
-        routerLink="/app"
-        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors min-w-0"
+        (click)="navigateToHome($event)"
+        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors min-w-0 cursor-pointer"
         [class.text-indigo-600]="isActive('/app')"
         [class.text-gray-400]="!isActive('/app')"
       >
@@ -59,8 +59,8 @@
     <div class="flex justify-around items-center max-w-md mx-auto">
       <!-- Home -->
       <a
-        routerLink="/app"
-        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors min-w-0"
+        (click)="navigateToHome($event)"
+        class="flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors min-w-0 cursor-pointer"
         [class.text-indigo-600]="isActive('/app')"
         [class.text-gray-400]="!isActive('/app')"
       >
