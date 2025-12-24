@@ -5,10 +5,16 @@ import { ToastService } from '../../../services/toast.service';
 import { AuthService } from '../../../services/auth.service';
 import { UserService } from '../../../services/user.service';
 import { FavoritesService } from '../../../services/favorites.service';
+import { AppointmentService } from '../../../services/appointment.service';
 import { CurrencySymbolPipe } from '../../shared/pipes/currency-symbol.pipe';
 import { Doctor, AvailableDay, Review } from '../../../models/doctor.model';
 import { Firestore, doc, getDoc } from '@angular/fire/firestore';
-import { TimeSlot, DaySchedule, BlockedDate } from '../../../models/availability.model';
+import { DaySchedule, BlockedDate } from '../../../models/availability.model';
+
+interface AvailableTimeSlot {
+  time: string;
+  available: boolean;
+}
 
 @Component({
   selector: 'app-doctor-detail',
@@ -25,6 +31,7 @@ export class DoctorDetailComponent implements OnInit {
   private authService = inject(AuthService);
   private userService = inject(UserService);
   private favoritesService = inject(FavoritesService);
+  private appointmentService = inject(AppointmentService);
   private firestore = inject(Firestore);
 
   @ViewChild('availabilitySection') availabilitySection?: ElementRef;
@@ -45,8 +52,9 @@ export class DoctorDetailComponent implements OnInit {
     { date: '27', dayName: 'Vie', dayNumber: '27', available: false }
   ]);
 
-  // Time slots for selected day
-  timeSlots = signal<string[]>(['16:30', '17:30', '19:00']);
+  // Time slots for selected day with availability status
+  timeSlots = signal<AvailableTimeSlot[]>([]);
+  isLoadingSlots = signal(false);
 
   // Reviews
   reviews = signal<Review[]>([
@@ -69,6 +77,7 @@ export class DoctorDetailComponent implements OnInit {
   private doctorAvailability: DaySchedule[] = [];
   private doctorSessionDuration = 60;
   private doctorBreakTime = 15;
+  private blockedDates: BlockedDate[] = [];
 
   ngOnInit() {
     window.scrollTo(0, 0);
@@ -168,6 +177,7 @@ export class DoctorDetailComponent implements OnInit {
         this.doctorAvailability = availability;
         this.doctorSessionDuration = sessionDuration;
         this.doctorBreakTime = breakTime;
+        this.blockedDates = blockedDates;
         
         // Generate available days for next 14 days
         const generatedDays = this.generateAvailableDays(availability, blockedDates);
@@ -178,7 +188,7 @@ export class DoctorDetailComponent implements OnInit {
           const firstAvailableDay = generatedDays.find(d => d.available);
           if (firstAvailableDay) {
             this.selectedDay.set(firstAvailableDay.date);
-            this.calculateTimeSlots(firstAvailableDay.date, availability, sessionDuration, breakTime);
+            this.calculateTimeSlotsWithAvailability(firstAvailableDay.date);
           }
         }
       }
@@ -197,7 +207,6 @@ export class DoctorDetailComponent implements OnInit {
     for (let i = 0; i < 14; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
-      
       const dayOfWeek = date.getDay();
       const dayKey = dayKeys[dayOfWeek];
       const dayName = i === 0 ? 'Hoy' : (i === 1 ? 'Mañana' : dayNames[dayOfWeek]);
@@ -232,19 +241,34 @@ export class DoctorDetailComponent implements OnInit {
     });
   }
 
-  calculateTimeSlots(selectedDate: string, availability: DaySchedule[], sessionDuration: number, breakTime: number) {
+  calculateTimeSlotsWithAvailability(selectedDate: string) {
+    this.isLoadingSlots.set(true);
     const date = new Date(selectedDate);
     const dayOfWeek = date.getDay();
     const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const dayKey = dayKeys[dayOfWeek];
     
-    const daySchedule = availability.find(d => d.day === dayKey);
+    const daySchedule = this.doctorAvailability.find(d => d.day === dayKey);
     if (!daySchedule || !daySchedule.enabled || daySchedule.slots.length === 0) {
       this.timeSlots.set([]);
+      this.isLoadingSlots.set(false);
       return;
     }
     
-    const slots: string[] = [];
+    const slots: AvailableTimeSlot[] = [];
+    const sessionDuration = +this.doctorSessionDuration;
+    const breakTime = this.doctorBreakTime;
+    
+    // Verificar si es hoy para filtrar por hora actual
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDay = new Date(selectedDate);
+    selectedDay.setHours(0, 0, 0, 0);
+    const isToday = selectedDay.getTime() === today.getTime();
+    
+    // Obtener hora actual en minutos
+    const now = new Date();
+    const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
     
     // For each time range in the day
     daySchedule.slots.forEach(range => {
@@ -255,16 +279,52 @@ export class DoctorDetailComponent implements OnInit {
       const endTime = endHour * 60 + endMinute;
       
       while (currentTime + sessionDuration <= endTime) {
-        const hour = Math.floor(currentTime / 60);
-        const minute = currentTime % 60;
-        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        slots.push(timeString);
+        // Si es hoy, solo mostrar slots futuros
+        if (!isToday || currentTime > currentTimeInMinutes) {
+          const hour = Math.floor(currentTime / 60);
+          const minute = currentTime % 60;
+          const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+          slots.push({ time, available: true });
+        }
         
         currentTime += sessionDuration + breakTime;
       }
     });
     
-    this.timeSlots.set(slots);
+    // Verificar disponibilidad real contra citas existentes
+    this.checkSlotsAvailability(slots, selectedDate);
+  }
+
+  checkSlotsAvailability(slots: AvailableTimeSlot[], date: string) {
+    const doctorId = this.doctorId();
+    if (!doctorId) {
+      this.timeSlots.set(slots);
+      this.isLoadingSlots.set(false);
+      return;
+    }
+
+    // Cargar citas existentes del día
+    this.appointmentService.getDoctorAppointmentsByDateRange(doctorId, date, date).subscribe({
+      next: (appointments) => {
+        // Marcar slots ocupados
+        const updatedSlots = slots.map(slot => {
+          const hasConflict = appointments.some(apt => {
+            if (apt.status === 'cancelled') return false;
+            return apt.startTime === slot.time;
+          });
+          return { ...slot, available: !hasConflict };
+        });
+        
+        this.timeSlots.set(updatedSlots);
+        this.isLoadingSlots.set(false);
+      },
+      error: (error) => {
+        console.error('Error al cargar citas existentes:', error);
+        // Si hay error, mostrar todos los slots como disponibles
+        this.timeSlots.set(slots);
+        this.isLoadingSlots.set(false);
+      }
+    });
   }
 
   private getLanguageFlag(langCode: string): string {
@@ -352,19 +412,112 @@ export class DoctorDetailComponent implements OnInit {
       }
       
       // Show error toast
-      this.toastService.show(
-        'Por favor, selecciona un día y una hora para tu cita',
-        'error'
-      );
+      this.toastService.error('Por favor, selecciona un día y una hora para tu cita');
       return;
     }
-    
-    // TODO: Navigate to booking confirmation page
-    console.log('Book appointment with:', this.doctor().name, 'on', this.selectedDay(), 'at', this.selectedTimeSlot());
-    this.toastService.show(
-      'Procesando tu reserva...',
-      'info'
-    );
+
+    const clientId = this.currentUserId();
+    const doctorData = this.doctor();
+    const selectedDate = this.selectedDay();
+    const selectedTime = this.selectedTimeSlot();
+
+    if (!clientId) {
+      this.toastService.error('Debes iniciar sesión para reservar una cita');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // Get current user data from service
+    this.authService.getCurrentUser().subscribe({
+      next: (currentUser) => {
+        if (!currentUser) {
+          this.toastService.error('Debes iniciar sesión para reservar una cita');
+          this.router.navigate(['/login']);
+          return;
+        }
+
+        if (currentUser.role !== 'client') {
+          this.toastService.error('Solo los pacientes pueden reservar citas');
+          return;
+        }
+
+        if (!doctorData || !selectedDate || !selectedTime) {
+          this.toastService.error('Información incompleta para crear la cita');
+          return;
+        }
+
+        // Calculate end time based on session duration
+        const [hours, minutes] = selectedTime.split(':').map(Number);
+        const totalMinutes = hours * 60 + minutes + this.doctorSessionDuration;
+        const endHours = Math.floor(totalMinutes / 60);
+        const endMinutes = totalMinutes % 60;
+        const endTime = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+
+        // Verify slot is still available before creating
+        this.appointmentService.isTimeSlotAvailable(
+          this.doctorId(),
+          selectedDate,
+          selectedTime,
+          endTime
+        ).subscribe({
+          next: (isAvailable) => {
+            if (!isAvailable) {
+              this.toastService.error('Este horario ya no está disponible. Por favor, selecciona otro.');
+              // Refresh time slots
+              this.calculateTimeSlotsWithAvailability(selectedDate);
+              return;
+            }
+
+            // Create appointment
+            const appointment = {
+              doctorId: this.doctorId(),
+              doctorName: doctorData.name,
+              clientId: clientId,
+              clientName: currentUser.fullName || currentUser.email || 'Cliente',
+              date: selectedDate,
+              startTime: selectedTime,
+              endTime: endTime,
+              duration: this.doctorSessionDuration,
+              type: 'video' as const, // Default to video
+              status: 'pending' as const,
+              reason: 'Consulta general', // Default reason
+              notes: '',
+              price: doctorData.price,
+              currency: doctorData.currency
+            };
+
+            this.toastService.info('Creando tu cita...');
+
+            this.appointmentService.createAppointment(appointment).subscribe({
+              next: (appointmentId) => {
+                if (appointmentId) {
+                  this.toastService.success('¡Cita reservada exitosamente!');
+                  // Reset selections
+                  this.selectedDay.set(null);
+                  this.selectedTimeSlot.set(null);
+                  // Navigate to appointments page
+                  this.router.navigate(['/app/appointments']);
+                } else {
+                  this.toastService.error('Error al crear la cita. Intenta nuevamente.');
+                }
+              },
+              error: (error) => {
+                console.error('Error creating appointment:', error);
+                this.toastService.error('Error al crear la cita. Intenta nuevamente.');
+              }
+            });
+          },
+          error: (error) => {
+            console.error('Error checking availability:', error);
+            this.toastService.error('Error al verificar disponibilidad. Intenta nuevamente.');
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error getting current user:', error);
+        this.toastService.error('Error al verificar autenticación. Intenta nuevamente.');
+      }
+    });
   }
 
   sendMessage() {
@@ -376,7 +529,7 @@ export class DoctorDetailComponent implements OnInit {
     this.selectedDay.set(date);
     this.selectedTimeSlot.set(null); // Reset selected time slot
     // Recalculate time slots for the newly selected day
-    this.calculateTimeSlots(date, this.doctorAvailability, this.doctorSessionDuration, this.doctorBreakTime);
+    this.calculateTimeSlotsWithAvailability(date);
   }
 
   selectTimeSlot(slot: string) {

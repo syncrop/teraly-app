@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal, NgZone } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -30,6 +30,7 @@ export class LoginComponent {
   isSubmittable = computed(() => this.formStatus() === 'VALID' && !this.isLoading());
 
   login() {
+console.log('Login form submitted');
     if (this.loginForm.invalid) {
       console.log('Form is invalid');
       return;
@@ -42,6 +43,8 @@ export class LoginComponent {
     
     this.authService.login(email!, password!).subscribe({
       next: (result) => {
+        console.log('Login result:', result);
+        alert('Login result success: ' + result.success);
         this.isLoading.set(false);
         
         if (result.success) {
@@ -49,20 +52,37 @@ export class LoginComponent {
           const role = this.authService.currentUserRole();
           const currentUser = this.authService.currentUser();
           
+          console.log('User role:', role);
+          console.log('Current user:', currentUser);
+          alert('Role: ' + role + ', User: ' + (currentUser ? 'exists' : 'null'));
+          
           if (role === 'client') {
-            this.router.navigate(['/app/home-client']);
+            console.log('Navigating to client home');
+            this.router.navigate(['/app/home-client']).then(success => {
+              console.log('Navigation success:', success);
+            });
           } else if (role === 'doctor') {
             // Check if doctor profile is complete
             const isProfileComplete = currentUser?.completed === true;
+            console.log('Is profile complete:', isProfileComplete);
             
             if (!isProfileComplete) {
-              this.router.navigate(['/app/profile']);
+              console.log('Navigating to profile');
+              this.router.navigate(['/app/profile']).then(success => {
+                console.log('Navigation success:', success);
+              });
               this.toastService.show('Por favor, completa tu perfil para comenzar', 'info');
             } else {
-              this.router.navigate(['/app/home-doctor']);
+              console.log('Navigating to doctor home');
+              this.router.navigate(['/app/home-doctor']).then(success => {
+                console.log('Navigation success:', success);
+              });
             }
+          } else {
+            console.log('Unknown role:', role);
           }
         } else {
+          console.log('Login failed:', result.error);
           this.errorMessage.set(result.error || 'Error al iniciar sesión');
           this.toastService.error(result.error || 'Error al iniciar sesión');
         }

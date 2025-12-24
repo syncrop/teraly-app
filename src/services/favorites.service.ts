@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Firestore, collection, doc, setDoc, getDoc, deleteDoc, query, where, getDocs } from '@angular/fire/firestore';
 import { from, Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { FirestoreHelperService } from './firestore-helper.service';
 
 export interface Favorite {
   userId: string;
@@ -14,6 +15,7 @@ export interface Favorite {
 })
 export class FavoritesService {
   private firestore = inject(Firestore);
+  private firestoreHelper = inject(FirestoreHelperService);
 
   // Agregar doctor a favoritos
   addFavorite(userId: string, doctorId: string): Observable<boolean> {
@@ -52,10 +54,8 @@ export class FavoritesService {
   // Verificar si un doctor está en favoritos
   isFavorite(userId: string, doctorId: string): Observable<boolean> {
     const favoriteId = `${userId}_${doctorId}`;
-    const favoriteRef = doc(this.firestore, 'favorites', favoriteId);
-
-    return from(getDoc(favoriteRef)).pipe(
-      map((docSnapshot) => docSnapshot.exists()),
+    return from(this.firestoreHelper.getDocument<Favorite>('favorites', favoriteId)).pipe(
+      map((doc) => doc !== null),
       catchError((error) => {
         console.error('Error al verificar favorito:', error);
         return from([false]);
@@ -65,18 +65,8 @@ export class FavoritesService {
 
   // Obtener todos los favoritos de un usuario
   getUserFavorites(userId: string): Observable<string[]> {
-    const favoritesRef = collection(this.firestore, 'favorites');
-    const favoritesQuery = query(favoritesRef, where('userId', '==', userId));
-
-    return from(getDocs(favoritesQuery)).pipe(
-      map((querySnapshot) => {
-        const doctorIds: string[] = [];
-        querySnapshot.forEach((doc) => {
-          const data = doc.data() as Favorite;
-          doctorIds.push(data.doctorId);
-        });
-        return doctorIds;
-      }),
+    return from(this.firestoreHelper.getDocuments<Favorite>('favorites', where('userId', '==', userId))).pipe(
+      map((favorites) => favorites.map(fav => fav.doctorId)),
       catchError((error) => {
         console.error('Error al obtener favoritos:', error);
         return from([[]]);

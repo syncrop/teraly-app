@@ -548,7 +548,9 @@
             }
             
             @if (selectedAppointment()!.status === 'confirmed') {
-              <button class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors">
+              <button 
+                (click)="startVideoCall(selectedAppointment()!.id)"
+                class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors">
                 <span i18n="@@calendar.startSession">Iniciar sesión</span>
               </button>
             }

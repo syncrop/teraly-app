@@ -1,6 +1,8 @@
 export interface Appointment {
   id: string;
   doctorId: string;
+  doctorName?: string;
+  doctorPhotoUrl?: string;
   clientId: string;
   clientName: string;
   clientPhoto?: string;

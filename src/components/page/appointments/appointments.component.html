@@ -1,0 +1,91 @@
+<div class="appointments-container">
+  <div class="header">
+    <h1>Mis Citas</h1>
+  </div>
+
+  <div class="tabs">
+    <button 
+      class="tab" 
+      [class.active]="selectedTab() === 'upcoming'"
+      (click)="selectTab('upcoming')">
+      Próximas ({{ upcomingAppointments().length }})
+    </button>
+    <button 
+      class="tab" 
+      [class.active]="selectedTab() === 'past'"
+      (click)="selectTab('past')">
+      Pasadas ({{ pastAppointments().length }})
+    </button>
+  </div>
+
+  <div class="appointments-list" *ngIf="!isLoading()">
+    <!-- Próximas citas -->
+    <div *ngIf="selectedTab() === 'upcoming'">
+      <div *ngIf="upcomingAppointments().length === 0" class="empty-state">
+        <p>No tienes citas próximas programadas</p>
+      </div>
+
+      <div *ngFor="let appointment of upcomingAppointments()" class="appointment-card">
+        <div class="appointment-header">
+          <div class="appointment-date">
+            <h3>{{ formatDate(appointment.date) }}</h3>
+            <p>{{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}</p>
+          </div>
+          <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
+            {{ getStatusLabel(appointment.status) }}
+          </span>
+        </div>
+
+        <div class="appointment-details">
+          <p class="doctor-name">Dr. {{ appointment.doctorName }}</p>
+          <p class="appointment-type">{{ appointment.type }}</p>
+          <p class="appointment-notes" *ngIf="appointment.notes">{{ appointment.notes }}</p>
+        </div>
+
+        <div class="appointment-actions">
+          <button 
+            class="btn-primary" 
+            *ngIf="appointment.status === 'scheduled'"
+            (click)="joinVideoCall(appointment.id!)">
+            Unirse a videollamada
+          </button>
+          <button 
+            class="btn-secondary" 
+            *ngIf="appointment.status === 'scheduled'"
+            (click)="cancelAppointment(appointment.id!)">
+            Cancelar cita
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Citas pasadas -->
+    <div *ngIf="selectedTab() === 'past'">
+      <div *ngIf="pastAppointments().length === 0" class="empty-state">
+        <p>No tienes citas pasadas</p>
+      </div>
+
+      <div *ngFor="let appointment of pastAppointments()" class="appointment-card past">
+        <div class="appointment-header">
+          <div class="appointment-date">
+            <h3>{{ formatDate(appointment.date) }}</h3>
+            <p>{{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}</p>
+          </div>
+          <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
+            {{ getStatusLabel(appointment.status) }}
+          </span>
+        </div>
+
+        <div class="appointment-details">
+          <p class="doctor-name">Dr. {{ appointment.doctorName }}</p>
+          <p class="appointment-type">{{ appointment.type }}</p>
+          <p class="appointment-notes" *ngIf="appointment.notes">{{ appointment.notes }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading()" class="loading">
+    <p>Cargando citas...</p>
+  </div>
+</div>

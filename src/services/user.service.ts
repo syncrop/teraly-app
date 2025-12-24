@@ -3,29 +3,18 @@ import { Firestore, collection, doc, getDoc, query, where, getDocs, updateDoc } 
 import { from, Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { AppUser } from '../models/user.model';
+import { FirestoreHelperService } from './firestore-helper.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private firestore = inject(Firestore);
+  private readonly firestore = inject(Firestore);
+  private readonly firestoreHelper = inject(FirestoreHelperService);
 
   // Obtener un usuario por su UID
   getUserById(uid: string): Observable<AppUser | null> {
-    const userRef = doc(this.firestore, 'users', uid);
-    
-    return from(getDoc(userRef)).pipe(
-      map((docSnapshot) => {
-        if (docSnapshot.exists()) {
-          return { ...docSnapshot.data(), uid: docSnapshot.id } as AppUser;
-        }
-        return null;
-      }),
-      catchError((error) => {
-        console.error('Error al obtener usuario:', error);
-        return from([null]);
-      })
-    );
+    return from(this.firestoreHelper.getDocument<AppUser>('users', uid));
   }
 
   // Refrescar datos del usuario desde Firestore
@@ -35,64 +24,25 @@ export class UserService {
 
   // Obtener lista de doctores desde Firestore
   getDoctors(): Observable<AppUser[]> {
-    const usersRef = collection(this.firestore, 'users');
-    const doctorsQuery = query(usersRef, where('role', '==', 'doctor'));
-
-    return from(getDocs(doctorsQuery)).pipe(
-      map((querySnapshot) => {
-        const doctors: AppUser[] = [];
-        querySnapshot.forEach((doc) => {
-          doctors.push({ ...doc.data(), uid: doc.id } as AppUser);
-        });
-        return doctors;
-      }),
-      catchError((error) => {
-        console.error('Error al obtener doctores:', error);
-        return from([[]]);
-      })
-    );
+    return from(this.firestoreHelper.getDocuments<AppUser>('users', where('role', '==', 'doctor')));
   }
 
   // Obtener un doctor específico por su UID
   getDoctorById(uid: string): Observable<AppUser | null> {
-    const doctorRef = doc(this.firestore, 'users', uid);
-    
-    return from(getDoc(doctorRef)).pipe(
-      map((docSnapshot) => {
-        if (docSnapshot.exists()) {
-          const userData = docSnapshot.data() as AppUser;
-          // Verificar que sea un doctor
-          if (userData.role === 'doctor') {
-            return { ...userData, uid: docSnapshot.id };
-          }
+    return from(this.firestoreHelper.getDocument<AppUser>('users', uid)).pipe(
+      map((userData) => {
+        // Verificar que sea un doctor
+        if (userData && userData.role === 'doctor') {
+          return userData;
         }
         return null;
-      }),
-      catchError((error) => {
-        console.error('Error al obtener doctor:', error);
-        return from([null]);
       })
     );
   }
 
   // Obtener lista de clientes desde Firestore
   getClients(): Observable<AppUser[]> {
-    const usersRef = collection(this.firestore, 'users');
-    const clientsQuery = query(usersRef, where('role', '==', 'client'));
-
-    return from(getDocs(clientsQuery)).pipe(
-      map((querySnapshot) => {
-        const clients: AppUser[] = [];
-        querySnapshot.forEach((doc) => {
-          clients.push({ ...doc.data(), uid: doc.id } as AppUser);
-        });
-        return clients;
-      }),
-      catchError((error) => {
-        console.error('Error al obtener clientes:', error);
-        return from([[]]);
-      })
-    );
+    return from(this.firestoreHelper.getDocuments<AppUser>('users', where('role', '==', 'client')));
   }
 
   // Actualizar la foto de perfil del usuario en Firestore

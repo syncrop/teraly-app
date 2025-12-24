@@ -36,7 +36,7 @@ export class AddAppointmentModalComponent {
   clientSearchQuery = signal('');
   selectedClient = signal<any>(null);
   selectedDate_internal = signal<Date>(new Date());
-  selectedTime = signal('09:00');
+  selectedTime = signal('');
   duration = signal(60);
   appointmentType = signal<'video' | 'audio' | 'chat'>('video');
   reason = signal('');

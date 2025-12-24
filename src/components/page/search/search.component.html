@@ -133,12 +133,12 @@
             <!-- Price Range Dropdown -->
             @if (showPriceDropdown()) {
               <div class="absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-gray-200 z-30 p-4">
-                <h4 class="text-sm font-semibold text-gray-900 mb-3">Rango de precio</h4>
+                <h4 class="text-sm font-semibold text-gray-900 mb-3" i18n="@@search.priceRange">Rango de precio</h4>
                 
                 <div class="space-y-4">
                   <!-- Min Price -->
                   <div>
-                    <label class="text-xs text-gray-600 mb-1 block">Precio mínimo</label>
+                    <label class="text-xs text-gray-600 mb-1 block" i18n="@@search.minPrice">Precio mínimo</label>
                     <div class="relative">
                       <span class="absolute left-3 top-2.5 text-gray-500">€</span>
                       <input
@@ -154,7 +154,7 @@
 
                   <!-- Max Price -->
                   <div>
-                    <label class="text-xs text-gray-600 mb-1 block">Precio máximo</label>
+                    <label class="text-xs text-gray-600 mb-1 block" i18n="@@search.maxPrice">Precio máximo</label>
                     <div class="relative">
                       <span class="absolute left-3 top-2.5 text-gray-500">€</span>
                       <input
@@ -200,6 +200,7 @@
                   <button
                     (click)="applyPriceFilter()"
                     class="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+                    i18n="@@search.apply"
                   >
                     Aplicar
                   </button>
@@ -224,7 +225,7 @@
   <!-- Results Count -->
   <div class="px-4 py-3">
     <p class="text-sm font-semibold text-gray-400 uppercase tracking-wider">
-      {{ resultsCount() }} RESULTADOS ENCONTRADOS
+      {{ resultsCount() }} <span i18n="@@search.resultsFound">RESULTADOS ENCONTRADOS</span>
     </p>
   </div>
 
@@ -334,7 +335,7 @@
               @if (doctor.available) {
                 <span class="flex items-center gap-1 text-xs font-medium text-green-600 whitespace-nowrap">
                   <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                  Disponible hoy
+                  <span i18n="@@search.availableToday">Disponible hoy</span>
                 </span>
               }
             </div>
@@ -372,7 +373,7 @@
               <div class="flex items-center gap-1 mt-2">
                 <span class="text-yellow-400 text-base">⭐</span>
                 <span class="text-sm font-semibold text-gray-900">{{ doctor.rating }}</span>
-                <span class="text-sm text-gray-500">({{ doctor.reviews }} reseñas)</span>
+                <span class="text-sm text-gray-500">({{ doctor.reviews }} <span i18n="@@search.reviews">reseñas</span>)</span>
               </div>
             }
           </div>
@@ -393,7 +394,7 @@
         <div class="flex items-center justify-between pt-3 border-t border-gray-100">
           @if (doctor.priceAmount) {
             <div>
-              <p class="text-xs text-gray-500 mb-0.5">Precio por sesión</p>
+              <p class="text-xs text-gray-500 mb-0.5" i18n="@@search.pricePerSession">Precio por sesión</p>
               <p class="text-xl font-bold text-gray-900">
                 {{ doctor.priceAmount }}{{ doctor.priceCurrency | currencySymbol }}
                 @if (doctor.pricePerSession) {
@@ -403,16 +404,16 @@
             </div>
           } @else {
             <div>
-              <p class="text-xs text-gray-500">Consultar precio</p>
+              <p class="text-xs text-gray-500" i18n="@@search.consultPrice">Consultar precio</p>
             </div>
           }
           
           @if (doctor.available || doctor.nextSlots) {
-            <button class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors">
+            <button class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors" i18n="@@search.reserve">
               Reservar
             </button>
           } @else {
-            <button class="px-6 py-2.5 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors">
+            <button class="px-6 py-2.5 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors" i18n="@@search.viewProfile">
               Ver Perfil
             </button>
           }

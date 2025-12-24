@@ -7,7 +7,7 @@ import {
   parseMetadata,
   splitBlock
 } from "./chunk-BWELXRSO.js";
-import "./chunk-GOMI4DH3.js";
+import "./chunk-H2SRQSE4.js";
 
 // node_modules/@angular/localize/fesm2022/localize.mjs
 var MissingTranslationError = class extends Error {

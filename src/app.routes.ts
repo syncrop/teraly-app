@@ -83,6 +83,16 @@ export const APP_ROUTES: Routes = [
         data: { expectedRole: 'doctor' }
       },
       {
+        path: 'appointments',
+        loadComponent: () => import('./components/page/appointments/appointments.component').then(c => c.AppointmentsComponent),
+        canActivate: [accessGuard],
+        data: { expectedRole: 'client' }
+      },
+      {
+        path: 'video-call/:id',
+        loadComponent: () => import('./components/page/video-call/video-call.component').then(c => c.VideoCallComponent)
+      },
+      {
         path: 'privacy-security',
         loadComponent: () => import('./components/page/privacy-security/privacy-security.component').then(c => c.PrivacySecurityComponent)
       },

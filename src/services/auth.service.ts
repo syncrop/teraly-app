@@ -1,3 +1,4 @@
+import { FirestoreHelperService } from './firestore-helper.service';
 import { Injectable, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, user } from '@angular/fire/auth';
@@ -5,6 +6,8 @@ import { Firestore, collection, doc, setDoc, getDoc, query, where, getDocs } fro
 import { from, Observable } from 'rxjs';
 import { map, catchError, switchMap, tap } from 'rxjs/operators';
 import { UserRole, AppUser } from '../models/user.model';
+import { Capacitor } from '@capacitor/core';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +16,7 @@ export class AuthService {
   private auth = inject(Auth);
   private firestore = inject(Firestore);
   private router = inject(Router);
+  private firestoreHelper = inject(FirestoreHelperService);
   
   currentUserRole = signal<UserRole>(null);
   currentUser = signal<AppUser | null>(null);
@@ -22,11 +26,91 @@ export class AuthService {
     if (storedRole === 'client' || storedRole === 'doctor') {
       this.currentUserRole.set(storedRole as UserRole);
     }
+    
+    // Inicializar el usuario actual si hay una sesión activa
+    this.initializeCurrentUser();
+  }
+
+  /**
+   * Helper para obtener documento de Firestore que funciona en web e iOS
+   */
+  private async getFirestoreUser(uid: string): Promise<AppUser | null> {
+    return this.firestoreHelper.getDocument<AppUser>('users', uid);
+  }
+
+  /**
+   * Inicializar el usuario actual desde Firebase Auth
+   */
+  private async initializeCurrentUser(): Promise<void> {
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      const userData = await this.getFirestoreUser(userId);
+      if (userData) {
+        this.currentUser.set(userData);
+        console.log('Usuario inicializado:', userData);
+      } else {
+        console.log('Usuario no encontrado en Firestore');
+      }
+    }
   }
 
   // Login con Firebase
   login(email: string, password: string): Observable<{ success: boolean; role?: UserRole; error?: string }> {
+    console.log('Attempting login for email:', email);
+    
+    // Usar plugin nativo en iOS/Android
+    if (Capacitor.isNativePlatform()) {
+      console.log('Using native Firebase plugin');
+      return from(
+        (async () => {
+          try {
+            console.log('Step 1: Calling FirebaseAuthentication.signInWithEmailAndPassword');
+            const result = await FirebaseAuthentication.signInWithEmailAndPassword({ email, password });
+            console.log('Step 2: Auth result received');
+            
+            const uid = result.user?.uid;
+            console.log('Step 3: UID extracted:', uid);
+            
+            if (!uid) {
+              console.error('No UID in result');
+              return { success: false, error: 'No se pudo obtener el UID del usuario' };
+            }
+            
+            console.log('Step 4: Fetching user from Firestore...');
+            const userData = await this.getFirestoreUser(uid);
+            console.log('Step 5: User data received:', userData);
+            
+            if (!userData) {
+              return { success: false, error: 'Usuario no encontrado en la base de datos' };
+            }
+            
+            const role: UserRole = userData.role === 'doctor' ? 'doctor' : 'client';
+            this.currentUserRole.set(role);
+            this.currentUser.set(userData);
+            localStorage.setItem('userRole', role);
+            localStorage.setItem('userId', uid);
+            
+            console.log('Step 6: Login successful, role:', role);
+            return { success: true, role };
+          } catch (error: any) {
+            console.error('Native login error:', error);
+            let errorMessage = 'Error al iniciar sesión';
+            if (error.code === 'auth/user-not-found') {
+              errorMessage = 'Usuario no encontrado';
+            } else if (error.code === 'auth/wrong-password') {
+              errorMessage = 'Contraseña incorrecta';
+            } else if (error.code === 'auth/invalid-email') {
+              errorMessage = 'Email inválido';
+            }
+            return { success: false, error: errorMessage };
+          }
+        })()
+      );
+    }
+    
+    // Usar @angular/fire en web
     return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
+      tap(() => console.log('signInWithEmailAndPassword successful')),
       // Use switchMap to handle the promise and emit the correct type
       // Import switchMap from 'rxjs/operators' if not already imported
       // Replace 'map(async ...)' with 'switchMap'
@@ -36,6 +120,7 @@ export class AuthService {
           switchMap((tokenResult) =>
             from(getDoc(doc(this.firestore, 'users', credential.user.uid))).pipe(
               map((userDoc) => {
+                debugger;
                 const userData = userDoc.data() as AppUser;
                 if (userData) {
                   const role: UserRole = userData.role === 'doctor' ? 'doctor' : 'client';
@@ -200,19 +285,33 @@ export class AuthService {
       return currentUser.uid;
     }
 
+    // Fallback a localStorage
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      return userId;
+    }
+
     // Fallback a sessionStorage (donde guardas localId al hacer login)
     const localId = sessionStorage.getItem('localId');
     if (localId) {
       return localId;
     }
 
-    // Último fallback a localStorage
-    const userId = localStorage.getItem('userId');
-    return userId;
+    return null;
   }
 
   // Obtener el usuario actual
   getCurrentUser(): Observable<AppUser | null> {
+    if (Capacitor.isNativePlatform()) {
+      // iOS/Android: Obtener UID y usar helper
+      const userId = this.getCurrentUserId();
+      if (!userId) {
+        return from([null]);
+      }
+      return from(this.getFirestoreUser(userId));
+    }
+    
+    // Web: Usar SDK normal
     return from(user(this.auth)).pipe(
       switchMap((firebaseUser) => {
         if (firebaseUser) {

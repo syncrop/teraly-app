@@ -15,6 +15,7 @@ import {
   orderBy
 } from '@angular/fire/firestore';
 import { Appointment } from '../models/appointment.model';
+import { FirestoreHelperService } from './firestore-helper.service';
 
 @Injectable({
   providedIn: 'root'
@@ -22,28 +23,23 @@ import { Appointment } from '../models/appointment.model';
 export class AppointmentService {
   private firestore = inject(Firestore);
   private appointmentsCollection = collection(this.firestore, 'appointments');
+  private firestoreHelper = inject(FirestoreHelperService);
 
   /**
    * Obtener todas las citas de un doctor
    */
   getDoctorAppointments(doctorId: string): Observable<Appointment[]> {
-    const q = query(
-      this.appointmentsCollection,
-      where('doctorId', '==', doctorId),
-      orderBy('date', 'asc'),
-      orderBy('startTime', 'asc')
-    );
-
-    return from(getDocs(q)).pipe(
-      map(snapshot => {
-        return snapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            ...data,
-            createdAt: data['createdAt']?.toDate() || new Date(),
-            updatedAt: data['updatedAt']?.toDate() || new Date()
-          } as Appointment;
+    console.log('AppointmentService: Consultando citas para doctorId:', doctorId);
+    
+    return from(this.firestoreHelper.getDocuments<Appointment>('appointments', where('doctorId', '==', doctorId))).pipe(
+      map(appointments => {
+        console.log('AppointmentService: Documentos encontrados:', appointments.length);
+        
+        // Ordenar en memoria por fecha y hora
+        return appointments.sort((a, b) => {
+          const dateCompare = a.date.localeCompare(b.date);
+          if (dateCompare !== 0) return dateCompare;
+          return a.startTime.localeCompare(b.startTime);
         });
       }),
       catchError(error => {
@@ -61,24 +57,8 @@ export class AppointmentService {
     startDate: string,
     endDate: string
   ): Observable<Appointment[]> {
-    // Consulta simplificada sin índice compuesto
-    const q = query(
-      this.appointmentsCollection,
-      where('doctorId', '==', doctorId)
-    );
-
-    return from(getDocs(q)).pipe(
-      map(snapshot => {
-        const appointments = snapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            ...data,
-            createdAt: data['createdAt']?.toDate() || new Date(),
-            updatedAt: data['updatedAt']?.toDate() || new Date()
-          } as Appointment;
-        });
-        
+    return from(this.firestoreHelper.getDocuments<Appointment>('appointments', where('doctorId', '==', doctorId))).pipe(
+      map(appointments => {
         // Filtrar por rango de fechas en memoria
         const filtered = appointments.filter(apt => 
           apt.date >= startDate && apt.date <= endDate
@@ -102,23 +82,13 @@ export class AppointmentService {
    * Obtener citas de un cliente
    */
   getClientAppointments(clientId: string): Observable<Appointment[]> {
-    const q = query(
-      this.appointmentsCollection,
-      where('clientId', '==', clientId),
-      orderBy('date', 'asc'),
-      orderBy('startTime', 'asc')
-    );
-
-    return from(getDocs(q)).pipe(
-      map(snapshot => {
-        return snapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            ...data,
-            createdAt: data['createdAt']?.toDate() || new Date(),
-            updatedAt: data['updatedAt']?.toDate() || new Date()
-          } as Appointment;
+    return from(this.firestoreHelper.getDocuments<Appointment>('appointments', where('clientId', '==', clientId))).pipe(
+      map(appointments => {
+        // Ordenar en memoria por fecha y hora
+        return appointments.sort((a, b) => {
+          const dateCompare = a.date.localeCompare(b.date);
+          if (dateCompare !== 0) return dateCompare;
+          return a.startTime.localeCompare(b.startTime);
         });
       }),
       catchError(error => {
@@ -132,26 +102,7 @@ export class AppointmentService {
    * Obtener una cita específica por ID
    */
   getAppointmentById(appointmentId: string): Observable<Appointment | null> {
-    const appointmentRef = doc(this.firestore, 'appointments', appointmentId);
-    
-    return from(getDoc(appointmentRef)).pipe(
-      map(docSnapshot => {
-        if (docSnapshot.exists()) {
-          const data = docSnapshot.data();
-          return {
-            id: docSnapshot.id,
-            ...data,
-            createdAt: data['createdAt']?.toDate() || new Date(),
-            updatedAt: data['updatedAt']?.toDate() || new Date()
-          } as Appointment;
-        }
-        return null;
-      }),
-      catchError(error => {
-        console.error('Error al obtener cita:', error);
-        return of(null);
-      })
-    );
+    return from(this.firestoreHelper.getDocument<Appointment>('appointments', appointmentId));
   }
 
   /**
@@ -265,7 +216,10 @@ export class AppointmentService {
 
     return from(getDocs(q)).pipe(
       map(snapshot => {
-        const appointments = snapshot.docs.map(doc => doc.data() as Appointment);
+        const appointments = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return { ...data, id: doc.id } as Appointment;
+        });
         
         // Verificar si hay conflicto con alguna cita existente
         const hasConflict = appointments.some(apt => {
@@ -280,11 +234,9 @@ export class AppointmentService {
           const newStart = this.timeToMinutes(startTime);
           const newEnd = this.timeToMinutes(endTime);
 
-          return (
-            (newStart >= aptStart && newStart < aptEnd) ||
-            (newEnd > aptStart && newEnd <= aptEnd) ||
-            (newStart <= aptStart && newEnd >= aptEnd)
-          );
+          // Dos intervalos se solapan si:
+          // El inicio de uno está antes del fin del otro Y el fin de uno está después del inicio del otro
+          return !(newStart < aptEnd && newEnd > aptStart);
         });
 
         return !hasConflict;

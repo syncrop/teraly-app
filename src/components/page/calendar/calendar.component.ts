@@ -113,7 +113,7 @@ export class CalendarComponent implements OnInit {
    * Cargar todas las citas del doctor
    */
   loadAppointments() {
-    const doctorId = this.authService.getCurrentUserId();
+    const doctorId = this.authService.currentUser()?.uid;
     if (!doctorId) {
       this.isLoading.set(false);
       return;
@@ -146,7 +146,7 @@ export class CalendarComponent implements OnInit {
    * Cargar disponibilidad del doctor desde Firestore
    */
   async loadDoctorAvailability() {
-    const doctorId = this.authService.getCurrentUserId();
+    const doctorId = this.authService.currentUser()?.uid;
     if (!doctorId) return;
 
     try {
@@ -419,6 +419,13 @@ export class CalendarComponent implements OnInit {
         this.toastService.error('Error al cancelar la cita');
       }
     });
+  }
+
+  /**
+   * Iniciar sesión de videollamada
+   */
+  startVideoCall(appointmentId: string) {
+    this.router.navigate(['/app/video-call', appointmentId]);
   }
 
   /**
