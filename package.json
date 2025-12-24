@@ -10,7 +10,10 @@
     "build:ios": "ng build && npx cap sync ios",
     "ios:open": "npx cap open ios",
     "ios:run": "ng build && npx cap sync ios && npx cap open ios",
-    "preview": "ng serve --configuration=production"
+    "preview": "ng serve --configuration=production",
+    "test": "karma start karma.conf.js",
+    "test:headless": "karma start karma.conf.js --browsers=ChromeHeadlessCI --single-run",
+    "test:coverage": "karma start karma.conf.js --browsers=ChromeHeadlessCI --single-run --code-coverage"
   },
   "dependencies": {
     "@angular/build": "^21.0.0",
@@ -38,8 +41,14 @@
     "tailwindcss": "latest"
   },
   "devDependencies": {
-    "@capacitor/cli": "^6.1.2",
+    "@capacitor/cli": "8.0.0",
     "@types/node": "^22.14.0",
+    "jasmine-core": "^5.13.0",
+    "karma": "^6.4.4",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-coverage": "^2.2.1",
+    "karma-jasmine": "^5.1.0",
+    "karma-jasmine-html-reporter": "^2.1.0",
     "typescript": "5.9",
     "vite": "^6.2.0"
   }
