@@ -285,7 +285,6 @@ export class AddAppointmentModalComponent {
   }
 
   async saveAppointment() {
-    debugger;
     if (!this.isFormValid()) {
       this.toastService.error('Por favor completa todos los campos requeridos');
       return;
@@ -334,7 +333,6 @@ export class AddAppointmentModalComponent {
       currency: this.currency()
     };
 
-    debugger;
     this.appointmentService.createAppointment(appointment).subscribe({
       next: (appointmentId) => {
         if (appointmentId) {

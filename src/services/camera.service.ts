@@ -49,20 +49,49 @@ export class CameraService {
    */
   async selectPhoto(): Promise<Photo | null> {
     try {
+      // Solicitar permisos explícitamente antes de abrir la cámara
+      const permissions = await Camera.checkPermissions();
+      
+      if (permissions.camera === 'denied' || permissions.photos === 'denied') {
+        // Si los permisos fueron denegados, solicitar de nuevo
+        const requestResult = await Camera.requestPermissions();
+        
+        if (requestResult.camera === 'denied' || requestResult.photos === 'denied') {
+          throw new Error('Permisos denegados. Por favor, habilita los permisos en Configuración.');
+        }
+      } else if (permissions.camera === 'prompt' || permissions.photos === 'prompt') {
+        // Si es la primera vez, solicitar permisos
+        const requestResult = await Camera.requestPermissions();
+        
+        if (requestResult.camera === 'denied' || requestResult.photos === 'denied') {
+          throw new Error('Permisos denegados. Por favor, habilita los permisos en Configuración.');
+        }
+      }
+      
+      // Ahora sí, abrir la cámara/galería
       const image = await Camera.getPhoto({
-        quality: 90,
+        quality: 80,
         allowEditing: true,
-        resultType: CameraResultType.Uri,
-        source: CameraSource.Prompt, // Muestra diálogo con opciones
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Prompt,
         promptLabelHeader: 'Foto de perfil',
         promptLabelPhoto: 'Seleccionar de galería',
-        promptLabelPicture: 'Tomar foto'
+        promptLabelPicture: 'Tomar foto',
+        width: 800,
+        height: 800,
+        correctOrientation: true,
+        saveToGallery: false
       });
       
       return image;
-    } catch (error) {
-      console.error('Error al seleccionar foto:', error);
-      return null;
+    } catch (error: any) {
+      // Si el usuario cancela, no mostrar error
+      if (error?.message?.includes('cancelled') || error?.message?.includes('canceled') || error?.message?.includes('User cancelled')) {
+        return null;
+      }
+      
+      // Para otros errores, lanzar para que se muestren
+      throw error;
     }
   }
 

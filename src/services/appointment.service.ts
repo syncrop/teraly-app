@@ -14,6 +14,8 @@ import {
   Timestamp,
   orderBy
 } from '@angular/fire/firestore';
+import { Capacitor } from '@capacitor/core';
+import { FirestoreNativeService } from './firestore-native.service';
 import { Appointment } from '../models/appointment.model';
 import { FirestoreHelperService } from './firestore-helper.service';
 
@@ -24,6 +26,7 @@ export class AppointmentService {
   private firestore = inject(Firestore);
   private appointmentsCollection = collection(this.firestore, 'appointments');
   private firestoreHelper = inject(FirestoreHelperService);
+  private firestoreNative = inject(FirestoreNativeService);
 
   /**
    * Obtener todas las citas de un doctor
@@ -129,19 +132,30 @@ export class AppointmentService {
    * Actualizar una cita existente
    */
   updateAppointment(appointmentId: string, updates: Partial<Appointment>): Observable<boolean> {
-    const appointmentRef = doc(this.firestore, 'appointments', appointmentId);
     const updateData = {
       ...updates,
-      updatedAt: Timestamp.now()
+      updatedAt: new Date().toISOString()
     };
-
-    return from(updateDoc(appointmentRef, updateData)).pipe(
-      map(() => true),
-      catchError(error => {
-        console.error('Error al actualizar cita:', error);
-        return of(false);
-      })
-    );
+    if (Capacitor.isNativePlatform()) {
+      // Usar REST API en iOS/Android
+      return from(this.firestoreNative.updateDocument('appointments', appointmentId, updateData)).pipe(
+        map((result) => !!result),
+        catchError((error) => {
+          console.error('Error al actualizar cita (nativo):', error);
+          return of(false);
+        })
+      );
+    } else {
+      // Usar SDK web en web
+      const appointmentRef = doc(this.firestore, 'appointments', appointmentId);
+      return from(updateDoc(appointmentRef, updateData)).pipe(
+        map(() => true),
+        catchError(error => {
+          console.error('Error al actualizar cita:', error);
+          return of(false);
+        })
+      );
+    }
   }
 
   /**
@@ -186,15 +200,26 @@ export class AppointmentService {
    * Eliminar una cita
    */
   deleteAppointment(appointmentId: string): Observable<boolean> {
-    const appointmentRef = doc(this.firestore, 'appointments', appointmentId);
-    
-    return from(deleteDoc(appointmentRef)).pipe(
-      map(() => true),
-      catchError(error => {
-        console.error('Error al eliminar cita:', error);
-        return of(false);
-      })
-    );
+    if (Capacitor.isNativePlatform()) {
+      // Usar REST API en iOS/Android
+      return from(this.firestoreNative.deleteDocument('appointments', appointmentId)).pipe(
+        map((result) => !!result),
+        catchError((error) => {
+          console.error('Error al eliminar cita (nativo):', error);
+          return of(false);
+        })
+      );
+    } else {
+      // Usar SDK web en web
+      const appointmentRef = doc(this.firestore, 'appointments', appointmentId);
+      return from(deleteDoc(appointmentRef)).pipe(
+        map(() => true),
+        catchError(error => {
+          console.error('Error al eliminar cita:', error);
+          return of(false);
+        })
+      );
+    }
   }
 
   /**

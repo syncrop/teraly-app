@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppointmentService } from '../../../services/appointment.service';
@@ -18,6 +18,9 @@ export class VideoCallComponent implements OnInit, OnDestroy {
   private appointmentService = inject(AppointmentService);
   private authService = inject(AuthService);
 
+  @ViewChild('localVideo') localVideoRef!: ElementRef<HTMLVideoElement>;
+  @ViewChild('remoteVideo') remoteVideoRef!: ElementRef<HTMLVideoElement>;
+
   appointment = signal<Appointment | null>(null);
   appointmentId = signal<string>('');
   isLoading = signal<boolean>(true);
@@ -28,6 +31,8 @@ export class VideoCallComponent implements OnInit, OnDestroy {
   
   private callStartTime: Date | null = null;
   private durationInterval: any;
+  private localStream: MediaStream | null = null;
+  private remoteStream: MediaStream | null = null;
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -61,15 +66,40 @@ export class VideoCallComponent implements OnInit, OnDestroy {
     });
   }
 
-  private startCall(): void {
+  private async startCall(): Promise<void> {
     this.callStartTime = new Date();
     this.updateCallDuration();
     this.durationInterval = setInterval(() => {
       this.updateCallDuration();
     }, 1000);
 
-    // Aquí se integraría con un servicio de videollamadas como WebRTC, Twilio, etc.
-    console.log('Iniciando videollamada para cita:', this.appointmentId());
+    // Inicializar cámara y micrófono
+    await this.initializeMedia();
+  }
+
+  private async initializeMedia(): Promise<void> {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      });
+      
+      this.localStream = stream;
+      
+      // Esperar a que el ViewChild esté disponible
+      setTimeout(() => {
+        if (this.localVideoRef?.nativeElement) {
+          this.localVideoRef.nativeElement.srcObject = stream;
+          this.localVideoRef.nativeElement.muted = true; // Asegurar que está silenciado
+          this.localVideoRef.nativeElement.volume = 0; // Volumen a 0
+        }
+      }, 100);
+      
+    } catch (error) {
+      console.error('Error al acceder a la cámara/micrófono:', error);
+      this.isVideoOn.set(false);
+      this.isMicOn.set(false);
+    }
   }
 
   private updateCallDuration(): void {
@@ -86,15 +116,25 @@ export class VideoCallComponent implements OnInit, OnDestroy {
   }
 
   toggleMic(): void {
-    this.isMicOn.set(!this.isMicOn());
-    // Aquí se implementaría la lógica para activar/desactivar el micrófono
-    console.log('Micrófono:', this.isMicOn() ? 'Activado' : 'Desactivado');
+    const newState = !this.isMicOn();
+    this.isMicOn.set(newState);
+    
+    if (this.localStream) {
+      this.localStream.getAudioTracks().forEach(track => {
+        track.enabled = newState;
+      });
+    }
   }
 
   toggleVideo(): void {
-    this.isVideoOn.set(!this.isVideoOn());
-    // Aquí se implementaría la lógica para activar/desactivar la cámara
-    console.log('Video:', this.isVideoOn() ? 'Activado' : 'Desactivado');
+    const newState = !this.isVideoOn();
+    this.isVideoOn.set(newState);
+    
+    if (this.localStream) {
+      this.localStream.getVideoTracks().forEach(track => {
+        track.enabled = newState;
+      });
+    }
   }
 
   toggleScreenShare(): void {
@@ -108,28 +148,25 @@ export class VideoCallComponent implements OnInit, OnDestroy {
       clearInterval(this.durationInterval);
     }
 
-    // Actualizar el estado de la cita a completada
-    const appointmentId = this.appointmentId();
-    if (appointmentId) {
-      this.appointmentService.updateAppointmentStatus(appointmentId, 'completed').subscribe({
-        next: () => {
-          console.log('Cita marcada como completada');
-        },
-        error: (error) => {
-          console.error('Error al actualizar estado de cita:', error);
-        }
-      });
+    // Detener todos los streams de medios
+    if (this.localStream) {
+      this.localStream.getTracks().forEach(track => track.stop());
+      this.localStream = null;
     }
-
-    // Aquí se implementaría la lógica para terminar la videollamada
-    console.log('Finalizando videollamada');
     
-    // Redirigir al usuario
-    const currentUser = this.authService.currentUser();
-    if (currentUser?.role === 'doctor') {
-      this.router.navigate(['/app/home-doctor']);
-    } else {
-      this.router.navigate(['/app/appointments']);
+    if (this.remoteStream) {
+      this.remoteStream.getTracks().forEach(track => track.stop());
+      this.remoteStream = null;
     }
+    
+    // Redirigir al usuario después de un pequeño delay
+    setTimeout(() => {
+      const currentUser = this.authService.currentUser();
+      if (currentUser?.role === 'doctor') {
+        this.router.navigate(['/app/home-doctor']);
+      } else {
+        this.router.navigate(['/app/appointments']);
+      }
+    }, 100);
   }
 }

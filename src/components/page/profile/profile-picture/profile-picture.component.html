@@ -26,7 +26,7 @@
 
       <!-- Camera button -->
       <button 
-        (click)="triggerFileInput()"
+        (click)="handleCameraClick()"
         class="absolute bottom-0 right-0 w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         [disabled]="isLoading()">
         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,10 +35,10 @@
         </svg>
       </button>
 
-      <!-- Hidden file input -->
+      <!-- Hidden file input for web -->
       <input 
+        #fileInput
         type="file" 
-        id="fileInput" 
         accept="image/*" 
         class="hidden" 
         (change)="onFileSelected($event)"

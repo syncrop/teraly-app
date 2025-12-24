@@ -17,14 +17,20 @@ export class PageComponent {
   private router = inject(Router);
   userRole = this.authService.currentUserRole;
   showFooter = signal(true);
+  showHeader = signal(true);
 
   constructor() {
     // Listen to route changes
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
-      // Hide footer on doctor detail page
-      this.showFooter.set(!event.url.includes('/doctor/'));
+      const isVideoCall = event.url.includes('/video-call');
+      
+      // Hide footer only on video-call
+      this.showFooter.set(!isVideoCall);
+      
+      // Hide header on video-call
+      this.showHeader.set(!isVideoCall);
     });
   }
 

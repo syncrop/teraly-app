@@ -250,26 +250,12 @@ export class CalendarComponent implements OnInit {
    * Verificar si un día está disponible según la configuración del doctor
    */
   isDayAvailable(date: Date): boolean {
-    const dateStr = this.formatDate(date);
+    // En el calendario, permitir seleccionar todos los días para poder ver las citas
+    // Solo deshabilitar días del pasado muy lejano (más de 1 año atrás)
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
     
-    // Verificar si está bloqueado (vacaciones)
-    const isBlocked = this.blockedDates().some(blocked => {
-      const startDate = new Date(blocked.startDate);
-      const endDate = new Date(blocked.endDate);
-      const checkDate = new Date(dateStr);
-      return checkDate >= startDate && checkDate <= endDate;
-    });
-    
-    if (isBlocked) return false;
-    
-    // Verificar si el día de la semana está habilitado
-    const dayOfWeek = date.getDay();
-    const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    const dayKey = dayKeys[dayOfWeek];
-    
-    const daySchedule = this.doctorAvailability().find(d => d.day === dayKey);
-    
-    return daySchedule?.enabled && daySchedule.slots.length > 0 || false;
+    return date >= oneYearAgo;
   }
 
   /**
@@ -426,6 +412,26 @@ export class CalendarComponent implements OnInit {
    */
   startVideoCall(appointmentId: string) {
     this.router.navigate(['/app/video-call', appointmentId]);
+  }
+
+  /**
+   * Completar una cita
+   */
+  completeAppointment(appointmentId: string) {
+    this.appointmentService.completeAppointment(appointmentId).subscribe({
+      next: (success) => {
+        if (success) {
+          this.toastService.success('Cita marcada como completada');
+          this.loadAppointments();
+          this.closeAppointmentModal();
+        } else {
+          this.toastService.error('Error al completar la cita');
+        }
+      },
+      error: () => {
+        this.toastService.error('Error al completar la cita');
+      }
+    });
   }
 
   /**

@@ -10,8 +10,9 @@
         <div class="participant-info">
           <h2>{{ appointment()?.doctorName || 'Participante' }}</h2>
         </div>
-        <!-- Aquí iría el elemento <video> real -->
+        <!-- Video remoto -->
         <div class="video-feed">
+          <video #remoteVideo autoplay playsinline class="remote-video"></video>
           <span class="video-status" *ngIf="!isVideoOn()">Cámara desactivada</span>
         </div>
       </div>
@@ -19,6 +20,7 @@
       <!-- Video propio (PiP) -->
       <div class="self-video">
         <div class="video-feed-small">
+          <video #localVideo autoplay playsinline muted class="local-video"></video>
           <span class="video-status" *ngIf="!isVideoOn()">Tu cámara</span>
         </div>
       </div>

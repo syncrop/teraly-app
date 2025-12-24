@@ -46,7 +46,9 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Teraly necesita acceso a tu cámara para tomar fotos de perfil</string>
+	<string>Teraly necesita acceso a tu cámara para realizar videollamadas con tu médico y tomar fotos de perfil</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Teraly necesita acceso a tu micrófono para realizar videollamadas con tu médico</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Teraly necesita acceso a tus fotos para seleccionar una imagen de perfil</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

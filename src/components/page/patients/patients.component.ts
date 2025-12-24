@@ -91,7 +91,7 @@ export class PatientsComponent implements OnInit {
   }
 
   viewPatientDetail(patient: Patient) {
-    this.router.navigate(['/app/patients', patient.uid]);
+    this.router.navigate(['/app/calendar']);
   }
 
   startChat(patient: Patient) {

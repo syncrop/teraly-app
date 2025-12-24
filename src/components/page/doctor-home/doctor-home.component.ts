@@ -4,6 +4,7 @@ import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../services/toast.service';
 import { AppointmentService } from '../../../services/appointment.service';
 import { Appointment } from '../../../models/appointment.model';
+import { CommonModule } from '@angular/common';
 
 interface RequestView {
   id: string;
@@ -19,7 +20,7 @@ interface RequestView {
   selector: 'app-doctor-home',
   templateUrl: './doctor-home.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: []
+  imports: [CommonModule]
 })
 export class DoctorHomeComponent implements OnInit {
   private authService = inject(AuthService);
@@ -51,7 +52,7 @@ export class DoctorHomeComponent implements OnInit {
     const now = new Date();
     const upcoming = this.todayAppointments()
       .filter(apt => {
-        if (apt.status !== 'pending' && apt.status !== 'confirmed') return false;
+        if (apt.status !== 'pending' && apt.status === 'confirmed') return false;
         const aptTime = this.parseAppointmentDateTime(apt.date, apt.startTime);
         return aptTime > now;
       })
@@ -82,7 +83,6 @@ export class DoctorHomeComponent implements OnInit {
   }
 
   private loadTodayAppointments(): void {
-    debugger;
     const currentUser = this.authService.currentUser();
     const doctorId = currentUser?.uid;
     
@@ -107,7 +107,7 @@ export class DoctorHomeComponent implements OnInit {
 
         // Verificar y actualizar citas cuya hora ya pasó
         todayApts.forEach(apt => {
-          if (apt.status === 'pending' || apt.status === 'confirmed') {
+          if (apt.status === 'pending' || apt.status !== 'confirmed') {
             const aptTime = this.parseAppointmentDateTime(apt.date, apt.endTime || apt.startTime);
             
             // Si ya pasó la hora de fin (o inicio), marcar como completada
@@ -147,7 +147,6 @@ export class DoctorHomeComponent implements OnInit {
   }
 
   private loadPendingAppointments(): void {
-    debugger;
     const currentUser = this.authService.currentUser();
     const doctorId = currentUser?.uid;
     
@@ -291,7 +290,7 @@ export class DoctorHomeComponent implements OnInit {
   }
 
   viewAllRequests(): void {
-    this.router.navigate(['/calendar']);
+    this.router.navigate(['/app/calendar']);
   }
 
   startVideoCall(appointmentId: string): void {

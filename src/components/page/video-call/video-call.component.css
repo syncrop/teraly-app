@@ -61,12 +61,20 @@
   position: relative;
 }
 
+.remote-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .video-status {
   color: white;
   font-size: 18px;
   background-color: rgba(0, 0, 0, 0.5);
   padding: 12px 24px;
   border-radius: 8px;
+  position: absolute;
+  z-index: 5;
 }
 
 .self-video {
@@ -90,11 +98,21 @@
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+  position: relative;
+}
+
+.local-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Mirror effect for self video */
 }
 
 .video-feed-small .video-status {
   font-size: 14px;
   padding: 8px 16px;
+  position: absolute;
+  z-index: 5;
 }
 
 .call-info {

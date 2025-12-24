@@ -51,6 +51,28 @@ export class FirestoreHelperService {
     collectionName: string, 
     ...queryConstraints: QueryConstraint[]
   ): Promise<T[]> {
+    // En plataformas nativas, convertir QueryConstraint a formato simple
+    if (Capacitor.isNativePlatform() && queryConstraints.length > 0) {
+      // Extraer el primer where constraint (limitación actual)
+      const whereConstraint = queryConstraints.find(c => (c as any).type === 'where');
+      
+      if (whereConstraint) {
+        const constraint = whereConstraint as any;
+        // Los QueryConstraint de @angular/fire tienen esta estructura interna
+        const field = constraint._field?.segments?.[0];
+        const op = constraint._op;
+        const value = constraint._value;
+        
+        if (field && op) {
+          return this.firestoreNative.getDocuments<T>(collectionName, field, op, value);
+        }
+      }
+      
+      // Si no hay where, obtener todos
+      return this.firestoreNative.getDocuments<T>(collectionName);
+    }
+
+    // En web, usar SDK normal
     try {
       const collectionRef = collection(this.firestore, collectionName);
       const q = query(collectionRef, ...queryConstraints);
