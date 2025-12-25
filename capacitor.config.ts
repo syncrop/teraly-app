@@ -6,6 +6,7 @@ const config: CapacitorConfig = {
   appId: 'com.teraly.app',
   appName: 'Teraly',
   webDir: 'dist',
+  backgroundColor: '#ffffff',
   server: {
     androidScheme: 'https',
     iosScheme: 'https'

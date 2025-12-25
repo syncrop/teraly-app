@@ -31,6 +31,16 @@ export class PageComponent {
       
       // Hide header on video-call
       this.showHeader.set(!isVideoCall);
+      
+      // Change root-container background for video-call
+      const rootContainer = document.getElementById('root-container');
+      if (rootContainer) {
+        if (isVideoCall) {
+          rootContainer.style.backgroundColor = '#1a202c';
+        } else {
+          rootContainer.style.backgroundColor = '#ffffff';
+        }
+      }
     });
   }
 

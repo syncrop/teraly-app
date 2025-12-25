@@ -5,6 +5,8 @@ import { ToastService } from '../../../services/toast.service';
 import { AppointmentService } from '../../../services/appointment.service';
 import { Appointment } from '../../../models/appointment.model';
 import { CommonModule } from '@angular/common';
+import { MinutesToTimePipe } from '../../shared/pipes/minutes-to-time.pipe';
+import { HeaderComponent } from '../../shared/header-home/header.component';
 
 interface RequestView {
   id: string;
@@ -20,7 +22,7 @@ interface RequestView {
   selector: 'app-doctor-home',
   templateUrl: './doctor-home.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule]
+  imports: [CommonModule, MinutesToTimePipe, HeaderComponent]
 })
 export class DoctorHomeComponent implements OnInit {
   private authService = inject(AuthService);

@@ -45,15 +45,15 @@
         <div class="appointment-actions">
           <button 
             class="btn-primary" 
-            *ngIf="appointment.status === 'scheduled'"
+            *ngIf="canJoinCall(appointment)"
             (click)="joinVideoCall(appointment.id!)">
-            Unirse a videollamada
+            Unirse
           </button>
           <button 
             class="btn-secondary" 
-            *ngIf="appointment.status === 'scheduled'"
+            *ngIf="canCancelAppointment(appointment)"
             (click)="cancelAppointment(appointment.id!)">
-            Cancelar cita
+            Cancelar
           </button>
         </div>
       </div>

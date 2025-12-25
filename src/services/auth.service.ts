@@ -292,30 +292,43 @@ export class AuthService {
   // Logout con Firebase
   async logout(): Promise<void> {
     try {
-      // Esperar a que signOut se complete
-      await signOut(this.auth);
-      
-      // Limpiar signals
+      // Limpiar signals primero
       this.currentUserRole.set(null);
       this.currentUser.set(null);
       
       // Limpiar localStorage
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userId');
-      localStorage.removeItem('idToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('expiresAt');
-      localStorage.removeItem('localId');
-      localStorage.removeItem('email');
+      localStorage.clear();
       
-      // Redirigir al login
-      await this.router.navigate(['/login']);
+      // Cerrar sesión en Firebase
+      if (Capacitor.isNativePlatform()) {
+        // iOS/Android: Usar plugin nativo
+        await FirebaseAuthentication.signOut();
+      } else {
+        // Web: Usar SDK normal
+        await signOut(this.auth);
+      }
+      
+      // Forzar navegación completa al login
+      if (Capacitor.isNativePlatform()) {
+        // En iOS/Android, forzar recarga completa
+        window.location.href = '/login';
+      } else {
+        // En web, usar router
+        await this.router.navigate(['/login'], { replaceUrl: true });
+      }
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
       // Intentar limpiar de todas formas
       this.currentUserRole.set(null);
       this.currentUser.set(null);
-      await this.router.navigate(['/login']);
+      localStorage.clear();
+      
+      // Forzar navegación aunque haya error
+      if (Capacitor.isNativePlatform()) {
+        window.location.href = '/login';
+      } else {
+        await this.router.navigate(['/login'], { replaceUrl: true });
+      }
     }
   }
 

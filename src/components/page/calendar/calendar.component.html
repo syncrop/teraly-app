@@ -1,6 +1,6 @@
-<div class="bg-gray-50 min-h-screen pb-24">
+<div class="bg-gray-50">
   <!-- Header -->
-  <div class="bg-white border-b border-gray-200">
+  <div class="bg-white border-b border-gray-200 md:relative md:z-auto" style="position: sticky; top: 0; z-index: 9999; padding-top: env(safe-area-inset-top, 0px);">
     <div class="px-4 py-4">
       <div class="flex items-center justify-between mb-4">
         <button (click)="goBack()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
@@ -411,41 +411,41 @@
 
   <!-- Appointment Detail Modal -->
   @if (showAppointmentModal() && selectedAppointment()) {
-    <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center justify-center p-4">
-      <div class="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-slide-up">
+    <div class="fixed pb-2 inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white pb-10 rounded-t-3xl sm:rounded-3xl w-full max-w-md max-h-[85vh] overflow-y-auto animate-slide-up">
         <!-- Modal Header -->
-        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h3 class="text-xl font-bold text-gray-900" i18n="@@calendar.appointmentDetails">Detalles de la cita</h3>
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+          <h3 class="text-lg font-bold text-gray-900" i18n="@@calendar.appointmentDetails">Detalles de la cita</h3>
           <button (click)="closeAppointmentModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         <!-- Modal Content -->
-        <div class="p-6 space-y-6">
+        <div class="p-4 space-y-4">
           <!-- Client Info -->
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3">
             @if (selectedAppointment()!.clientPhoto) {
               <img
                 [src]="selectedAppointment()!.clientPhoto"
                 [alt]="selectedAppointment()!.clientName"
-                class="w-16 h-16 rounded-full object-cover"
+                class="w-12 h-12 rounded-full object-cover"
               />
             } @else {
-              <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center">
-                <span class="text-xl font-bold text-indigo-600">
+              <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
+                <span class="text-lg font-bold text-indigo-600">
                   {{ selectedAppointment()!.clientName.charAt(0) }}
                 </span>
               </div>
             }
             
             <div class="flex-1">
-              <h4 class="font-bold text-gray-900 text-lg">{{ selectedAppointment()!.clientName }}</h4>
+              <h4 class="font-bold text-gray-900">{{ selectedAppointment()!.clientName }}</h4>
               <span
                 [class]="getStatusColor(selectedAppointment()!.status)"
-                class="inline-block px-3 py-1 rounded-full text-xs font-medium mt-1"
+                class="inline-block px-2 py-0.5 rounded-full text-xs font-medium mt-1"
               >
                 @switch (selectedAppointment()!.status) {
                   @case ('pending') { <span i18n="@@calendar.statusPending">Pendiente</span> }
@@ -459,34 +459,34 @@
           </div>
 
           <!-- Date & Time -->
-          <div class="bg-gray-50 rounded-xl p-4 space-y-3">
-            <div class="flex items-center gap-3">
-              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="bg-gray-50 rounded-xl p-3 space-y-2">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <div>
-                <p class="text-sm text-gray-500" i18n="@@calendar.date">Fecha</p>
-                <p class="font-semibold text-gray-900">{{ selectedAppointment()!.date }}</p>
+                <p class="text-xs text-gray-500" i18n="@@calendar.date">Fecha</p>
+                <p class="text-sm font-semibold text-gray-900">{{ selectedAppointment()!.date }}</p>
               </div>
             </div>
             
-            <div class="flex items-center gap-3">
-              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>
-                <p class="text-sm text-gray-500" i18n="@@calendar.schedule">Horario</p>
-                <p class="font-semibold text-gray-900">{{ selectedAppointment()!.startTime }} - {{ selectedAppointment()!.endTime }}</p>
+                <p class="text-xs text-gray-500" i18n="@@calendar.schedule">Horario</p>
+                <p class="text-sm font-semibold text-gray-900">{{ selectedAppointment()!.startTime }} - {{ selectedAppointment()!.endTime }}</p>
               </div>
             </div>
 
-            <div class="flex items-center gap-3">
-              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
               <div>
-                <p class="text-sm text-gray-500" i18n="@@calendar.type">Tipo</p>
-                <p class="font-semibold text-gray-900">
+                <p class="text-xs text-gray-500" i18n="@@calendar.type">Tipo</p>
+                <p class="text-sm font-semibold text-gray-900">
                   @if (selectedAppointment()!.type === 'video') {
                     <span i18n="@@calendar.videoCall">Videollamada</span>
                   } @else if (selectedAppointment()!.type === 'audio') {
@@ -502,46 +502,46 @@
           <!-- Reason -->
           @if (selectedAppointment()!.reason) {
             <div>
-              <p class="text-sm font-medium text-gray-500 mb-2" i18n="@@calendar.reason">Motivo</p>
-              <p class="text-gray-900">{{ selectedAppointment()!.reason }}</p>
+              <p class="text-xs font-medium text-gray-500 mb-1" i18n="@@calendar.reason">Motivo</p>
+              <p class="text-sm text-gray-900">{{ selectedAppointment()!.reason }}</p>
             </div>
           }
 
           <!-- Notes -->
           @if (selectedAppointment()!.notes) {
             <div>
-              <p class="text-sm font-medium text-gray-500 mb-2" i18n="@@calendar.notes">Notas</p>
-              <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3">
+              <p class="text-xs font-medium text-gray-500 mb-1" i18n="@@calendar.notes">Notas</p>
+              <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-2">
                 <p class="text-gray-900 text-sm">{{ selectedAppointment()!.notes }}</p>
               </div>
             </div>
           }
 
           <!-- Price -->
-          <div class="bg-indigo-50 rounded-xl p-4">
-            <p class="text-sm text-indigo-600 mb-1" i18n="@@calendar.priceConfig">Precio de la sesión</p>
-            <p class="text-2xl font-bold text-indigo-900">
+          <div class="bg-indigo-50 rounded-xl p-3">
+            <p class="text-xs text-indigo-600 mb-1" i18n="@@calendar.priceConfig">Precio de la sesión</p>
+            <p class="text-xl font-bold text-indigo-900">
               {{ selectedAppointment()!.price }}{{ selectedAppointment()!.currency === 'EUR' ? '€' : '$' }}
             </p>
           </div>
 
           <!-- Actions -->
-          <div class="flex gap-3">
+          <div class="flex gap-2">
             @if (selectedAppointment()!.status === 'pending') {
               <button
                 (click)="confirmAppointment(selectedAppointment()!.id)"
-                class="flex-1 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                class="flex-1 py-2.5 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
                 <span i18n="@@calendar.confirmAppointment">Confirmar</span>
               </button>
               <button
                 (click)="cancelAppointment(selectedAppointment()!.id)"
-                class="flex-1 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                class="flex-1 py-2.5 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
                 <span i18n="@@calendar.cancelAppointment">Cancelar</span>
@@ -551,17 +551,17 @@
             @if (selectedAppointment()!.status === 'confirmed') {
               <button 
                 (click)="startVideoCall(selectedAppointment()!.id)"
-                class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
                 <span i18n="@@calendar.startSession">Iniciar sesión</span>
               </button>
               <button
                 (click)="completeAppointment(selectedAppointment()!.id)"
-                class="px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                class="px-4 py-2.5 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
                 <span i18n="@@calendar.end">Finalizar</span>

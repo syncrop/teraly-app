@@ -59,12 +59,35 @@ export class AppointmentsComponent implements OnInit {
     const past: Appointment[] = [];
 
     appointments.forEach(appointment => {
-      if (appointment.date > today || 
-          (appointment.date === today && appointment.startTime >= currentTime)) {
-        upcoming.push(appointment);
-      } else {
+      // Si está completada o cancelada, va a pasadas
+      if (appointment.status === 'completed' || appointment.status === 'cancelled') {
         past.push(appointment);
       }
+      // Si es futura, va a próximas
+      else if (appointment.date > today || 
+          (appointment.date === today && appointment.startTime >= currentTime)) {
+        upcoming.push(appointment);
+      } 
+      // Si ya pasó la fecha/hora, va a pasadas
+      else {
+        past.push(appointment);
+      }
+    });
+
+    // Ordenar próximas citas: más próxima primero (ascendente)
+    upcoming.sort((a, b) => {
+      if (a.date !== b.date) {
+        return a.date.localeCompare(b.date);
+      }
+      return a.startTime.localeCompare(b.startTime);
+    });
+
+    // Ordenar citas pasadas: más reciente primero (descendente)
+    past.sort((a, b) => {
+      if (a.date !== b.date) {
+        return b.date.localeCompare(a.date);
+      }
+      return b.startTime.localeCompare(a.startTime);
     });
 
     this.upcomingAppointments.set(upcoming);
@@ -96,6 +119,7 @@ export class AppointmentsComponent implements OnInit {
 
   getStatusLabel(status: string): string {
     const labels: { [key: string]: string } = {
+      'pending': 'pendiente',
       'scheduled': 'Programada',
       'completed': 'Completada',
       'cancelled': 'Cancelada',
@@ -106,6 +130,7 @@ export class AppointmentsComponent implements OnInit {
 
   getStatusClass(status: string): string {
     const classes: { [key: string]: string } = {
+      'pending': 'status-pending',
       'scheduled': 'status-scheduled',
       'completed': 'status-completed',
       'cancelled': 'status-cancelled',
@@ -126,5 +151,42 @@ export class AppointmentsComponent implements OnInit {
 
   formatTime(time: string): string {
     return time;
+  }
+
+  canJoinCall(appointment: Appointment): boolean {
+    // No puede unirse si está cancelada o completada
+    if (appointment.status === 'cancelled' || appointment.status === 'completed') {
+      return false;
+    }
+
+    // Para tipo video, permitir unirse
+    if (appointment.type === 'video') {
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+
+      // Si la cita está confirmada, permitir unirse en cualquier momento del día de la cita
+      if (appointment.status === 'confirmed' && appointment.date === today) {
+        return true;
+      }
+
+      // Para otros estados, verificar ventana de tiempo
+      if (appointment.date === today) {
+        const appointmentDateTime = new Date(`${appointment.date}T${appointment.startTime}`);
+        const endDateTime = new Date(`${appointment.date}T${appointment.endTime}`);
+        const nowDateTime = new Date();
+        
+        // Permitir unirse 15 minutos antes
+        const fifteenMinutesBefore = new Date(appointmentDateTime.getTime() - 15 * 60000);
+        
+        return nowDateTime >= fifteenMinutesBefore && nowDateTime <= endDateTime;
+      }
+    }
+
+    return false;
+  }
+
+  canCancelAppointment(appointment: Appointment): boolean {
+    // Solo se puede cancelar si está confirmed
+    return appointment.status === 'confirmed';
   }
 }

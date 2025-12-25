@@ -44,7 +44,6 @@ console.log('Login form submitted');
     this.authService.login(email!, password!).subscribe({
       next: (result) => {
         console.log('Login result:', result);
-        alert('Login result success: ' + result.success);
         this.isLoading.set(false);
         
         if (result.success) {
@@ -54,7 +53,6 @@ console.log('Login form submitted');
           
           console.log('User role:', role);
           console.log('Current user:', currentUser);
-          alert('Role: ' + role + ', User: ' + (currentUser ? 'exists' : 'null'));
           
           if (role === 'client') {
             console.log('Navigating to client home');

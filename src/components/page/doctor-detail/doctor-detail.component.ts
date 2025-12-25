@@ -170,8 +170,8 @@ export class DoctorDetailComponent implements OnInit {
         const data = doctorDoc.data();
         const availability = data['availability'] as DaySchedule[] || [];
         const blockedDates = data['blockedDates'] as BlockedDate[] || [];
-        const sessionDuration = data['sessionDuration'] || 60;
-        const breakTime = data['breakTime'] || 15;
+        const sessionDuration = Number(data['sessionDuration']) || 60;
+        const breakTime = Number(data['breakTime']) || 15;
         
         // Store configuration for later use
         this.doctorAvailability = availability;
@@ -284,11 +284,22 @@ export class DoctorDetailComponent implements OnInit {
           const hour = Math.floor(currentTime / 60);
           const minute = currentTime % 60;
           const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-          slots.push({ time, available: true });
+          
+          // Solo agregar si no existe ya
+          if (!slots.some(s => s.time === time)) {
+            slots.push({ time, available: true });
+          }
         }
         
         currentTime += sessionDuration + breakTime;
       }
+    });
+    
+    // Ordenar slots por hora
+    slots.sort((a, b) => {
+      const [aHour, aMin] = a.time.split(':').map(Number);
+      const [bHour, bMin] = b.time.split(':').map(Number);
+      return (aHour * 60 + aMin) - (bHour * 60 + bMin);
     });
     
     // Verificar disponibilidad real contra citas existentes
@@ -534,6 +545,10 @@ export class DoctorDetailComponent implements OnInit {
 
   selectTimeSlot(slot: string) {
     this.selectedTimeSlot.set(slot);
+  }
+
+  canBook(): boolean {
+    return !!(this.selectedDay() && this.selectedTimeSlot() && !this.isOwnProfile());
   }
 
   navigateToEditProfile() {

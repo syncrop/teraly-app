@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-white pb-32">
+<div class="min-h-screen bg-white" style="padding-bottom: calc(8rem + env(safe-area-inset-bottom, 0px));">
   <!-- Loading State - Skeleton -->
   @if (isLoading()) {
     <div class="animate-pulse">
@@ -361,7 +361,7 @@
   </div>
 
   <!-- Bottom Action Bar -->
-  <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-4 shadow-lg">
+  <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg" style="z-index: 10000; padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));">
     <div class="flex gap-3 max-w-2xl mx-auto">
       <!-- Message Button -->
       <button
@@ -376,7 +376,10 @@
       <!-- Book Appointment Button -->
       <button
         (click)="bookAppointment()"
-        class="flex-1 bg-indigo-600 text-white rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-colors flex items-center justify-between px-6 py-4"
+        [disabled]="!canBook()"
+        [class.opacity-50]="!canBook()"
+        [class.cursor-not-allowed]="!canBook()"
+        class="flex-1 bg-indigo-600 text-white rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-colors disabled:hover:bg-indigo-600 flex items-center justify-between px-6 py-4"
       >
         <span i18n="@@doctorDetail.bookAppointment">Reservar Cita</span>
         <span class="text-xl">{{ doctor().price }}{{ doctor().currency | currencySymbol }}</span>
