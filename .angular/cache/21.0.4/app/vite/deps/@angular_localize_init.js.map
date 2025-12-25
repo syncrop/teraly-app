@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../../../node_modules/@angular/localize/fesm2022/init.mjs"],
+  "sourcesContent": ["/**\n * @license Angular v21.0.6\n * (c) 2010-2025 Google LLC. https://angular.dev/\n * License: MIT\n */\n\nimport { $localize } from './_localize-chunk.mjs';\n\nglobalThis.$localize = $localize;\n\nexport { $localize };\n\n"],
+  "mappings": ";;;;;;AAQA,WAAW,YAAY;",
+  "names": []
+}

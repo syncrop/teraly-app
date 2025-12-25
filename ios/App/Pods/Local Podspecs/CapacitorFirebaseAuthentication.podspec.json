@@ -1,0 +1,56 @@
+{
+  "name": "CapacitorFirebaseAuthentication",
+  "version": "6.3.1",
+  "summary": "Capacitor plugin for Firebase Authentication.",
+  "license": "Apache-2.0",
+  "homepage": "git+https://github.com/capawesome-team/capacitor-firebase.git",
+  "authors": "Robin Genz <mail@robingenz.dev>",
+  "source": {
+    "git": "git+https://github.com/capawesome-team/capacitor-firebase.git",
+    "tag": "6.3.1"
+  },
+  "source_files": "ios/Plugin/**/*.{swift,h,m,c,cc,mm,cpp}",
+  "platforms": {
+    "ios": "13.0"
+  },
+  "dependencies": {
+    "Capacitor": [],
+    "FirebaseAuth": [
+      "~> 11.0"
+    ]
+  },
+  "swift_versions": "5.1",
+  "static_framework": true,
+  "default_subspecs": "Lite",
+  "subspecs": [
+    {
+      "name": "Lite"
+    },
+    {
+      "name": "Google",
+      "xcconfig": {
+        "OTHER_SWIFT_FLAGS": "$(inherited) -DRGCFA_INCLUDE_GOOGLE"
+      },
+      "dependencies": {
+        "GoogleSignIn": [
+          "7.1.0"
+        ]
+      }
+    },
+    {
+      "name": "Facebook",
+      "xcconfig": {
+        "OTHER_SWIFT_FLAGS": "$(inherited) -DRGCFA_INCLUDE_FACEBOOK"
+      },
+      "dependencies": {
+        "FBSDKCoreKit": [
+          "17.1.0"
+        ],
+        "FBSDKLoginKit": [
+          "17.1.0"
+        ]
+      }
+    }
+  ],
+  "swift_version": "5.1"
+}
