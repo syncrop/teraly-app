@@ -136,7 +136,7 @@
       Restamos 8px a la zona segura para "chupar" hacia abajo la barra blanca.
       Esto elimina el exceso de espacio en blanco en iPhones modernos.
     */
-    padding-bottom: calc(env(safe-area-inset-bottom) - 8px);
+    padding-bottom: calc(env(safe-area-inset-bottom));
     
     /* Fallback para móviles viejos: asegúrate de tener al menos 10px abajo */
     padding-bottom: max(10px, calc(env(safe-area-inset-bottom) - 8px));

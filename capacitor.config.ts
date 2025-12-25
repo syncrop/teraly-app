@@ -12,7 +12,6 @@ const config: CapacitorConfig = {
     iosScheme: 'https'
   },
   ios: {
-    contentInset: 'automatic',
     allowsBackForwardNavigationGestures: true
   },
   plugins: {

@@ -159,26 +159,13 @@ export class AppointmentsComponent implements OnInit {
       return false;
     }
 
-    // Para tipo video, permitir unirse
+    // Para tipo video, permitir unirse si la cita está confirmada y es una cita próxima
     if (appointment.type === 'video') {
-      const now = new Date();
-      const today = now.toISOString().split('T')[0];
-
-      // Si la cita está confirmada, permitir unirse en cualquier momento del día de la cita
-      if (appointment.status === 'confirmed' && appointment.date === today) {
-        return true;
-      }
-
-      // Para otros estados, verificar ventana de tiempo
-      if (appointment.date === today) {
-        const appointmentDateTime = new Date(`${appointment.date}T${appointment.startTime}`);
-        const endDateTime = new Date(`${appointment.date}T${appointment.endTime}`);
-        const nowDateTime = new Date();
-        
-        // Permitir unirse 15 minutos antes
-        const fifteenMinutesBefore = new Date(appointmentDateTime.getTime() - 15 * 60000);
-        
-        return nowDateTime >= fifteenMinutesBefore && nowDateTime <= endDateTime;
+      // Si la cita está confirmada y está en próximas citas, permitir unirse
+      if (appointment.status === 'confirmed') {
+        const upcomingList = this.upcomingAppointments();
+        const isInUpcoming = upcomingList.some(apt => apt.id === appointment.id);
+        return isInUpcoming;
       }
     }
 
