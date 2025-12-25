@@ -1,0 +1,142 @@
+<div class="bg-gray-50">
+  <app-header 
+    title="Hola," 
+    subtitle="Panel de Control"
+    [userName]="currentUser()?.fullName?.split(' ')[0] || 'Doctor'"
+    [showNotifications]="true"
+    [notificationCount]="1">
+  </app-header>
+
+  <div class="max-w-2xl mx-auto px-4 py-6 pb-0">
+    <!-- Agenda de Hoy Card -->
+    <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-6 mb-6 text-white">
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <p class="text-sm text-gray-300 uppercase tracking-wide mb-2" i18n="@@doctorHome.todayAgenda">AGENDA DE HOY</p>
+          <div class="flex items-baseline gap-2">
+            <span class="text-5xl font-bold">{{ pendingAppointments() }}</span>
+            <span class="text-lg text-gray-300" i18n="@@doctorHome.pendingAppointments">citas pendientes</span>
+          </div>
+        </div>
+        <div class="w-16 h-16 rounded-full border-4 border-indigo-500 flex items-center justify-center">
+          <div class="text-center">
+            <div class="text-sm font-bold">{{ completedAppointments() }}/{{ totalAppointments() }}</div>
+          </div>
+        </div>
+      </div>
+      <!-- Progress Bar -->
+      <div class="mt-4">
+        <div class="w-full bg-gray-700 rounded-full h-2">
+          <div 
+            class="bg-indigo-500 h-2 rounded-full transition-all duration-300"
+            [style.width.%]="progressPercentage()"
+          ></div>
+        </div>
+        <p class="text-right text-sm text-gray-300 mt-2">{{ progressPercentage() }}% <span i18n="@@doctorHome.completed">completado</span></p>
+      </div>
+      <!-- Next appointment summary inside top card -->
+      @if (nextAppointment()) {
+        <div class="mt-6 bg-white bg-opacity-5 p-4 rounded-xl flex items-center gap-4">
+          @if (nextAppointment()?.clientPhoto) {
+            <img 
+              [src]="nextAppointment()?.clientPhoto" 
+              [alt]="nextAppointment()?.clientName"
+              class="w-12 h-12 rounded-full object-cover"
+            />
+          } @else {
+            <div class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm font-bold">
+              {{ getInitials(nextAppointment()?.clientName || '') }}
+            </div>
+          }
+          <div class="flex-1">
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="text-sm text-gray-300">Próxima cita</div>
+                <div class="text-base font-bold">{{ nextAppointment()?.clientName }}</div>
+                <div class="text-xs text-gray-300">{{ getAppointmentTypeLabel(nextAppointment()?.type || '') }}</div>
+              </div>
+              <div class="text-right">
+                <div class="text-sm text-indigo-300">En {{ minutesUntilNext() | minutesToTime }}</div>
+                <button 
+                  (click)="startVideoCall(nextAppointment()!.id)"
+                  class="mt-2 inline-flex items-center gap-2 bg-indigo-600 text-white text-xs font-semibold py-1 px-3 rounded-full hover:bg-indigo-700 transition-colors"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  <span i18n="@@doctorHome.join">Unirse</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <div class="mt-6 text-sm text-gray-400">No hay próxima cita hoy</div>
+      }
+    </div>
+
+    
+
+    <!-- Solicitudes -->
+    <div class="mb-6">
+      <div class="flex justify-between items-center mb-4">
+        <div class="flex items-center gap-3">
+          <h2 class="text-xl font-bold text-gray-900" i18n="@@doctorHome.requests">Solicitudes</h2>
+          @if (pendingRequests() > 0) {
+            <span class="w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+              {{ pendingRequests() }}
+            </span>
+          }
+        </div>
+        <button 
+          (click)="viewAllRequests()"
+          class="text-sm text-indigo-600 font-medium hover:text-indigo-700" 
+          i18n="@@doctorHome.viewAll">
+          Ver todo
+        </button>
+      </div>
+
+      <!-- Request Cards -->
+      @if (requests().length === 0) {
+        <div class="bg-white rounded-2xl shadow-sm p-6 text-center">
+          <div class="text-gray-400 mb-2">
+            <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+            </svg>
+          </div>
+          <p class="text-gray-600 font-medium" i18n="@@doctorHome.noRequests">No hay solicitudes pendientes</p>
+          <p class="text-sm text-gray-500 mt-1" i18n="@@doctorHome.noRequestsDesc">Cuando los pacientes soliciten citas, aparecerán aquí</p>
+        </div>
+      }
+      @for (request of requests(); track request.id) {
+        <div class="bg-white rounded-2xl shadow-sm p-4 mb-3">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-lg font-bold">
+              {{ request.initials }}
+            </div>
+            <div class="flex-1">
+              <h3 class="text-base font-bold text-gray-900">{{ request.name }}</h3>
+              <p class="text-sm text-gray-600">{{ request.type }}</p>
+              <p class="text-xs text-gray-500 mt-1">{{ request.time }}</p>
+            </div>
+          </div>
+          <div class="flex gap-3 mt-4">
+            <button 
+              (click)="acceptRequest(request.id)"
+              class="flex-1 bg-green-50 text-green-600 font-semibold py-2 px-4 rounded-xl hover:bg-green-100 transition-colors"
+              i18n="@@doctorHome.accept">
+              Aceptar
+            </button>
+            <button 
+              (click)="rejectRequest(request.id)"
+              class="flex-1 bg-gray-100 text-gray-600 font-semibold py-2 px-4 rounded-xl hover:bg-gray-200 transition-colors"
+              i18n="@@doctorHome.reject">
+              Rechazar
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+  </div>
+</div>

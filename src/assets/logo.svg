@@ -1,0 +1,8 @@
+<!-- Logo Teraly SVG -->
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-10 h-10">
+  <!-- La T -->
+  <path d="M20 25H80" stroke="currentColor" stroke-width="14" stroke-linecap="round"/>
+  <path d="M50 25V80" stroke="currentColor" stroke-width="14" stroke-linecap="round"/>
+  <!-- El Punto Vital (Verde) -->
+  <circle cx="80" cy="80" r="8" fill="#4ade80" stroke="currentColor" stroke-width="3"/>
+</svg>

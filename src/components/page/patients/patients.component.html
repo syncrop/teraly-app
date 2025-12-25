@@ -1,0 +1,191 @@
+<div class="bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-200 md:relative md:z-auto" style="position: sticky; top: 0; z-index: 9999; padding-top: env(safe-area-inset-top, 0px);">
+    <div class="px-4 py-4">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-2xl font-bold text-gray-900">Pacientes</h1>
+        <div class="flex gap-2">
+          <button class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+          </button>
+          <button class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div class="relative mb-4">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          type="text"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          placeholder="Buscar por nombre..."
+          class="w-full pl-10 pr-4 py-3 bg-gray-100 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors"
+        />
+      </div>
+
+      <!-- Filters -->
+      <div class="flex gap-2">
+        <button
+          (click)="selectFilter('active')"
+          [class.bg-indigo-600]="selectedFilter() === 'active'"
+          [class.text-white]="selectedFilter() === 'active'"
+          [class.bg-gray-100]="selectedFilter() !== 'active'"
+          [class.text-gray-700]="selectedFilter() !== 'active'"
+          class="flex-1 py-2 px-4 rounded-xl font-semibold transition-colors"
+        >
+          Activos ({{ activePatientsCount() }})
+        </button>
+        <button
+          (click)="selectFilter('pending')"
+          [class.bg-indigo-600]="selectedFilter() === 'pending'"
+          [class.text-white]="selectedFilter() === 'pending'"
+          [class.bg-gray-100]="selectedFilter() !== 'pending'"
+          [class.text-gray-700]="selectedFilter() !== 'pending'"
+          class="flex-1 py-2 px-4 rounded-xl font-semibold transition-colors"
+        >
+          Pendientes ({{ pendingPatientsCount() }})
+        </button>
+        <button
+          (click)="selectFilter('archived')"
+          [class.bg-indigo-600]="selectedFilter() === 'archived'"
+          [class.text-white]="selectedFilter() === 'archived'"
+          [class.bg-gray-100]="selectedFilter() !== 'archived'"
+          [class.text-gray-700]="selectedFilter() !== 'archived'"
+          class="flex-1 py-2 px-4 rounded-xl font-semibold transition-colors"
+        >
+          Archivados ({{ archivedPatientsCount() }})
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="p-4">
+    @if (isLoading()) {
+      <!-- Loading Skeleton -->
+      <div class="space-y-3">
+        @for (skeleton of [1,2,3,4,5]; track skeleton) {
+          <div class="bg-white rounded-2xl p-4 animate-pulse">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-gray-200 rounded-full"></div>
+              <div class="flex-1">
+                <div class="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+                <div class="h-3 bg-gray-200 rounded w-24"></div>
+              </div>
+              <div class="w-8 h-8 bg-gray-200 rounded-lg"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (filteredPatients().length === 0) {
+      <!-- Empty State -->
+      <div class="text-center py-12">
+        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </div>
+        <p class="text-gray-600 font-medium mb-1">No hay pacientes</p>
+        <p class="text-sm text-gray-500">Los pacientes aparecerán aquí cuando tengas citas programadas</p>
+      </div>
+    } @else {
+      <!-- Patient List -->
+      <div class="space-y-3">
+        @for (patient of filteredPatients(); track patient.uid) {
+          <button
+            (click)="viewPatientDetail(patient)"
+            class="w-full bg-white rounded-2xl p-4 hover:shadow-md transition-shadow text-left"
+            [class.border-l-4]="patient.status === 'active'"
+            [class.border-indigo-600]="patient.status === 'active'"
+          >
+            <div class="flex items-center gap-3 mb-3">
+              @if (patient.photoURL) {
+                <img [src]="patient.photoURL" [alt]="patient.fullName" class="w-12 h-12 rounded-full object-cover" />
+              } @else {
+                <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <span class="text-lg font-bold text-indigo-600">{{ getInitials(patient.fullName) }}</span>
+                </div>
+              }
+              
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <h3 class="font-bold text-gray-900">{{ patient.fullName }}</h3>
+                  @if (patient.status === 'active') {
+                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                  }
+                </div>
+                
+                @if (patient.nextAppointment) {
+                  <div class="flex items-center gap-1 text-sm text-indigo-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>{{ formatDate(patient.nextAppointment.date) }}, {{ patient.nextAppointment.time }}</span>
+                  </div>
+                } @else if (patient.lastAppointment) {
+                  <div class="flex items-center gap-1 text-sm text-gray-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Mañana, {{ patient.lastAppointment.time }}</span>
+                  </div>
+                } @else {
+                  <div class="flex items-center gap-1 text-sm text-orange-600">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Reprogramar</span>
+                  </div>
+                }
+              </div>
+
+              <button
+                (click)="startChat(patient); $event.stopPropagation()"
+                class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </button>
+            </div>
+
+            <div class="flex items-center justify-between">
+              @if (patient.nextAppointment) {
+                <span class="text-xs text-gray-500">{{ patient.nextAppointment.reason }}</span>
+              } @else if (patient.lastAppointment) {
+                <span class="text-xs text-gray-500">{{ patient.lastAppointment.reason }}</span>
+              } @else {
+                <span class="text-xs text-gray-500">Sin próximas citas</span>
+              }
+              
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+
+            @if (patient.status === 'pending') {
+              <div class="mt-3 pt-3 border-t border-gray-100">
+                <p class="text-xs text-gray-500">
+                  @if (patient.lastAppointment) {
+                    <span>Última cita: {{ getRelativeTime(patient.lastAppointment.date) }}</span>
+                  } @else {
+                    <span>Esperando primera cita</span>
+                  }
+                </p>
+              </div>
+            }
+          </button>
+        }
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,584 @@
+<div class="bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-200 md:relative md:z-auto" style="position: sticky; top: 0; z-index: 9999; padding-top: env(safe-area-inset-top, 0px);">
+    <div class="px-4 py-4">
+      <div class="flex items-center justify-between mb-4">
+        <button (click)="goBack()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <svg class="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        
+        <h1 class="text-2xl font-bold text-gray-900" i18n="@@calendar.title">Calendario</h1>
+        
+        <button (click)="addNewAppointment()" class="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- View Toggle -->
+      <div class="flex gap-2 bg-gray-100 rounded-xl p-1">
+        <button
+          (click)="toggleView('month')"
+          [class.bg-white]="currentView() === 'month'"
+          [class.text-gray-900]="currentView() === 'month'"
+          [class.text-gray-600]="currentView() !== 'month'"
+          [class.shadow-sm]="currentView() === 'month'"
+          class="flex-1 py-2 px-4 rounded-lg font-semibold transition-all"
+        >
+          <span i18n="@@calendar.monthView">Mes</span>
+        </button>
+        <button
+          (click)="toggleView('day')"
+          [class.bg-white]="currentView() === 'day'"
+          [class.text-gray-900]="currentView() === 'day'"
+          [class.text-gray-600]="currentView() !== 'day'"
+          [class.shadow-sm]="currentView() === 'day'"
+          class="flex-1 py-2 px-4 rounded-lg font-semibold transition-all"
+        >
+          <span i18n="@@calendar.dayView">Día</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <!-- Loading Skeleton -->
+    <div class="p-4 space-y-4">
+      <div class="bg-white rounded-2xl p-4 animate-pulse">
+        <div class="flex items-center justify-between mb-4">
+          <div class="h-6 bg-gray-200 rounded w-32"></div>
+          <div class="flex gap-2">
+            <div class="w-8 h-8 bg-gray-200 rounded-lg"></div>
+            <div class="w-8 h-8 bg-gray-200 rounded-lg"></div>
+          </div>
+        </div>
+        <div class="grid grid-cols-7 gap-2">
+          @for (skeleton of [1,2,3,4,5,6,7,8,9,10,11,12,13,14]; track skeleton) {
+            <div class="aspect-square bg-gray-200 rounded-lg"></div>
+          }
+        </div>
+      </div>
+    </div>
+  } @else {
+    <!-- Month View -->
+    @if (currentView() === 'month') {
+      <div class="p-4">
+        <div class="bg-white rounded-2xl p-4 shadow-sm">
+          <!-- Month Navigation -->
+          <div class="flex items-center justify-between mb-4">
+            <button (click)="previousMonth()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            
+            <h2 class="text-xl font-bold text-gray-900">
+              @switch (currentMonth()) {
+                @case (0) { <span i18n="@@calendar.month.january">Enero</span> }
+                @case (1) { <span i18n="@@calendar.month.february">Febrero</span> }
+                @case (2) { <span i18n="@@calendar.month.march">Marzo</span> }
+                @case (3) { <span i18n="@@calendar.month.april">Abril</span> }
+                @case (4) { <span i18n="@@calendar.month.may">Mayo</span> }
+                @case (5) { <span i18n="@@calendar.month.june">Junio</span> }
+                @case (6) { <span i18n="@@calendar.month.july">Julio</span> }
+                @case (7) { <span i18n="@@calendar.month.august">Agosto</span> }
+                @case (8) { <span i18n="@@calendar.month.september">Septiembre</span> }
+                @case (9) { <span i18n="@@calendar.month.october">Octubre</span> }
+                @case (10) { <span i18n="@@calendar.month.november">Noviembre</span> }
+                @case (11) { <span i18n="@@calendar.month.december">Diciembre</span> }
+              }
+              {{ currentYear() }}
+            </h2>
+            
+            <button (click)="nextMonth()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Day Names -->
+          <div class="grid grid-cols-7 gap-2 mb-2">
+            <div class="text-center text-xs font-medium text-gray-500 py-2">
+              <span i18n="@@calendar.day.monday">LU</span>
+            </div>
+            <div class="text-center text-xs font-medium text-gray-500 py-2">
+              <span i18n="@@calendar.day.tuesday">MA</span>
+            </div>
+            <div class="text-center text-xs font-medium text-gray-500 py-2">
+              <span i18n="@@calendar.day.wednesday">MI</span>
+            </div>
+            <div class="text-center text-xs font-medium text-gray-500 py-2">
+              <span i18n="@@calendar.day.thursday">JU</span>
+            </div>
+            <div class="text-center text-xs font-medium text-gray-500 py-2">
+              <span i18n="@@calendar.day.friday">VI</span>
+            </div>
+            <div class="text-center text-xs font-medium text-gray-500 py-2">
+              <span i18n="@@calendar.day.saturday">SA</span>
+            </div>
+            <div class="text-center text-xs font-medium text-gray-500 py-2">
+              <span i18n="@@calendar.day.sunday">DO</span>
+            </div>
+          </div>
+
+          <!-- Calendar Grid -->
+          <div class="space-y-2">
+            @for (week of calendarMonthView(); track $index) {
+              <div class="grid grid-cols-7 gap-2">
+                @for (day of week; track day.date) {
+                  <button
+                    (click)="selectDay(day)"
+                    [disabled]="!day.isAvailable"
+                    [class.opacity-40]="!day.isCurrentMonth"
+                    [class.bg-indigo-600]="day.isToday && day.isAvailable"
+                    [class.text-white]="day.isToday && day.isAvailable"
+                    [class.hover:bg-gray-100]="!day.isToday && day.isAvailable"
+                    [class.bg-gray-100]="!day.isAvailable"
+                    [class.text-gray-400]="!day.isAvailable"
+                    [class.cursor-not-allowed]="!day.isAvailable"
+                    [class.cursor-pointer]="day.isAvailable"
+                    class="relative aspect-square flex flex-col items-center justify-center rounded-xl transition-colors text-sm font-medium touch-manipulation active:scale-95"
+                  >
+                    <span 
+                      [class.text-white]="day.isToday && day.isAvailable" 
+                      [class.text-gray-900]="!day.isToday && day.isAvailable"
+                      [class.text-gray-400]="!day.isAvailable"
+                    >
+                      {{ day.dayNumber }}
+                    </span>
+                    
+                    @if (day.hasAppointments) {
+                      <div class="absolute bottom-1 flex gap-0.5">
+                        @for (apt of day.appointments.slice(0, 3); track apt.id) {
+                          <span
+                            [class.bg-orange-500]="apt.status === 'pending'"
+                            [class.bg-blue-500]="apt.status === 'confirmed'"
+                            [class.bg-green-500]="apt.status === 'completed'"
+                            [class.bg-red-500]="apt.status === 'cancelled'"
+                            [class.bg-white]="day.isToday"
+                            class="w-1 h-1 rounded-full"
+                          ></span>
+                        }
+                      </div>
+                    }
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Today's Appointments -->
+        <div class="mt-4 bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div class="bg-indigo-600 text-white px-4 py-3">
+            <h3 class="font-semibold capitalize">
+              @switch (todayComponents().weekday) {
+                @case (1) { <span i18n="@@calendar.weekday.monday">lunes</span> }
+                @case (2) { <span i18n="@@calendar.weekday.tuesday">martes</span> }
+                @case (3) { <span i18n="@@calendar.weekday.wednesday">miércoles</span> }
+                @case (4) { <span i18n="@@calendar.weekday.thursday">jueves</span> }
+                @case (5) { <span i18n="@@calendar.weekday.friday">viernes</span> }
+                @case (6) { <span i18n="@@calendar.weekday.saturday">sábado</span> }
+                @case (0) { <span i18n="@@calendar.weekday.sunday">domingo</span> }
+              },
+              {{ todayComponents().day }}
+              <span i18n="@@calendar.of">de</span>
+              @switch (todayComponents().month) {
+                @case (0) { <span i18n="@@calendar.monthFull.january">enero</span> }
+                @case (1) { <span i18n="@@calendar.monthFull.february">febrero</span> }
+                @case (2) { <span i18n="@@calendar.monthFull.march">marzo</span> }
+                @case (3) { <span i18n="@@calendar.monthFull.april">abril</span> }
+                @case (4) { <span i18n="@@calendar.monthFull.may">mayo</span> }
+                @case (5) { <span i18n="@@calendar.monthFull.june">junio</span> }
+                @case (6) { <span i18n="@@calendar.monthFull.july">julio</span> }
+                @case (7) { <span i18n="@@calendar.monthFull.august">agosto</span> }
+                @case (8) { <span i18n="@@calendar.monthFull.september">septiembre</span> }
+                @case (9) { <span i18n="@@calendar.monthFull.october">octubre</span> }
+                @case (10) { <span i18n="@@calendar.monthFull.november">noviembre</span> }
+                @case (11) { <span i18n="@@calendar.monthFull.december">diciembre</span> }
+              }
+            </h3>
+            @if (todayAppointments().length > 0) {
+              <p class="text-sm text-indigo-100 mt-1">
+                @if (todayAppointments().length === 1) {
+                  <span>{{ todayAppointments().length }} <span i18n="@@calendar.appointment">cita</span></span>
+                } @else {
+                  <span>{{ todayAppointments().length }} <span i18n="@@calendar.appointments">citas</span></span>
+                }
+              </p>
+            } @else {
+              <p class="text-sm text-indigo-100 mt-1" i18n="@@calendar.noAppointmentsToday">Sin citas programadas</p>
+            }
+          </div>
+
+          <div class="p-4">
+            @if (todayAppointments().length > 0) {
+              <div class="space-y-2">
+                @for (appointment of todayAppointments(); track appointment.id) {
+                  <button
+                    (click)="viewAppointmentDetails(appointment)"
+                    class="w-full text-left p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div class="flex-shrink-0">
+                        <div class="text-sm font-bold text-indigo-600">{{ appointment.startTime }}</div>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-gray-900 text-sm truncate">{{ appointment.clientName }}</p>
+                        @if (appointment.reason) {
+                          <p class="text-xs text-gray-500 truncate">{{ appointment.reason }}</p>
+                        }
+                      </div>
+                      <div class="flex-shrink-0">
+                        <span
+                          [class]="getStatusColor(appointment.status)"
+                          class="inline-block px-2 py-1 rounded-full text-xs font-medium"
+                        >
+                          @switch (appointment.status) {
+                            @case ('pending') { <span i18n="@@calendar.statusPending">Pendiente</span> }
+                            @case ('confirmed') { <span i18n="@@calendar.statusConfirmed">Confirmada</span> }
+                            @case ('completed') { <span i18n="@@calendar.statusCompleted">Completada</span> }
+                            @case ('cancelled') { <span i18n="@@calendar.statusCancelled">Cancelada</span> }
+                            @case ('no-show') { <span i18n="@@calendar.statusNoShow">No asistió</span> }
+                          }
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                }
+              </div>
+            } @else {
+              <div class="text-center py-6">
+                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <p class="text-sm text-gray-600" i18n="@@calendar.noAppointmentsToday">No hay citas hoy</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Day View -->
+    @if (currentView() === 'day') {
+      <div class="p-4">
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <!-- Day Header -->
+          <div class="bg-indigo-600 text-white p-4">
+            <div class="flex items-center justify-between mb-2">
+              <button (click)="toggleView('month')" class="p-1 hover:bg-indigo-700 rounded-lg transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h2 class="text-lg font-semibold capitalize">
+                @switch (selectedDateComponents().weekday) {
+                  @case (1) { <span i18n="@@calendar.weekday.monday">lunes</span> }
+                  @case (2) { <span i18n="@@calendar.weekday.tuesday">martes</span> }
+                  @case (3) { <span i18n="@@calendar.weekday.wednesday">miércoles</span> }
+                  @case (4) { <span i18n="@@calendar.weekday.thursday">jueves</span> }
+                  @case (5) { <span i18n="@@calendar.weekday.friday">viernes</span> }
+                  @case (6) { <span i18n="@@calendar.weekday.saturday">sábado</span> }
+                  @case (0) { <span i18n="@@calendar.weekday.sunday">domingo</span> }
+                },
+                {{ selectedDateComponents().day }}
+                <span i18n="@@calendar.of">de</span>
+                @switch (selectedDateComponents().month) {
+                  @case (0) { <span i18n="@@calendar.monthFull.january">enero</span> }
+                  @case (1) { <span i18n="@@calendar.monthFull.february">febrero</span> }
+                  @case (2) { <span i18n="@@calendar.monthFull.march">marzo</span> }
+                  @case (3) { <span i18n="@@calendar.monthFull.april">abril</span> }
+                  @case (4) { <span i18n="@@calendar.monthFull.may">mayo</span> }
+                  @case (5) { <span i18n="@@calendar.monthFull.june">junio</span> }
+                  @case (6) { <span i18n="@@calendar.monthFull.july">julio</span> }
+                  @case (7) { <span i18n="@@calendar.monthFull.august">agosto</span> }
+                  @case (8) { <span i18n="@@calendar.monthFull.september">septiembre</span> }
+                  @case (9) { <span i18n="@@calendar.monthFull.october">octubre</span> }
+                  @case (10) { <span i18n="@@calendar.monthFull.november">noviembre</span> }
+                  @case (11) { <span i18n="@@calendar.monthFull.december">diciembre</span> }
+                }
+                {{ selectedDateComponents().year }}
+              </h2>
+              <button class="p-1">
+                <!-- Spacer -->
+              </button>
+            </div>
+            
+            @if (selectedDateAppointments().length > 0) {
+              <p class="text-sm text-indigo-100">
+                @if (selectedDateAppointments().length === 1) {
+                  <span>{{ selectedDateAppointments().length }} <span i18n="@@calendar.appointment">cita</span></span>
+                } @else {
+                  <span>{{ selectedDateAppointments().length }} <span i18n="@@calendar.appointments">citas</span></span>
+                }
+              </p>
+            } @else {
+              <p class="text-sm text-indigo-100" i18n="@@calendar.noAppointmentsToday">Sin citas programadas</p>
+            }
+          </div>
+
+          <!-- Appointments List -->
+          <div class="p-4 space-y-3">
+            @if (selectedDateAppointments().length > 0) {
+              @for (appointment of selectedDateAppointments(); track appointment.id) {
+                <button
+                  (click)="viewAppointmentDetails(appointment)"
+                  class="w-full text-left"
+                >
+                  <div
+                    [class.border-l-blue-500]="appointment.status === 'confirmed'"
+                    [class.bg-blue-50]="appointment.status === 'confirmed'"
+                    [class.border-l-orange-500]="appointment.status === 'pending'"
+                    [class.bg-orange-50]="appointment.status === 'pending'"
+                    [class.border-l-green-500]="appointment.status === 'completed'"
+                    [class.bg-green-50]="appointment.status === 'completed'"
+                    [class.border-l-red-500]="appointment.status === 'cancelled'"
+                    [class.bg-red-50]="appointment.status === 'cancelled'"
+                    class="border-l-4 rounded-r-xl p-4 hover:shadow-md transition-shadow"
+                  >
+                    <div class="flex items-start gap-3">
+                      <!-- Time -->
+                      <div class="flex-shrink-0 text-center">
+                        <div class="text-sm font-bold text-gray-900">{{ appointment.startTime }}</div>
+                        <div class="text-xs text-gray-500">{{ appointment.startTime.includes('PM') ? 'PM' : 'AM' }}</div>
+                      </div>
+
+                      <!-- Client Info -->
+                      <div class="flex-1 min-w-0">
+                        <h3 class="font-bold text-gray-900 mb-1">{{ appointment.clientName }}</h3>
+                        @if (appointment.reason) {
+                          <p class="text-sm text-indigo-600 mb-1">
+                            @if (appointment.type === 'video') {
+                              <span i18n="@@calendar.video">Video</span>
+                            } @else if (appointment.type === 'audio') {
+                              <span i18n="@@calendar.audio">Audio</span>
+                            } @else {
+                              <span i18n="@@calendar.chat">Chat</span>
+                            }
+                            • {{ appointment.reason }}
+                          </p>
+                        }
+                        
+                        <!-- Status Badge -->
+                        <span
+                          [class]="getStatusColor(appointment.status)"
+                          class="inline-block px-2 py-1 rounded-full text-xs font-medium"
+                        >
+                          @switch (appointment.status) {
+                            @case ('pending') { <span i18n="@@calendar.statusPending">Pendiente</span> }
+                            @case ('confirmed') { <span i18n="@@calendar.statusConfirmed">Confirmada</span> }
+                            @case ('completed') { <span i18n="@@calendar.statusCompleted">Completada</span> }
+                            @case ('cancelled') { <span i18n="@@calendar.statusCancelled">Cancelada</span> }
+                            @case ('no-show') { <span i18n="@@calendar.statusNoShow">No asistió</span> }
+                          }
+                        </span>
+                      </div>
+
+                      <!-- Actions -->
+                      <button class="p-2 hover:bg-white rounded-lg transition-colors">
+                        <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </button>
+              }
+            } @else {
+              <!-- Empty State -->
+              <div class="text-center py-12">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <p class="text-gray-600 font-medium mb-1" i18n="@@calendar.noAppointmentsThisDay">No hay citas este día</p>
+                <p class="text-sm text-gray-500" i18n="@@calendar.agendaFree">Tu agenda está libre</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  }
+
+  <!-- Appointment Detail Modal -->
+  @if (showAppointmentModal() && selectedAppointment()) {
+    <div class="fixed pb-2 inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white pb-10 rounded-t-3xl sm:rounded-3xl w-full max-w-md max-h-[85vh] overflow-y-auto animate-slide-up">
+        <!-- Modal Header -->
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+          <h3 class="text-lg font-bold text-gray-900" i18n="@@calendar.appointmentDetails">Detalles de la cita</h3>
+          <button (click)="closeAppointmentModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modal Content -->
+        <div class="p-4 space-y-4">
+          <!-- Client Info -->
+          <div class="flex items-center gap-3">
+            @if (selectedAppointment()!.clientPhoto) {
+              <img
+                [src]="selectedAppointment()!.clientPhoto"
+                [alt]="selectedAppointment()!.clientName"
+                class="w-12 h-12 rounded-full object-cover"
+              />
+            } @else {
+              <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
+                <span class="text-lg font-bold text-indigo-600">
+                  {{ selectedAppointment()!.clientName.charAt(0) }}
+                </span>
+              </div>
+            }
+            
+            <div class="flex-1">
+              <h4 class="font-bold text-gray-900">{{ selectedAppointment()!.clientName }}</h4>
+              <span
+                [class]="getStatusColor(selectedAppointment()!.status)"
+                class="inline-block px-2 py-0.5 rounded-full text-xs font-medium mt-1"
+              >
+                @switch (selectedAppointment()!.status) {
+                  @case ('pending') { <span i18n="@@calendar.statusPending">Pendiente</span> }
+                  @case ('confirmed') { <span i18n="@@calendar.statusConfirmed">Confirmada</span> }
+                  @case ('completed') { <span i18n="@@calendar.statusCompleted">Completada</span> }
+                  @case ('cancelled') { <span i18n="@@calendar.statusCancelled">Cancelada</span> }
+                  @case ('no-show') { <span i18n="@@calendar.statusNoShow">No asistió</span> }
+                }
+              </span>
+            </div>
+          </div>
+
+          <!-- Date & Time -->
+          <div class="bg-gray-50 rounded-xl p-3 space-y-2">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <div>
+                <p class="text-xs text-gray-500" i18n="@@calendar.date">Fecha</p>
+                <p class="text-sm font-semibold text-gray-900">{{ selectedAppointment()!.date }}</p>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p class="text-xs text-gray-500" i18n="@@calendar.schedule">Horario</p>
+                <p class="text-sm font-semibold text-gray-900">{{ selectedAppointment()!.startTime }} - {{ selectedAppointment()!.endTime }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <div>
+                <p class="text-xs text-gray-500" i18n="@@calendar.type">Tipo</p>
+                <p class="text-sm font-semibold text-gray-900">
+                  @if (selectedAppointment()!.type === 'video') {
+                    <span i18n="@@calendar.videoCall">Videollamada</span>
+                  } @else if (selectedAppointment()!.type === 'audio') {
+                    <span i18n="@@calendar.audioCall">Llamada de audio</span>
+                  } @else {
+                    <span i18n="@@calendar.chat">Chat</span>
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reason -->
+          @if (selectedAppointment()!.reason) {
+            <div>
+              <p class="text-xs font-medium text-gray-500 mb-1" i18n="@@calendar.reason">Motivo</p>
+              <p class="text-sm text-gray-900">{{ selectedAppointment()!.reason }}</p>
+            </div>
+          }
+
+          <!-- Notes -->
+          @if (selectedAppointment()!.notes) {
+            <div>
+              <p class="text-xs font-medium text-gray-500 mb-1" i18n="@@calendar.notes">Notas</p>
+              <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-2">
+                <p class="text-gray-900 text-sm">{{ selectedAppointment()!.notes }}</p>
+              </div>
+            </div>
+          }
+
+          <!-- Price -->
+          <div class="bg-indigo-50 rounded-xl p-3">
+            <p class="text-xs text-indigo-600 mb-1" i18n="@@calendar.priceConfig">Precio de la sesión</p>
+            <p class="text-xl font-bold text-indigo-900">
+              {{ selectedAppointment()!.price }}{{ selectedAppointment()!.currency === 'EUR' ? '€' : '$' }}
+            </p>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex gap-2">
+            @if (selectedAppointment()!.status === 'pending') {
+              <button
+                (click)="confirmAppointment(selectedAppointment()!.id)"
+                class="flex-1 py-2.5 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span i18n="@@calendar.confirmAppointment">Confirmar</span>
+              </button>
+              <button
+                (click)="cancelAppointment(selectedAppointment()!.id)"
+                class="flex-1 py-2.5 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <span i18n="@@calendar.cancelAppointment">Cancelar</span>
+              </button>
+            }
+            
+            @if (selectedAppointment()!.status === 'confirmed') {
+              <button 
+                (click)="startVideoCall(selectedAppointment()!.id)"
+                class="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <span i18n="@@calendar.startSession">Iniciar sesión</span>
+              </button>
+              <button
+                (click)="completeAppointment(selectedAppointment()!.id)"
+                class="px-4 py-2.5 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span i18n="@@calendar.end">Finalizar</span>
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Add Appointment Modal -->
+  @if (showAddAppointmentModal()) {
+    <app-add-appointment-modal
+      [selectedDate]="selectedDate()"
+      (close)="closeAddAppointmentModal()"
+      (appointmentCreated)="onAppointmentCreated()"
+    />
+  }
+</div>

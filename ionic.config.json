@@ -1,0 +1,7 @@
+{
+  "name": "teraly",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

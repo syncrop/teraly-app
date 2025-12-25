@@ -1,0 +1,254 @@
+.video-call-container {
+  height: 100vh;
+  background-color: #1a202c;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: white;
+  font-size: 20px;
+}
+
+.video-call-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-video {
+  flex: 1;
+  position: relative;
+  background-color: #000;
+}
+
+.video-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.participant-info {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  color: white;
+  z-index: 10;
+}
+
+.participant-info h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.video-feed {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.remote-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-status {
+  color: white;
+  font-size: 18px;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 12px 24px;
+  border-radius: 8px;
+  position: absolute;
+  z-index: 5;
+}
+
+.self-video {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  width: 240px;
+  height: 180px;
+  background-color: #2d3748;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 3px solid #4a5568;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  z-index: 20;
+}
+
+.video-feed-small {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+  position: relative;
+}
+
+.local-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Mirror effect for self video */
+}
+
+.video-feed-small .video-status {
+  font-size: 14px;
+  padding: 8px 16px;
+  position: absolute;
+  z-index: 5;
+}
+
+.call-info {
+  background-color: rgba(26, 32, 44, 0.95);
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.call-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.appointment-details h3 {
+  color: white;
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.appointment-details p {
+  color: #a0aec0;
+  margin: 0;
+  font-size: 14px;
+}
+
+.call-timer {
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+}
+
+.call-controls {
+  background-color: rgba(26, 32, 44, 0.95);
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+}
+
+.control-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background-color: #4a5568;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.control-btn:hover {
+  background-color: #2d3748;
+  transform: scale(1.05);
+}
+
+.control-btn.active {
+  background-color: #3b82f6;
+}
+
+.control-btn.active:hover {
+  background-color: #2563eb;
+}
+
+.control-btn.end-call {
+  background-color: #ef4444;
+  width: 64px;
+  height: 64px;
+}
+
+.control-btn.end-call:hover {
+  background-color: #dc2626;
+  transform: scale(1.05);
+}
+
+.control-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.control-btn.end-call svg {
+  width: 28px;
+  height: 28px;
+}
+
+@media (max-width: 768px) {
+  .self-video {
+    width: 160px;
+    height: 120px;
+    bottom: 100px;
+    right: 16px;
+  }
+
+  .participant-info {
+    top: 16px;
+    left: 16px;
+  }
+
+  .participant-info h2 {
+    font-size: 18px;
+  }
+
+  .call-info {
+    padding: 12px 16px;
+  }
+
+  .call-header {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .control-btn {
+    width: 48px;
+    height: 48px;
+  }
+
+  .control-btn.end-call {
+    width: 56px;
+    height: 56px;
+  }
+
+  .control-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .control-btn.end-call svg {
+    width: 24px;
+    height: 24px;
+  }
+}

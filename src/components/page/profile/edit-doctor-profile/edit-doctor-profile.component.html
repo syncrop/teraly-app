@@ -1,0 +1,240 @@
+<div class="bg-gray-50 min-h-screen pb-6">
+  <div class="bg-white shadow-sm sticky top-0 z-10">
+    <div class="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
+      <button (click)="goBack()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+        <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <h1 class="text-2xl font-bold text-gray-900" i18n="@@editProfile.title">Editar Perfil Profesional</h1>
+    </div>
+  </div>
+
+  <div class="max-w-2xl mx-auto px-4 py-6">
+    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="space-y-6">
+      
+      <!-- Nombre Completo -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2" i18n="@@editProfile.fullName">Nombre Completo *</label>
+        <input
+          formControlName="fullName"
+          type="text"
+          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          placeholder="Dr. Juan Pérez"
+        />
+        @if (profileForm.get('fullName')?.hasError('required') && profileForm.get('fullName')?.touched) {
+          <p class="text-red-500 text-xs mt-1" i18n="@@editProfile.fullNameRequired">El nombre es requerido</p>
+        }
+      </div>
+
+      <!-- Número de Licencia -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2" i18n="@@editProfile.licenseNumber">Número de Licencia *</label>
+        <input
+          formControlName="licenseNumber"
+          type="text"
+          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          placeholder="2894012"
+        />
+        @if (profileForm.get('licenseNumber')?.hasError('required') && profileForm.get('licenseNumber')?.touched) {
+          <p class="text-red-500 text-xs mt-1" i18n="@@editProfile.licenseRequired">El número de licencia es requerido</p>
+        }
+      </div>
+
+      <!-- Especialidad Principal -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2" i18n="@@editProfile.specialty">Especialidad Principal *</label>
+        <input
+          formControlName="specialty"
+          type="text"
+          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          placeholder="Psicólogo Clínico"
+        />
+        @if (profileForm.get('specialty')?.hasError('required') && profileForm.get('specialty')?.touched) {
+          <p class="text-red-500 text-xs mt-1" i18n="@@editProfile.specialtyRequired">La especialidad es requerida</p>
+        }
+      </div>
+
+      <!-- Descripción / Bio -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2" i18n="@@editProfile.description">Descripción Profesional *</label>
+        <textarea
+          formControlName="description"
+          rows="5"
+          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+          placeholder="Cuéntanos sobre tu experiencia, enfoque terapéutico y cómo puedes ayudar a tus pacientes..."
+          i18n-placeholder="@@editProfile.descriptionPlaceholder"
+        ></textarea>
+        <div class="flex items-center justify-between mt-1">
+          <div>
+            @if (profileForm.get('description')?.hasError('required') && profileForm.get('description')?.touched) {
+              <p class="text-red-500 text-xs" i18n="@@editProfile.descriptionRequired">La descripción es requerida</p>
+            }
+            @if (profileForm.get('description')?.hasError('minlength')) {
+              <p class="text-red-500 text-xs" i18n="@@editProfile.descriptionMinLength">Mínimo 50 caracteres</p>
+            }
+          </div>
+          <span class="text-xs text-gray-500">
+            {{ profileForm.get('description')?.value?.length || 0 }}/500
+          </span>
+        </div>
+      </div>
+
+      <!-- Idiomas -->
+      <div class="relative">
+        <label class="block text-sm font-semibold text-gray-700 mb-2" i18n="@@editProfile.languages">Idiomas que hablas *</label>
+        <button
+          type="button"
+          (click)="toggleLanguagesDropdown()"
+          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-left flex items-center justify-between"
+        >
+          <span [class.text-gray-400]="!profileForm.get('languages')?.value?.length">
+            {{ getSelectedLanguagesDisplay() }}
+          </span>
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        @if (showLanguagesDropdown()) {
+          <div class="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+            @for (language of availableLanguages; track language.code) {
+              <label class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors">
+                <input
+                  type="checkbox"
+                  [checked]="isLanguageSelected(language.code)"
+                  (change)="toggleLanguage(language.code)"
+                  class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <span class="ml-3 text-sm text-gray-900">{{ language.flag }} {{ language.name }}</span>
+              </label>
+            }
+          </div>
+        }
+        @if (profileForm.get('languages')?.hasError('required') && profileForm.get('languages')?.touched) {
+          <p class="text-red-500 text-xs mt-1" i18n="@@editProfile.languagesRequired">Debes seleccionar al menos un idioma</p>
+        }
+      </div>
+
+      <!-- Especialidades -->
+      <div class="relative">
+        <label class="block text-sm font-semibold text-gray-700 mb-2" i18n="@@editProfile.specialties">Áreas de Especialización *</label>
+        <button
+          type="button"
+          (click)="toggleSpecialtiesDropdown()"
+          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-left flex items-center justify-between"
+        >
+          <span [class.text-gray-400]="!profileForm.get('specialties')?.value?.length">
+            {{ getSelectedSpecialtiesDisplay() }}
+          </span>
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        @if (showSpecialtiesDropdown()) {
+          <div class="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+            @for (specialty of availableSpecialties; track specialty.id) {
+              <label class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors">
+                <input
+                  type="checkbox"
+                  [checked]="isSpecialtySelected(specialty.id)"
+                  (change)="toggleSpecialty(specialty.id)"
+                  class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <span class="ml-3 text-sm text-gray-900">{{ specialty.name }}</span>
+              </label>
+            }
+          </div>
+        }
+        @if (profileForm.get('specialties')?.hasError('required') && profileForm.get('specialties')?.touched) {
+          <p class="text-red-500 text-xs mt-1" i18n="@@editProfile.specialtiesRequired">Debes seleccionar al menos una especialidad</p>
+        }
+      </div>
+
+      <!-- Moneda -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">Moneda *</label>
+        <select
+          formControlName="currency"
+          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+        >
+          <option value="EUR">EUR (€)</option>
+          <option value="USD">USD ($)</option>
+          <option value="GBP">GBP (£)</option>
+          <option value="PLN">PLN (zł)</option>
+          <option value="UAH">UAH (₴)</option>
+        </select>
+        @if (profileForm.get('currency')?.hasError('required') && profileForm.get('currency')?.touched) {
+          <p class="text-red-500 text-xs mt-1">La moneda es requerida</p>
+        }
+      </div>
+
+      <!-- Precio por Sesión -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2" i18n="@@editProfile.price">Precio por Sesión *</label>
+        <input
+          formControlName="price"
+          type="number"
+          min="1"
+          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          placeholder="50"
+        />
+        @if (profileForm.get('price')?.hasError('required') && profileForm.get('price')?.touched) {
+          <p class="text-red-500 text-xs mt-1" i18n="@@editProfile.priceRequired">El precio es requerido</p>
+        }
+        @if (profileForm.get('price')?.hasError('min')) {
+          <p class="text-red-500 text-xs mt-1" i18n="@@editProfile.priceMin">El precio debe ser mayor a 0</p>
+        }
+      </div>
+
+      <!-- Duración de Sesión -->
+      <!-- <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">Duración de Sesión (minutos) *</label>
+        <select
+          formControlName="sessionDuration"
+          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+        >
+          <option value="30">30 minutos</option>
+          <option value="45">45 minutos</option>
+          <option value="50">50 minutos</option>
+          <option value="60">60 minutos</option>
+        </select>
+        @if (profileForm.get('sessionDuration')?.hasError('required') && profileForm.get('sessionDuration')?.touched) {
+          <p class="text-red-500 text-xs mt-1">La duración de sesión es requerida</p>
+        }
+      </div> -->
+
+      <!-- Años de Experiencia -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2" i18n="@@editProfile.experience">Años de Experiencia *</label>
+        <input
+          formControlName="experience"
+          type="number"
+          min="0"
+          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          placeholder="8"
+        />
+        @if (profileForm.get('experience')?.hasError('required') && profileForm.get('experience')?.touched) {
+          <p class="text-red-500 text-xs mt-1" i18n="@@editProfile.experienceRequired">Los años de experiencia son requeridos</p>
+        }
+      </div>
+
+      <!-- Botón Guardar -->
+      <div class="pt-4">
+        <button
+          type="submit"
+          [disabled]="profileForm.invalid || isLoading()"
+          class="w-full bg-indigo-600 text-white font-semibold py-4 rounded-xl hover:bg-indigo-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          @if (isLoading()) {
+            <span i18n="@@editProfile.saving">Guardando...</span>
+          } @else {
+            <span i18n="@@editProfile.saveButton">Guardar Perfil</span>
+          }
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
