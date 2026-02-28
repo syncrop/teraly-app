@@ -1,20 +1,24 @@
 import { ChangeDetectionStrategy, Component, inject, signal, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-import { ToastService } from '../../../services/toast.service';
-import { AuthService } from '../../../services/auth.service';
-import { UserService } from '../../../services/user.service';
-import { FavoritesService } from '../../../services/favorites.service';
-import { AppointmentService } from '../../../services/appointment.service';
-import { CurrencySymbolPipe } from '../../shared/pipes/currency-symbol.pipe';
-import { Doctor, AvailableDay, Review } from '../../../models/doctor.model';
+import { ToastService } from '../../../../services/toast.service';
+import { AuthService } from '../../../../services/auth.service';
+import { UserService } from '../../../../services/user.service';
+import { FavoritesService } from '../../../../services/favorites.service';
+import { AppointmentService } from '../../../../services/appointment.service';
+import { ReviewService } from '../../../../services/review.service';
+import { CurrencySymbolPipe } from '../../../shared/pipes/currency-symbol.pipe';
+import { Doctor, AvailableDay } from '../../../../models/doctor.model';
+import { DoctorReview } from '../../../../models/review.model';
 import { Firestore, doc, getDoc } from '@angular/fire/firestore';
-import { DaySchedule, BlockedDate } from '../../../models/availability.model';
+import { DaySchedule, BlockedDate } from '../../../../models/availability.model';
 
 interface AvailableTimeSlot {
   time: string;
   available: boolean;
 }
+
+type WeekdayKey = 'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday';
 
 @Component({
   selector: 'app-doctor-detail',
@@ -32,6 +36,7 @@ export class DoctorDetailComponent implements OnInit {
   private userService = inject(UserService);
   private favoritesService = inject(FavoritesService);
   private appointmentService = inject(AppointmentService);
+  private reviewService = inject(ReviewService);
   private firestore = inject(Firestore);
 
   @ViewChild('availabilitySection') availabilitySection?: ElementRef;
@@ -45,27 +50,22 @@ export class DoctorDetailComponent implements OnInit {
   currentUserId = signal<string>('');
 
   // Available days
-  availableDays = signal<AvailableDay[]>([
-    { date: '24', dayName: 'Hoy', dayNumber: '24', available: true },
-    { date: '25', dayName: 'Mie', dayNumber: '25', available: false },
-    { date: '26', dayName: 'Jue', dayNumber: '26', available: true },
-    { date: '27', dayName: 'Vie', dayNumber: '27', available: false }
-  ]);
+  availableDays = signal<AvailableDay[]>([]);
 
   // Time slots for selected day with availability status
   timeSlots = signal<AvailableTimeSlot[]>([]);
   isLoadingSlots = signal(false);
 
   // Reviews
-  reviews = signal<Review[]>([
-    {
-      id: 1,
-      name: 'Marta G.',
-      avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-      rating: 5,
-      comment: 'El Dr. Javier me ayudó muchísimo con mi ansiedad social. Desde la segunda sesión noté cambios...'
-    }
-  ]);
+  reviews = signal<DoctorReview[]>([]);
+  isLoadingReviews = signal(false);
+  myReview = signal<DoctorReview | null>(null);
+  canCreateReview = signal(false);
+  completedAppointmentIdForReview = signal<string | null>(null);
+
+  reviewRating = signal<number>(5);
+  reviewComment = signal<string>('');
+  isSubmittingReview = signal(false);
 
   // Doctor data from backend
   doctor = signal<Doctor | null>(null);
@@ -78,6 +78,16 @@ export class DoctorDetailComponent implements OnInit {
   private doctorSessionDuration = 60;
   private doctorBreakTime = 15;
   private blockedDates: BlockedDate[] = [];
+
+  private readonly weekdayKeys: readonly WeekdayKey[] = [
+    'sunday',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+  ];
 
   ngOnInit() {
     window.scrollTo(0, 0);
@@ -100,6 +110,10 @@ export class DoctorDetailComponent implements OnInit {
         this.isOwnProfile.set(isDoctor && isSameUser);
         
         this.loadDoctorData(id);
+
+        // Reviews
+        this.loadReviews(id);
+        this.refreshReviewEligibility(id);
         
         // Solo verificar favoritos si NO es el propio perfil
         if (!this.isOwnProfile()) {
@@ -107,6 +121,140 @@ export class DoctorDetailComponent implements OnInit {
         }
       }
     });
+  }
+
+  private loadReviews(doctorId: string) {
+    this.isLoadingReviews.set(true);
+    this.reviewService.getDoctorReviews(doctorId).subscribe({
+      next: (reviews) => {
+        this.reviews.set(reviews);
+        this.isLoadingReviews.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading reviews:', err);
+        this.isLoadingReviews.set(false);
+      }
+    });
+  }
+
+  private refreshReviewEligibility(doctorId: string) {
+    const user = this.authService.currentUser();
+    const userId = this.currentUserId();
+
+    if (!userId || !user || user.role !== 'client') {
+      this.canCreateReview.set(false);
+      this.myReview.set(null);
+      this.completedAppointmentIdForReview.set(null);
+      return;
+    }
+
+    // 1) Check if user already reviewed this doctor
+    this.reviewService.getReviewForDoctor(doctorId, userId).subscribe({
+      next: (existing) => {
+        this.myReview.set(existing);
+        if (existing) {
+          this.canCreateReview.set(false);
+          this.completedAppointmentIdForReview.set(null);
+          return;
+        }
+
+        // 2) Find a completed appointment for this doctor
+        this.appointmentService.getClientAppointments(userId).subscribe({
+          next: (appointments) => {
+            const completed = (appointments ?? [])
+              .filter(a => a.doctorId === doctorId && a.status === 'completed' && !!a.id)
+              .sort((a, b) => {
+                const dateCompare = (b.date ?? '').localeCompare(a.date ?? '');
+                if (dateCompare !== 0) return dateCompare;
+                return (b.startTime ?? '').localeCompare(a.startTime ?? '');
+              });
+
+            const apt = completed[0];
+            if (apt?.id) {
+              this.completedAppointmentIdForReview.set(apt.id);
+              this.canCreateReview.set(true);
+            } else {
+              this.completedAppointmentIdForReview.set(null);
+              this.canCreateReview.set(false);
+            }
+          },
+          error: () => {
+            this.completedAppointmentIdForReview.set(null);
+            this.canCreateReview.set(false);
+          }
+        });
+      },
+      error: () => {
+        this.canCreateReview.set(false);
+        this.myReview.set(null);
+        this.completedAppointmentIdForReview.set(null);
+      }
+    });
+  }
+
+  submitReview() {
+    const doctorId = this.doctorId();
+    const user = this.authService.currentUser();
+    const userId = this.currentUserId();
+    const appointmentId = this.completedAppointmentIdForReview();
+
+    if (!doctorId || !userId || !user || user.role !== 'client') {
+      this.toastService.error('Debes iniciar sesión como paciente para dejar una reseña');
+      return;
+    }
+
+    if (!appointmentId) {
+      this.toastService.error('Necesitas haber completado una cita para dejar una reseña');
+      return;
+    }
+
+    const rating = this.reviewRating();
+    const comment = this.reviewComment().trim();
+    if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
+      this.toastService.error('Selecciona una calificación válida (1-5)');
+      return;
+    }
+    if (!comment) {
+      this.toastService.error('Escribe un comentario');
+      return;
+    }
+
+    this.isSubmittingReview.set(true);
+    this.reviewService.createReview({
+      doctorId,
+      clientId: userId,
+      appointmentId,
+      rating,
+      comment,
+      clientName: user.fullName || user.email || 'Usuario',
+      clientAvatar: user.photoURL ?? null,
+    }).subscribe({
+      next: (ok) => {
+        this.isSubmittingReview.set(false);
+        if (ok) {
+          this.toastService.success('¡Reseña enviada!');
+          this.reviewComment.set('');
+          this.reviewRating.set(5);
+          this.loadReviews(doctorId);
+          this.refreshReviewEligibility(doctorId);
+        } else {
+          this.toastService.error('No se pudo enviar la reseña');
+        }
+      },
+      error: (err) => {
+        console.error('Error submitting review:', err);
+        this.isSubmittingReview.set(false);
+        this.toastService.error('Error al enviar la reseña');
+      }
+    });
+  }
+
+  setReviewRating(rating: number) {
+    this.reviewRating.set(rating);
+  }
+
+  onReviewCommentInput(value: string) {
+    this.reviewComment.set(value);
   }
 
   checkIfFavorite(doctorId: string) {
@@ -144,8 +292,11 @@ export class DoctorDetailComponent implements OnInit {
             verified: doctorData.isVerified || false
           });
 
-          // Load doctor availability
-          this.loadDoctorAvailability(doctorId);
+          // Load doctor availability (prefer data already fetched by UserService, fallback to Firestore getDoc)
+          const appliedFromDoctorData = this.applyAvailabilityFromDoctorData(doctorData);
+          if (!appliedFromDoctorData) {
+            this.loadDoctorAvailability(doctorId);
+          }
         } else {
           this.toastService.error('Doctor no encontrado');
           this.goBack();
@@ -168,48 +319,204 @@ export class DoctorDetailComponent implements OnInit {
       
       if (doctorDoc.exists()) {
         const data = doctorDoc.data();
-        const availability = data['availability'] as DaySchedule[] || [];
-        const blockedDates = data['blockedDates'] as BlockedDate[] || [];
-        const sessionDuration = Number(data['sessionDuration']) || 60;
-        const breakTime = Number(data['breakTime']) || 15;
-        
-        // Store configuration for later use
-        this.doctorAvailability = availability;
-        this.doctorSessionDuration = sessionDuration;
-        this.doctorBreakTime = breakTime;
-        this.blockedDates = blockedDates;
-        
-        // Generate available days for next 14 days
-        const generatedDays = this.generateAvailableDays(availability, blockedDates);
-        this.availableDays.set(generatedDays);
-        
-        // If there's at least one available day, select it and calculate time slots
-        if (generatedDays.length > 0) {
-          const firstAvailableDay = generatedDays.find(d => d.available);
-          if (firstAvailableDay) {
-            this.selectedDay.set(firstAvailableDay.date);
-            this.calculateTimeSlotsWithAvailability(firstAvailableDay.date);
-          }
-        }
+        const availability = this.parseDayScheduleList(data['availability']);
+        const blockedDates = this.parseBlockedDateList(data['blockedDates']);
+        const sessionDuration = this.parseNumberValue(data['sessionDuration']) ?? 60;
+        const breakTime = this.parseNumberValue(data['breakTime']) ?? 15;
+
+        this.applyAvailabilityConfig(availability, blockedDates, sessionDuration, breakTime);
       }
     } catch (error) {
       console.error('Error al cargar disponibilidad del doctor:', error);
     }
   }
 
+  private applyAvailabilityFromDoctorData(doctorData: any): boolean {
+    const source = doctorData?.fields ? doctorData.fields : doctorData;
+
+    const availability = this.parseDayScheduleList(source?.availability);
+    const blockedDates = this.parseBlockedDateList(source?.blockedDates);
+    const sessionDuration = this.parseNumberValue(source?.sessionDuration) ?? 60;
+    const breakTime = this.parseNumberValue(source?.breakTime) ?? 15;
+
+    if (
+      availability.length === 0 &&
+      blockedDates.length === 0 &&
+      source?.sessionDuration == null &&
+      source?.breakTime == null
+    ) {
+      return false;
+    }
+
+    this.applyAvailabilityConfig(availability, blockedDates, sessionDuration, breakTime);
+    return true;
+  }
+
+  private applyAvailabilityConfig(
+    availability: DaySchedule[],
+    blockedDates: BlockedDate[],
+    sessionDuration: number,
+    breakTime: number,
+  ) {
+    this.doctorAvailability = availability;
+    this.doctorSessionDuration = sessionDuration;
+    this.doctorBreakTime = breakTime;
+    this.blockedDates = blockedDates;
+
+    const generatedDays = this.generateAvailableDays(availability, blockedDates);
+    this.availableDays.set(generatedDays);
+
+    const firstAvailableDay = generatedDays.find(d => d.available);
+    if (firstAvailableDay) {
+      this.selectedDay.set(firstAvailableDay.date);
+      this.calculateTimeSlotsWithAvailability(firstAvailableDay.date);
+    }
+  }
+
+  private parseDayScheduleList(raw: unknown): DaySchedule[] {
+    if (Array.isArray(raw)) {
+      // Native REST conversion returns arrays with mapValue wrappers for complex objects.
+      const looksLikeTypedMaps = raw.some((v: any) => v?.mapValue?.fields);
+      if (looksLikeTypedMaps) {
+        return (raw as any[])
+          .map((v: any): DaySchedule | null => {
+            const fields = v?.mapValue?.fields;
+            if (!fields) return null;
+
+            const day = this.parseStringValue(fields.day) ?? '';
+            const enabled = this.parseBooleanValue(fields.enabled) ?? false;
+            const isExpanded = this.parseBooleanValue(fields.isExpanded) ?? false;
+            const dayName = this.parseStringValue(fields.dayName) ?? '';
+
+            const slotsRaw = fields.slots;
+            const slotsValues = slotsRaw?.arrayValue?.values;
+            const slots = Array.isArray(slotsValues)
+              ? slotsValues
+                  .map((sv: any): { start: string; end: string } | null => {
+                    const slotFields = sv?.mapValue?.fields;
+                    if (!slotFields) return null;
+                    const start = this.parseStringValue(slotFields.start) ?? '';
+                    const end = this.parseStringValue(slotFields.end) ?? '';
+                    if (!start || !end) return null;
+                    return { start, end };
+                  })
+                  .filter(Boolean) as { start: string; end: string }[]
+              : [];
+
+            if (!day) return null;
+
+            return {
+              day,
+              dayName,
+              enabled,
+              slots,
+              isExpanded,
+            };
+          })
+          .filter(Boolean) as DaySchedule[];
+      }
+
+      // Already a plain DaySchedule[]
+      return raw as DaySchedule[];
+    }
+
+    const values = (raw as any)?.arrayValue?.values;
+    if (!Array.isArray(values)) return [];
+
+    return values
+      .map((v: any): DaySchedule | null => {
+        const fields = v?.mapValue?.fields;
+        if (!fields) return null;
+
+        const day = this.parseStringValue(fields.day) ?? '';
+        const enabled = this.parseBooleanValue(fields.enabled) ?? false;
+        const isExpanded = this.parseBooleanValue(fields.isExpanded) ?? false;
+        const slotsRaw = fields.slots;
+        const slotsValues = slotsRaw?.arrayValue?.values;
+        const slots = Array.isArray(slotsValues)
+          ? slotsValues
+              .map((sv: any): { start: string; end: string } | null => {
+                const slotFields = sv?.mapValue?.fields;
+                if (!slotFields) return null;
+                const start = this.parseStringValue(slotFields.start) ?? '';
+                const end = this.parseStringValue(slotFields.end) ?? '';
+                if (!start || !end) return null;
+                return { start, end };
+              })
+              .filter(Boolean) as { start: string; end: string }[]
+          : [];
+
+        if (!day) return null;
+
+        return {
+          day,
+          dayName: '',
+          enabled,
+          slots,
+          isExpanded,
+        };
+      })
+      .filter(Boolean) as DaySchedule[];
+  }
+
+  private parseBlockedDateList(raw: unknown): BlockedDate[] {
+    if (Array.isArray(raw)) return raw as BlockedDate[];
+
+    const values = (raw as any)?.arrayValue?.values;
+    if (!Array.isArray(values)) return [];
+
+    return values
+      .map((v: any): BlockedDate | null => {
+        const fields = v?.mapValue?.fields;
+        if (!fields) return null;
+        const startDate = this.parseStringValue(fields.startDate) ?? '';
+        const endDate = this.parseStringValue(fields.endDate) ?? '';
+        const reason = this.parseStringValue(fields.reason) ?? '';
+        const dateRange = this.parseStringValue(fields.dateRange) ?? '';
+        if (!startDate || !endDate) return null;
+        return { startDate, endDate, reason, dateRange };
+      })
+      .filter(Boolean) as BlockedDate[];
+  }
+
+  private parseStringValue(v: any): string | null {
+    if (typeof v === 'string') return v;
+    if (v?.stringValue != null) return String(v.stringValue);
+    return null;
+  }
+
+  private parseBooleanValue(v: any): boolean | null {
+    if (typeof v === 'boolean') return v;
+    if (v?.booleanValue != null) return Boolean(v.booleanValue);
+    return null;
+  }
+
+  private parseNumberValue(v: any): number | null {
+    if (typeof v === 'number' && Number.isFinite(v)) return v;
+    if (typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v))) return Number(v);
+    if (v?.stringValue != null && String(v.stringValue).trim() !== '' && Number.isFinite(Number(v.stringValue))) {
+      return Number(v.stringValue);
+    }
+    if (v?.integerValue != null && Number.isFinite(Number(v.integerValue))) return Number(v.integerValue);
+    if (v?.doubleValue != null && Number.isFinite(Number(v.doubleValue))) return Number(v.doubleValue);
+    return null;
+  }
+
   generateAvailableDays(availability: DaySchedule[], blockedDates: BlockedDate[]): AvailableDay[] {
     const days: AvailableDay[] = [];
     const today = new Date();
-    
-    const dayNames = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
-    const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     
     for (let i = 0; i < 14; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       const dayOfWeek = date.getDay();
-      const dayKey = dayKeys[dayOfWeek];
-      const dayName = i === 0 ? 'Hoy' : (i === 1 ? 'Mañana' : dayNames[dayOfWeek]);
+      const dayKey = this.weekdayKeys[dayOfWeek];
+      const dayName =
+        i === 0
+          ? $localize`:@@calendar.today:Hoy`
+          : i === 1
+            ? $localize`:@@calendar.tomorrow:Mañana`
+            : this.getCalendarDayAbbreviation(dayKey);
       const dateString = date.toISOString().split('T')[0];
       const dayNumber = date.getDate().toString();
       
@@ -229,6 +536,25 @@ export class DoctorDetailComponent implements OnInit {
     }
     
     return days;
+  }
+
+  private getCalendarDayAbbreviation(dayKey: WeekdayKey): string {
+    switch (dayKey) {
+      case 'monday':
+        return $localize`:@@calendar.weekday.monday:lunes`;
+      case 'tuesday':
+        return $localize`:@@calendar.weekday.tuesday:martes`;
+      case 'wednesday':
+        return $localize`:@@calendar.weekday.wednesday:miércoles`;
+      case 'thursday':
+        return $localize`:@@calendar.weekday.thursday:jueves`;
+      case 'friday':
+        return $localize`:@@calendar.weekday.friday:viernes`;
+      case 'saturday':
+        return $localize`:@@calendar.weekday.saturday:sábado`;
+      case 'sunday':
+        return $localize`:@@calendar.weekday.sunday:domingo`;
+    }
   }
 
   isDateBlocked(date: string, blockedDates: BlockedDate[]): boolean {
@@ -276,7 +602,12 @@ export class DoctorDetailComponent implements OnInit {
       const [endHour, endMinute] = range.end.split(':').map(Number);
       
       let currentTime = startHour * 60 + startMinute;
-      const endTime = endHour * 60 + endMinute;
+      let endTime = endHour * 60 + endMinute;
+
+      // Handle ranges that end at 00:00 or otherwise wrap past midnight
+      if (endTime <= currentTime) {
+        endTime += 24 * 60;
+      }
       
       while (currentTime + sessionDuration <= endTime) {
         // Si es hoy, solo mostrar slots futuros

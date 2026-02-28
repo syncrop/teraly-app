@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UserService } from '../../../services/user.service';
 import { CurrencySymbolPipe } from '../../shared/pipes/currency-symbol.pipe';
-import { AppUser } from '@/src/models/user.model';
+import { AppUser } from '@/models/user.model';
 
 interface Doctor {
   id: string;

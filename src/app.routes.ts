@@ -34,7 +34,7 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: 'home-doctor',
-        loadComponent: () => import('./components/page/doctor-home/doctor-home.component').then(c => c.DoctorHomeComponent),
+        loadComponent: () => import('./components/page/doctor-pages/doctor-home/doctor-home.component').then(c => c.DoctorHomeComponent),
         canActivate: [accessGuard],
         data: { expectedRole: 'doctor' }
       },
@@ -44,7 +44,7 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: 'doctor/:id',
-        loadComponent: () => import('./components/page/doctor-detail/doctor-detail.component').then(c => c.DoctorDetailComponent)
+        loadComponent: () => import('./components/page/doctor-pages/doctor-detail/doctor-detail.component').then(c => c.DoctorDetailComponent)
       },
       {
         path: 'favorites',

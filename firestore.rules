@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function userDoc(uid) {
+      return get(/databases/$(database)/documents/users/$(uid));
+    }
+
+    function roleIs(role) {
+      return signedIn() && userDoc(request.auth.uid).data.role == role;
+    }
+
+    function isClient() {
+      return roleIs('client');
+    }
+
+    function isDoctor() {
+      return roleIs('doctor');
+    }
+
+    // USERS
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create: if isSelf(uid) && request.resource.data.uid == uid;
+      allow update: if isSelf(uid);
+      allow delete: if false;
+    }
+
+    // APPOINTMENTS
+    match /appointments/{appointmentId} {
+      allow read: if signedIn() && (resource.data.clientId == request.auth.uid || resource.data.doctorId == request.auth.uid);
+
+      // Client creates their own appointment
+      allow create: if isClient() && request.resource.data.clientId == request.auth.uid;
+
+      // Updates
+      allow update: if signedIn() && (
+        // Doctor can manage their appointments
+        (isDoctor() && resource.data.doctorId == request.auth.uid)
+        ||
+        // Client can only cancel their own appointment
+        (isClient() && resource.data.clientId == request.auth.uid
+          && request.resource.data.clientId == resource.data.clientId
+          && request.resource.data.doctorId == resource.data.doctorId
+          && request.resource.data.status == 'cancelled'
+        )
+      );
+
+      allow delete: if false;
+    }
+
+    // FAVORITES (docId is `${userId}_${doctorId}`)
+    match /favorites/{favoriteId} {
+      allow read: if signedIn() && resource.data.userId == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+      allow update: if false;
+    }
+
+    // REVIEWS (docId is `${doctorId}_${clientId}`)
+    match /reviews/{reviewId} {
+      allow read: if signedIn();
+
+      allow create: if isClient()
+        && request.resource.data.clientId == request.auth.uid
+        && reviewId == (request.resource.data.doctorId + '_' + request.auth.uid)
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.comment is string
+        && request.resource.data.comment.size() > 0
+        && request.resource.data.comment.size() <= 2000
+        && request.resource.data.appointmentId is string
+        && exists(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId))
+        && get(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)).data.clientId == request.auth.uid
+        && get(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)).data.doctorId == request.resource.data.doctorId
+        && get(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)).data.status == 'completed';
+
+      // Optional: allow clients to edit their own review (still single per doctor)
+      allow update: if isClient()
+        && resource.data.clientId == request.auth.uid
+        && request.resource.data.clientId == resource.data.clientId
+        && request.resource.data.doctorId == resource.data.doctorId
+        && reviewId == (resource.data.doctorId + '_' + request.auth.uid)
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.comment is string
+        && request.resource.data.comment.size() > 0
+        && request.resource.data.comment.size() <= 2000
+        && request.resource.data.appointmentId == resource.data.appointmentId;
+
+      allow delete: if false;
+    }
+  }
+}

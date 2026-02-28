@@ -310,6 +310,7 @@
     "calendar.appointment": "wizyta",
     "calendar.appointments": "wizyty",
     "calendar.today": "Dziś",
+    "calendar.tomorrow": "Jutro",
     "calendar.dateBlocked": "Ta data jest zablokowana (wakacje lub święto)",
     "calendar.noScheduleConfigured": "Brak skonfigurowanego harmonogramu na ten dzień",
     "calendar.startSession": "Rozpocznij sesję",
@@ -360,6 +361,22 @@
     "videoCall.microphone": "Mikrofon",
     "videoCall.camera": "Kamera",
     "videoCall.endCall": "Rozłącz",
-    "videoCall.connecting": "Łączenie..."
+    "videoCall.connecting": "Łączenie...",
+    "changePassword.title": "Zmień hasło",
+    "changePassword.subtitle": "Zaktualizuj hasło, aby chronić swoje konto.",
+    "changePassword.requirementsTitle": "Wymagania dotyczące hasła:",
+    "changePassword.requirementMinLength": "• Minimum 6 znaków",
+    "changePassword.requirementDifferent": "• Musi różnić się od bieżącego hasła",
+    "changePassword.requirementAdvice": "• Zalecamy używanie liter, cyfr i symboli",
+    "changePassword.currentPasswordLabel": "Obecne hasło",
+    "changePassword.currentPasswordPlaceholder": "Wprowadź obecne hasło",
+    "changePassword.newPasswordLabel": "Nowe hasło",
+    "changePassword.newPasswordPlaceholder": "Wprowadź nowe hasło",
+    "changePassword.confirmPasswordLabel": "Potwierdź nowe hasło",
+    "changePassword.confirmPasswordPlaceholder": "Potwierdź nowe hasło",
+    "changePassword.updating": "Aktualizacja...",
+    "changePassword.updateButton": "Zaktualizuj hasło",
+    "changePassword.securityTipTitle": "Wskazówka dotycząca bezpieczeństwa",
+    "changePassword.securityTip": "Nigdy nie udostępniaj swojego hasła. Zespół Teraly nigdy nie poprosi o hasło przez e-mail ani telefon."
   }
 }

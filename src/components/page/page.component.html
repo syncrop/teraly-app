@@ -27,7 +27,8 @@
 }
 
 <!-- Main Content -->
-<main [class.md:pt-20]="showHeader()" [class.pb-24]="showFooter()" class="md:min-h-screen bg-white md:pt-0" style="padding-top: env(safe-area-inset-top, 0px)">
+<main [class.md:pt-20]="showHeader()" [class.pb-24]="showFooter()" class="min-h-screen bg-white md:pt-0" 
+      (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
   <router-outlet></router-outlet>
 </main>
 

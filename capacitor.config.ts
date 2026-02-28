@@ -15,9 +15,15 @@ const config: CapacitorConfig = {
     allowsBackForwardNavigationGestures: true
   },
   plugins: {
+    SplashScreen: {
+      launchShowDuration: 0,
+      launchAutoHide: true,
+      backgroundColor: '#0f172a',
+      showSpinner: false
+    },
     StatusBar: {
       style: 'Light',
-      backgroundColor: '#ffffff',
+      backgroundColor: '#4338CA',
       overlaysWebView: false
     },
     FirebaseAuthentication: {

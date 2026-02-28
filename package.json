@@ -11,9 +11,9 @@
     "ios:open": "npx cap open ios",
     "ios:run": "ng build && npx cap sync ios && npx cap open ios",
     "preview": "ng serve --configuration=production",
-    "test": "karma start karma.conf.js",
-    "test:headless": "karma start karma.conf.js --browsers=ChromeHeadlessCI --single-run",
-    "test:coverage": "karma start karma.conf.js --browsers=ChromeHeadlessCI --single-run --code-coverage"
+    "test": "karma start karma.conf.cjs",
+    "test:headless": "karma start karma.conf.cjs --browsers=ChromeHeadlessCI --single-run",
+    "test:coverage": "karma start karma.conf.cjs --browsers=ChromeHeadlessCI --single-run --code-coverage"
   },
   "dependencies": {
     "@angular/build": "^21.0.0",
@@ -34,6 +34,7 @@
     "@capacitor/haptics": "^6.0.1",
     "@capacitor/ios": "^6.1.2",
     "@capacitor/keyboard": "^6.0.2",
+    "@capacitor/splash-screen": "^6.0.3",
     "@capacitor/status-bar": "^6.0.3",
     "@tensorflow-models/toxicity": "^1.2.2",
     "@tensorflow/tfjs": "^4.22.0",
@@ -43,6 +44,7 @@
     "tailwindcss": "latest"
   },
   "devDependencies": {
+    "@angular-devkit/build-angular": "^21.0.3",
     "@capacitor/cli": "8.0.0",
     "@types/node": "^22.14.0",
     "jasmine-core": "^5.13.0",

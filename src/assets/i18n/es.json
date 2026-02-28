@@ -310,6 +310,7 @@
     "calendar.appointment": "cita",
     "calendar.appointments": "citas",
     "calendar.today": "Hoy",
+    "calendar.tomorrow": "Mañana",
     "calendar.dateBlocked": "Esta fecha está bloqueada (vacaciones o día festivo)",
     "calendar.noScheduleConfigured": "No hay horarios configurados para este día",
     "calendar.startSession": "Iniciar sesión",
@@ -360,6 +361,22 @@
     "videoCall.microphone": "Micro",
     "videoCall.camera": "Cámara",
     "videoCall.endCall": "Colgar",
-    "videoCall.connecting": "Conectando..."
+    "videoCall.connecting": "Conectando...",
+    "changePassword.title": "Cambiar Contraseña",
+    "changePassword.subtitle": "Actualiza tu contraseña para mantener tu cuenta segura.",
+    "changePassword.requirementsTitle": "Requisitos de contraseña:",
+    "changePassword.requirementMinLength": "• Mínimo 6 caracteres",
+    "changePassword.requirementDifferent": "• Debe ser diferente a la contraseña actual",
+    "changePassword.requirementAdvice": "• Recomendamos usar letras, números y símbolos",
+    "changePassword.currentPasswordLabel": "Contraseña Actual",
+    "changePassword.currentPasswordPlaceholder": "Ingresa tu contraseña actual",
+    "changePassword.newPasswordLabel": "Nueva Contraseña",
+    "changePassword.newPasswordPlaceholder": "Ingresa tu nueva contraseña",
+    "changePassword.confirmPasswordLabel": "Confirmar Nueva Contraseña",
+    "changePassword.confirmPasswordPlaceholder": "Confirma tu nueva contraseña",
+    "changePassword.updating": "Actualizando...",
+    "changePassword.updateButton": "Actualizar Contraseña",
+    "changePassword.securityTipTitle": "Consejo de seguridad",
+    "changePassword.securityTip": "Nunca compartas tu contraseña con nadie. El equipo de Teraly nunca te pedirá tu contraseña por email o teléfono."
   }
 }

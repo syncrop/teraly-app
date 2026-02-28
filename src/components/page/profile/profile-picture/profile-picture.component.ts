@@ -239,4 +239,8 @@ export class ProfilePictureComponent implements OnInit {
     }
     return name.substring(0, 2).toUpperCase();
   }
+
+  getInitials(): string {
+    return this.triggerFileInput();
+  }
 }

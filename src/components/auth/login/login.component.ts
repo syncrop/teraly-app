@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal, NgZone } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -45,8 +45,8 @@ console.log('Login form submitted');
       next: (result) => {
         console.log('Login result:', result);
         this.isLoading.set(false);
-        
-        if (result.success) {
+
+        if (result?.success === true) {
           this.toastService.success('¡Bienvenido! Inicio de sesión exitoso');
           const role = this.authService.currentUserRole();
           const currentUser = this.authService.currentUser();

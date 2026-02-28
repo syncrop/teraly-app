@@ -60,6 +60,9 @@ export class FirestoreNativeService {
           if (v.integerValue !== undefined) return parseInt(v.integerValue);
           if (v.doubleValue !== undefined) return v.doubleValue;
           if (v.booleanValue !== undefined) return v.booleanValue;
+          if (v.mapValue && v.mapValue.fields) {
+            return this.convertFirestoreDocument({ fields: v.mapValue.fields });
+          }
           return v;
         });
       } else if (field.mapValue && field.mapValue.fields) {
@@ -149,6 +152,34 @@ export class FirestoreNativeService {
       }
       const body = { fields };
 
+      await firstValueFrom(this.http.patch(url, body, { headers }));
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Crear o reemplazar un documento (upsert) usando la REST API.
+   * Útil para guardar docs con IDs determinísticos (ej: reviews).
+   */
+  async setDocument(collection: string, documentId: string, data: any): Promise<boolean> {
+    try {
+      const token = await this.getAuthToken();
+      if (!token) return false;
+
+      const url = `${this.FIRESTORE_API}/${collection}/${documentId}`;
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      };
+
+      const fields: any = {};
+      for (const key of Object.keys(data ?? {})) {
+        fields[key] = this.convertValueToFirestore(data[key]);
+      }
+
+      const body = { fields };
       await firstValueFrom(this.http.patch(url, body, { headers }));
       return true;
     } catch (error) {

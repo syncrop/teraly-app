@@ -80,7 +80,7 @@
               [class.bg-green-500]="day.enabled"
               [class.bg-gray-300]="!day.enabled">
             </div>
-            <span class="text-base font-semibold text-gray-900">{{ day.dayName }}</span>
+            <span class="text-base font-semibold text-gray-900">{{ weekdayLabel(day.day) | titlecase }}</span>
             @if (day.enabled && !day.isExpanded && day.slots.length > 0) {
               <span class="text-sm text-gray-500">
                 {{ day.slots[0].start }} - {{ day.slots[day.slots.length - 1].end }}

@@ -1,12 +1,13 @@
-import { Component, signal, inject, OnDestroy } from '@angular/core';
+import { Component, signal, inject, OnDestroy, OnInit } from '@angular/core';
 import { LoaderService } from '../../../services/loader.service';
-import { Subscription } from 'rxjs';
+import { Subscription, fromEvent, merge } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-loader',
   standalone: true,
   template: `
-    @if (isVisible()) {
+    @if (isVisible() || !isOnline()) {
       <div class="loader-screen">
         <div class="relative w-32 h-32 mb-4">
           <!-- LOGO SVG ANIMADO -->
@@ -24,6 +25,17 @@ import { Subscription } from 'rxjs';
         
         <!-- TEXTO DE MARCA -->
         <h1 class="brand-text text-3xl font-bold tracking-tight text-white">teraly</h1>
+        
+        <!-- MENSAJE DE CONEXIÓN -->
+        @if (!isOnline()) {
+          <div class="offline-message">
+            <svg class="w-8 h-8 mb-2 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414"></path>
+            </svg>
+            <p class="text-white text-lg font-medium">Sin conexión a Internet</p>
+            <p class="text-gray-400 text-sm mt-1">Esperando conexión...</p>
+          </div>
+        }
       </div>
     }
   `,
@@ -124,12 +136,24 @@ import { Subscription } from 'rxjs';
     @keyframes fadeOutScreen {
       to { opacity: 0; visibility: hidden; }
     }
+
+    /* --- MENSAJE SIN CONEXIÓN --- */
+    .offline-message {
+      position: absolute;
+      bottom: 20%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeUp 0.5s ease-out forwards;
+    }
   `]
 })
-export class LoaderComponent implements OnDestroy {
+export class LoaderComponent implements OnInit, OnDestroy {
   private loaderService = inject(LoaderService);
   isVisible = signal(false);
+  isOnline = signal(navigator.onLine);
   private subscription: Subscription;
+  private networkSubscription?: Subscription;
 
   constructor() {
     this.subscription = this.loaderService.isLoading$.subscribe(isLoading => {
@@ -137,7 +161,18 @@ export class LoaderComponent implements OnDestroy {
     });
   }
 
+  ngOnInit(): void {
+    // Escuchar cambios en la conectividad
+    const online$ = fromEvent(window, 'online').pipe(map(() => true));
+    const offline$ = fromEvent(window, 'offline').pipe(map(() => false));
+
+    this.networkSubscription = merge(online$, offline$).subscribe(status => {
+      this.isOnline.set(status);
+    });
+  }
+
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
+    this.networkSubscription?.unsubscribe();
   }
 }

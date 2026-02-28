@@ -310,6 +310,7 @@
     "calendar.appointment": "appointment",
     "calendar.appointments": "appointments",
     "calendar.today": "Today",
+    "calendar.tomorrow": "Tomorrow",
     "calendar.dateBlocked": "This date is blocked (vacation or holiday)",
     "calendar.noScheduleConfigured": "No schedule configured for this day",
     "calendar.startSession": "Start session",
@@ -360,6 +361,22 @@
     "videoCall.microphone": "Mic",
     "videoCall.camera": "Camera",
     "videoCall.endCall": "Hang up",
-    "videoCall.connecting": "Connecting..."
+    "videoCall.connecting": "Connecting...",
+    "changePassword.title": "Change Password",
+    "changePassword.subtitle": "Update your password to keep your account secure.",
+    "changePassword.requirementsTitle": "Password requirements:",
+    "changePassword.requirementMinLength": "• Minimum 6 characters",
+    "changePassword.requirementDifferent": "• Must be different from current password",
+    "changePassword.requirementAdvice": "• We recommend using letters, numbers and symbols",
+    "changePassword.currentPasswordLabel": "Current Password",
+    "changePassword.currentPasswordPlaceholder": "Enter your current password",
+    "changePassword.newPasswordLabel": "New Password",
+    "changePassword.newPasswordPlaceholder": "Enter your new password",
+    "changePassword.confirmPasswordLabel": "Confirm New Password",
+    "changePassword.confirmPasswordPlaceholder": "Confirm your new password",
+    "changePassword.updating": "Updating...",
+    "changePassword.updateButton": "Update Password",
+    "changePassword.securityTipTitle": "Security tip",
+    "changePassword.securityTip": "Never share your password with anyone. The Teraly team will never ask for your password by email or phone."
   }
 }

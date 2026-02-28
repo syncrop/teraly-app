@@ -2,7 +2,7 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter, withHashLocation } from '@angular/router';
 import { LOCALE_ID, provideZonelessChangeDetection, importProvidersFrom } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
 import '@angular/localize/init';
 import { loadTranslations } from '@angular/localize';
@@ -13,6 +13,7 @@ import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { getStorage, provideStorage } from '@angular/fire/storage';
+import { authInterceptor } from './src/interceptors/auth.interceptor';
 
 async function bootstrapApp() {
   // --- Locale Detection ---
@@ -75,9 +76,9 @@ async function bootstrapApp() {
       providers: [
         provideZonelessChangeDetection(),
         provideRouter(APP_ROUTES, withHashLocation()),
-        provideHttpClient(),
+        provideHttpClient(withInterceptors([authInterceptor])),
         importProvidersFrom(ReactiveFormsModule),
-        { provide: LOCALE_ID, useValue: locale },
+        provideHttpClient(withInterceptors([authInterceptor])),
         provideFirebaseApp(() => initializeApp(firebaseConfig)),
         provideAuth(() => getAuth()),
         provideFirestore(() => getFirestore()),

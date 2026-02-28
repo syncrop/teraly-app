@@ -2,13 +2,17 @@ import { Injectable, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, user } from '@angular/fire/auth';
 import { Firestore, collection, doc, setDoc, getDoc, query, where, getDocs } from '@angular/fire/firestore';
-import { from, Observable } from 'rxjs';
+import { from, Observable, of } from 'rxjs';
 import { map, catchError, switchMap, tap } from 'rxjs/operators';
+import { finalize } from 'rxjs/operators';
 import { UserRole, AppUser } from '../models/user.model';
 import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { FirestoreHelperService } from './firestore-helper.service';
 import { LoaderService } from './loader.service';
+import { BACKEND_CONFIG } from '../config/backend.config';
+import { UsersApiService } from './users-api.service';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -19,6 +23,7 @@ export class AuthService {
   private router = inject(Router);
   private firestoreHelper = inject(FirestoreHelperService);
   private loaderService = inject(LoaderService);
+  private usersApi = inject(UsersApiService);
   
   currentUserRole = signal<UserRole>(null);
   currentUser = signal<AppUser | null>(null);
@@ -67,13 +72,33 @@ export class AuthService {
   }
 
   /**
+   * Perfil del usuario (durante la migración):
+   * - Backend (Cloud Run + Mongo) cuando BACKEND_CONFIG.enabled=true
+   * - Firestore mientras BACKEND_CONFIG.enabled=false
+   */
+  private async getUserProfile(uid: string): Promise<AppUser | null> {
+    if (BACKEND_CONFIG.enabled) {
+      try {
+        // Prefer /me when possible; fallback to /users/:uid for bootstrap scenarios.
+        const me = await firstValueFrom(this.usersApi.getMe().pipe(catchError(() => of(null))));
+        if (me) return me;
+        return await firstValueFrom(this.usersApi.getUserById(uid).pipe(catchError(() => of(null))));
+      } catch {
+        return null;
+      }
+    }
+
+    return this.getFirestoreUser(uid);
+  }
+
+  /**
    * Inicializar el usuario actual desde Firebase Auth
    */
   private async initializeCurrentUser(): Promise<void> {
     try {
       const userId = localStorage.getItem('userId');
       if (userId) {
-        const userData = await this.getFirestoreUser(userId);
+        const userData = await this.getUserProfile(userId);
         
         if (userData) {
           this.currentUser.set(userData);
@@ -114,7 +139,7 @@ export class AuthService {
               return { success: false, error: 'No se pudo obtener el UID del usuario' };
             }
             
-            const userData = await this.getFirestoreUser(uid);
+            const userData = await this.getUserProfile(uid);
             
             if (!userData) {
               await FirebaseAuthentication.signOut();
@@ -148,54 +173,81 @@ export class AuthService {
     
     // Usar @angular/fire en web
     return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
-      tap(() => {
-        this.loaderService.hide();
-      }),
-      // Use switchMap to handle the promise and emit the correct type
-      // Import switchMap from 'rxjs/operators' if not already imported
-      // Replace 'map(async ...)' with 'switchMap'
-      // If switchMap is not imported, add: import { map, catchError, switchMap } from 'rxjs/operators';
       switchMap((credential) =>
-        from(credential.user.getIdTokenResult()).pipe(
-          switchMap((tokenResult) =>
-            from(getDoc(doc(this.firestore, 'users', credential.user.uid))).pipe(
-              switchMap(async (userDoc) => {
-                const userData = userDoc.data() as AppUser;
-                if (userData) {
-                  const role: UserRole = userData.role === 'doctor' ? 'doctor' : 'client';
-                  this.currentUserRole.set(role);
-                  this.currentUser.set(userData);
-                  localStorage.setItem('userRole', role);
-                  localStorage.setItem('userId', credential.user.uid);
+        from(
+          (async () => {
+            const uid = credential.user.uid;
 
-                  // store session token details
-                  try {
-                    const idToken = (tokenResult && (tokenResult.token as string)) || '';
-                    const expiresAt = tokenResult && tokenResult.expirationTime ? new Date(tokenResult.expirationTime).getTime() : (Date.now() + 3600 * 1000);
-                    const refreshToken = (credential.user as any)?.refreshToken || '';
-                    localStorage.setItem('idToken', idToken);
-                    localStorage.setItem('refreshToken', refreshToken);
-                    localStorage.setItem('expiresAt', String(expiresAt));
-                    localStorage.setItem('localId', credential.user.uid);
-                    localStorage.setItem('email', credential.user.email || '');
-                  } catch (e) {
-                    // swallow storage errors
-                    console.warn('Could not store session tokens', e);
-                  }
+            // Guardar tokens cuanto antes (si falla, no debe romper login)
+            try {
+              const tokenResult = await credential.user.getIdTokenResult();
+              const idToken = tokenResult?.token || '';
+              const expiresAt = tokenResult?.expirationTime
+                ? new Date(tokenResult.expirationTime).getTime()
+                : Date.now() + 3600 * 1000;
+              const refreshToken = (credential.user as any)?.refreshToken || '';
+              localStorage.setItem('idToken', idToken);
+              localStorage.setItem('refreshToken', refreshToken);
+              localStorage.setItem('expiresAt', String(expiresAt));
+              localStorage.setItem('localId', uid);
+              localStorage.setItem('email', credential.user.email || '');
+            } catch (e) {
+              console.warn('Could not store session tokens', e);
+            }
 
-                  return { success: true, role };
-                }
-                
-                // Usuario no encontrado en Firestore, hacer logout de Firebase Auth
+            let userData: AppUser | null = null;
+
+            if (BACKEND_CONFIG.enabled) {
+              userData = await this.getUserProfile(uid);
+              if (!userData) {
                 await signOut(this.auth);
-                return { success: false, error: 'Usuario no encontrado en la base de datos. Por favor, regístrate primero.' };
-              })
-            )
-          )
+                return {
+                  success: false,
+                  error: 'Tu cuenta existe en Auth, pero falta tu perfil en el backend. Regístrate o contacta soporte.'
+                };
+              }
+            } else {
+              // Recuperar perfil de Firestore (si no existe o no hay permisos, devolvemos error explícito)
+              let userDoc;
+              try {
+                userDoc = await getDoc(doc(this.firestore, 'users', uid));
+              } catch (e: any) {
+                const code = e?.code as string | undefined;
+                if (code === 'permission-denied') {
+                  return {
+                    success: false,
+                    error: 'No tienes permisos para leer tu perfil (Firestore rules).'
+                  };
+                }
+
+                return {
+                  success: false,
+                  error: 'No se pudo leer tu perfil de usuario. Intenta de nuevo.'
+                };
+              }
+
+              if (!userDoc.exists()) {
+                await signOut(this.auth);
+                return {
+                  success: false,
+                  error: 'Tu cuenta existe en Auth, pero falta tu perfil en Firestore. Regístrate o contacta soporte.'
+                };
+              }
+
+              userData = userDoc.data() as AppUser;
+            }
+
+            const role: UserRole = userData?.role === 'doctor' ? 'doctor' : 'client';
+            this.currentUserRole.set(role);
+            this.currentUser.set(userData);
+            localStorage.setItem('userRole', role);
+            localStorage.setItem('userId', uid);
+            return { success: true, role };
+          })()
         )
       ),
+      finalize(() => this.loaderService.hide()),
       catchError((error) => {
-        this.loaderService.hide();
         let errorMessage = 'Error al iniciar sesión';
         if (error.code === 'auth/user-not-found') {
           errorMessage = 'Usuario no encontrado';
@@ -204,7 +256,7 @@ export class AuthService {
         } else if (error.code === 'auth/invalid-email') {
           errorMessage = 'Email inválido';
         }
-        return from([{ success: false, error: errorMessage }]);
+        return of({ success: false, error: errorMessage });
       })
     );
   }
@@ -216,7 +268,6 @@ export class AuthService {
       switchMap((credential) =>
         from((async () => {
           const uid = credential.user.uid;
-          const userRef = doc(this.firestore, 'users', uid);
           
           const userData: AppUser = {
             uid,
@@ -232,8 +283,15 @@ export class AuthService {
               completed: false
             })
           };
-          
-          await setDoc(userRef, userData);
+
+          if (BACKEND_CONFIG.enabled) {
+            // Create profile in backend (Cloud Run + Mongo).
+            await firstValueFrom(this.usersApi.upsertMe(userData));
+          } else {
+            const userRef = doc(this.firestore, 'users', uid);
+            await setDoc(userRef, userData);
+          }
+
           this.currentUserRole.set(userType);
           this.currentUser.set(userData);
           localStorage.setItem('userRole', userType);

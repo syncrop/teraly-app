@@ -4,24 +4,70 @@
   </div>
 
   <div *ngIf="!isLoading() && appointment()" class="video-call-content">
-    <!-- Video principal -->
-    <div class="main-video">
-      <div class="video-placeholder">
-        <div class="participant-info">
-          <h2>{{ appointment()?.doctorName || 'Participante' }}</h2>
+    <div class="video-chat-wrapper" [class.chat-open]="showChat()">
+      <!-- Video principal -->
+      <div class="main-video" [class.with-chat]="showChat()">
+        <div class="video-placeholder">
+          <div class="participant-info">
+            <h2>{{ appointment()?.doctorName || 'Participante' }}</h2>
+          </div>
+          <!-- Video remoto -->
+          <div class="video-feed">
+            <video #remoteVideo autoplay playsinline class="remote-video"></video>
+            <span class="video-status" *ngIf="!isVideoOn()">Cámara desactivada</span>
+          </div>
         </div>
-        <!-- Video remoto -->
-        <div class="video-feed">
-          <video #remoteVideo autoplay playsinline class="remote-video"></video>
-          <span class="video-status" *ngIf="!isVideoOn()">Cámara desactivada</span>
+
+        <!-- Video propio (PiP) -->
+        <div class="self-video" *ngIf="!showChat() || isVideoOn()">
+          <div class="video-feed-small">
+            <video #localVideo autoplay playsinline muted class="local-video"></video>
+            <span class="video-status" *ngIf="!isVideoOn()">Tu cámara</span>
+          </div>
         </div>
       </div>
 
-      <!-- Video propio (PiP) -->
-      <div class="self-video">
-        <div class="video-feed-small">
-          <video #localVideo autoplay playsinline muted class="local-video"></video>
-          <span class="video-status" *ngIf="!isVideoOn()">Tu cámara</span>
+      <!-- Vista de Chat -->
+      <div class="chat-container" *ngIf="showChat()">
+        <div class="chat-header">
+          <h3>Chat</h3>
+          <button class="close-chat-btn md:hidden" (click)="toggleChat()" title="Volver al video">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="chat-messages">
+          <div *ngFor="let msg of messages(); trackBy: trackByMessageIndex" 
+               class="message" 
+               [class.own-message]="msg.isOwn">
+            <div class="message-content">
+              <div class="message-sender">{{ msg.sender }}</div>
+              <div class="message-text">{{ msg.text }}</div>
+              <div class="message-time">{{ msg.time }}</div>
+            </div>
+          </div>
+          <div *ngIf="messages().length === 0" class="no-messages">
+            No hay mensajes aún
+          </div>
+        </div>
+        
+        <div class="chat-input-container">
+          <input 
+            type="text" 
+            class="chat-input" 
+            placeholder="Escribe un mensaje..."
+            [value]="currentMessage()"
+            (input)="updateMessageInput($event)"
+            (keyup.enter)="sendMessage()">
+          <button class="send-btn" (click)="sendMessage()" [disabled]="!currentMessage().trim()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
         </div>
       </div>
     </div>
@@ -86,6 +132,17 @@
           <line x1="8" y1="21" x2="16" y2="21"></line>
           <line x1="12" y1="17" x2="12" y2="21"></line>
         </svg>
+      </button>
+
+      <button 
+        class="control-btn" 
+        [class.active]="showChat()"
+        (click)="toggleChat()"
+        title="Chat">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span *ngIf="messages().length > 0 && !showChat()" class="chat-badge">{{ messages().length }}</span>
       </button>
 
       <button 

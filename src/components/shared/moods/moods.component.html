@@ -2,7 +2,7 @@
   <p class="text-sm text-gray-600 mb-4" i18n="@@clientHome.howFeel">¿Cómo te sientes hoy?</p>
   <div class="grid grid-cols-4 gap-3 mb-6">
     <button
-      *ngFor="let mood of moods"
+      *ngFor="let mood of moods; trackBy: trackByMoodId"
       (click)="onMoodSelect(mood.id)"
       class="flex flex-col items-center gap-2 p-3 rounded-2xl transition-all"
       [class.bg-indigo-600]="selectedMood() === mood.id"
@@ -53,7 +53,7 @@
       <!-- Questions -->
       <div class="space-y-6">
         <!-- Range Questions -->
-        <div *ngFor="let question of moodQuestions" [ngSwitch]="question.type">
+        <div *ngFor="let question of moodQuestions; trackBy: trackByQuestionId" [ngSwitch]="question.type">
           <!-- Range Input -->
           <div *ngSwitchCase="'range'">
             <label class="block">

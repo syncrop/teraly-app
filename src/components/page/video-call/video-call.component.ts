@@ -1,17 +1,18 @@
-import { Component, OnInit, OnDestroy, inject, signal, ViewChild, ElementRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppointmentService } from '../../../services/appointment.service';
 import { AuthService } from '../../../services/auth.service';
 import { Appointment } from '../../../models/appointment.model';
-import { Room, RoomEvent, Track, RemoteTrack, RemoteParticipant, RemoteTrackPublication } from 'livekit-client';
+import { Room, RoomEvent, Track, RemoteTrack, RemoteParticipant, RemoteTrackPublication, DataPacket_Kind } from 'livekit-client';
 
 @Component({
   selector: 'app-video-call',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './video-call.component.html',
-  styleUrls: ['./video-call.component.css']
+  styleUrls: ['./video-call.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class VideoCallComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -29,6 +30,9 @@ export class VideoCallComponent implements OnInit, OnDestroy {
   isVideoOn = signal<boolean>(true);
   isScreenSharing = signal<boolean>(false);
   callDuration = signal<string>('00:00');
+  showChat = signal<boolean>(false);
+  messages = signal<Array<{text: string, sender: string, time: string, isOwn: boolean}>>([]);
+  currentMessage = signal<string>('');
   
   private callStartTime: Date | null = null;
   private durationInterval: any;
@@ -156,6 +160,15 @@ export class VideoCallComponent implements OnInit, OnDestroy {
       console.log('Desconectado de la room');
       this.isLoading.set(false);
     });
+
+    // Cuando se recibe un mensaje de chat
+    this.room.on(RoomEvent.DataReceived, (payload: Uint8Array, participant?: RemoteParticipant) => {
+      if (participant) {
+        const decoder = new TextDecoder();
+        const message = decoder.decode(payload);
+        this.addMessage(message, participant.identity, false);
+      }
+    });
   }
 
   private attachLocalVideo(): void {
@@ -252,6 +265,40 @@ export class VideoCallComponent implements OnInit, OnDestroy {
     }
   }
 
+  toggleChat(): void {
+    this.showChat.set(!this.showChat());
+  }
+
+  sendMessage(): void {
+    const messageText = this.currentMessage().trim();
+    if (!messageText || !this.room) return;
+
+    // Enviar mensaje a otros participantes
+    const encoder = new TextEncoder();
+    const data = encoder.encode(messageText);
+    this.room.localParticipant.publishData(data, { reliable: true });
+
+    // Agregar mensaje propio a la lista
+    const userName = this.authService.currentUser()?.fullName || 'Tú';
+    this.addMessage(messageText, userName, true);
+    
+    // Limpiar input
+    this.currentMessage.set('');
+  }
+
+  private addMessage(text: string, sender: string, isOwn: boolean): void {
+    const now = new Date();
+    const time = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    
+    const newMessage = { text, sender, time, isOwn };
+    this.messages.update(msgs => [...msgs, newMessage]);
+  }
+
+  updateMessageInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.currentMessage.set(input.value);
+  }
+
   endCall(): void {
     if (this.durationInterval) {
       clearInterval(this.durationInterval);
@@ -273,4 +320,6 @@ export class VideoCallComponent implements OnInit, OnDestroy {
       }
     }, 100);
   }
+
+  trackByMessageIndex = (index: number): number => index;
 }

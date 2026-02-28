@@ -165,4 +165,8 @@ export class MoodsComponent implements OnInit {
     this.showQuestions.set(false);
     this.moodResponses.set({});
   }
+
+  trackByMoodId = (_: number, mood: Mood): string => mood.id;
+
+  trackByQuestionId = (_: number, question: { id: string }): string => question.id;
 }

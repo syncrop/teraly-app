@@ -257,4 +257,25 @@ export class AvailabilityComponent implements OnInit {
       this.isSaving.set(false);
     }
   }
+
+  weekdayLabel(dayKey: string): string {
+    switch (dayKey) {
+      case 'monday':
+        return $localize`:@@calendar.weekday.monday:lunes`;
+      case 'tuesday':
+        return $localize`:@@calendar.weekday.tuesday:martes`;
+      case 'wednesday':
+        return $localize`:@@calendar.weekday.wednesday:miércoles`;
+      case 'thursday':
+        return $localize`:@@calendar.weekday.thursday:jueves`;
+      case 'friday':
+        return $localize`:@@calendar.weekday.friday:viernes`;
+      case 'saturday':
+        return $localize`:@@calendar.weekday.saturday:sábado`;
+      case 'sunday':
+        return $localize`:@@calendar.weekday.sunday:domingo`;
+      default:
+        return dayKey;
+    }
+  }
 }

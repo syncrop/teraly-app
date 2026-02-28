@@ -6,6 +6,8 @@ import { from, Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { AppUser } from '../models/user.model';
 import { FirestoreHelperService } from './firestore-helper.service';
+import { BACKEND_CONFIG } from '../config/backend.config';
+import { UsersApiService } from './users-api.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,9 +16,14 @@ export class UserService {
   private readonly firestore = inject(Firestore);
   private readonly firestoreHelper = inject(FirestoreHelperService);
   private readonly firestoreNative = inject(FirestoreNativeService);
+  private readonly usersApi = inject(UsersApiService);
 
   // Obtener un usuario por su UID
   getUserById(uid: string): Observable<AppUser | null> {
+    if (BACKEND_CONFIG.enabled) {
+      return this.usersApi.getUserById(uid);
+    }
+
     return from(this.firestoreHelper.getDocument<AppUser>('users', uid));
   }
 
@@ -27,12 +34,16 @@ export class UserService {
 
   // Obtener lista de doctores desde Firestore
   getDoctors(): Observable<AppUser[]> {
+    if (BACKEND_CONFIG.enabled) {
+      return this.usersApi.listUsersByRole('doctor');
+    }
+
     return from(this.firestoreHelper.getDocuments<AppUser>('users', where('role', '==', 'doctor')));
   }
 
   // Obtener un doctor específico por su UID
   getDoctorById(uid: string): Observable<AppUser | null> {
-    return from(this.firestoreHelper.getDocument<AppUser>('users', uid)).pipe(
+    return this.getUserById(uid).pipe(
       map((userData) => {
         // Verificar que sea un doctor
         if (userData && userData.role === 'doctor') {
@@ -45,11 +56,26 @@ export class UserService {
 
   // Obtener lista de clientes desde Firestore
   getClients(): Observable<AppUser[]> {
+    if (BACKEND_CONFIG.enabled) {
+      return this.usersApi.listUsersByRole('client');
+    }
+
     return from(this.firestoreHelper.getDocuments<AppUser>('users', where('role', '==', 'client')));
   }
 
   // Actualizar la foto de perfil del usuario en Firestore
   updateProfilePicture(userId: string, photoURL: string): Observable<boolean> {
+    if (BACKEND_CONFIG.enabled) {
+      // Backend decides authorization (owner-only)
+      return this.usersApi.updateMyProfilePicture(photoURL).pipe(
+        map((r) => !!r?.success),
+        catchError((error) => {
+          console.error('Error al actualizar foto de perfil (backend):', error);
+          return from([false]);
+        })
+      );
+    }
+
     if (Capacitor.isNativePlatform()) {
       // Usar REST API en iOS/Android
       return from(this.firestoreNative.updateDocument('users', userId, { photoURL })).pipe(
@@ -74,6 +100,16 @@ export class UserService {
 
   // Eliminar la foto de perfil del usuario en Firestore
   removeProfilePicture(userId: string): Observable<boolean> {
+    if (BACKEND_CONFIG.enabled) {
+      return this.usersApi.removeMyProfilePicture().pipe(
+        map((r) => !!r?.success),
+        catchError((error) => {
+          console.error('Error al eliminar foto de perfil (backend):', error);
+          return from([false]);
+        })
+      );
+    }
+
     const userRef = doc(this.firestore, 'users', userId);
     
     return from(updateDoc(userRef, { photoURL: null })).pipe(

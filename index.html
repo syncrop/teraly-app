@@ -26,6 +26,8 @@
       position: fixed;
       overflow: hidden;
       /* Color de las safe areas superior e inferior */
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
     }
     
     body {
@@ -40,6 +42,23 @@
       overscroll-behavior-y: none;
       -webkit-overflow-scrolling: touch;
     }
+
+    /* Opcional: diferentes colores para top y bottom */
+    @supports (padding-top: env(safe-area-inset-top)) {
+      html {
+        /* Gradiente para safe areas con colores distintos */
+        background: linear-gradient(
+          to bottom,
+          #ffffff 0%,
+          #ffffff env(safe-area-inset-top),
+          #f9fafb env(safe-area-inset-top),
+          #f9fafb calc(100% - env(safe-area-inset-bottom)),
+          #ffffff calc(100% - env(safe-area-inset-bottom)),
+          #ffffff 100%
+        );
+      }
+    }
+
     #root-container {
       height: 100%;
       width: 100%;

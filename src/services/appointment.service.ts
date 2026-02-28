@@ -18,6 +18,8 @@ import { Capacitor } from '@capacitor/core';
 import { FirestoreNativeService } from './firestore-native.service';
 import { Appointment } from '../models/appointment.model';
 import { FirestoreHelperService } from './firestore-helper.service';
+import { BACKEND_CONFIG } from '../config/backend.config';
+import { AppointmentsApiService } from './appointments-api.service';
 
 @Injectable({
   providedIn: 'root'
@@ -27,12 +29,29 @@ export class AppointmentService {
   private appointmentsCollection = collection(this.firestore, 'appointments');
   private firestoreHelper = inject(FirestoreHelperService);
   private firestoreNative = inject(FirestoreNativeService);
+  private appointmentsApi = inject(AppointmentsApiService);
 
   /**
    * Obtener todas las citas de un doctor
    */
   getDoctorAppointments(doctorId: string): Observable<Appointment[]> {
     console.log('AppointmentService: Consultando citas para doctorId:', doctorId);
+
+    if (BACKEND_CONFIG.enabled) {
+      return this.appointmentsApi.listDoctorAppointments(doctorId).pipe(
+        map((appointments) =>
+          (appointments ?? []).sort((a, b) => {
+            const dateCompare = a.date.localeCompare(b.date);
+            if (dateCompare !== 0) return dateCompare;
+            return a.startTime.localeCompare(b.startTime);
+          })
+        ),
+        catchError((error) => {
+          console.error('Error al obtener citas del doctor (backend):', error);
+          return of([]);
+        })
+      );
+    }
     
     return from(this.firestoreHelper.getDocuments<Appointment>('appointments', where('doctorId', '==', doctorId))).pipe(
       map(appointments => {
@@ -60,6 +79,22 @@ export class AppointmentService {
     startDate: string,
     endDate: string
   ): Observable<Appointment[]> {
+    if (BACKEND_CONFIG.enabled) {
+      return this.appointmentsApi.listDoctorAppointments(doctorId, startDate, endDate).pipe(
+        map((appointments) =>
+          (appointments ?? []).sort((a, b) => {
+            const dateCompare = a.date.localeCompare(b.date);
+            if (dateCompare !== 0) return dateCompare;
+            return a.startTime.localeCompare(b.startTime);
+          })
+        ),
+        catchError((error) => {
+          console.error('Error al obtener citas por rango (backend):', error);
+          return of([]);
+        })
+      );
+    }
+
     return from(this.firestoreHelper.getDocuments<Appointment>('appointments', where('doctorId', '==', doctorId))).pipe(
       map(appointments => {
         // Filtrar por rango de fechas en memoria
@@ -85,6 +120,22 @@ export class AppointmentService {
    * Obtener citas de un cliente
    */
   getClientAppointments(clientId: string): Observable<Appointment[]> {
+    if (BACKEND_CONFIG.enabled) {
+      return this.appointmentsApi.listClientAppointments(clientId).pipe(
+        map((appointments) =>
+          (appointments ?? []).sort((a, b) => {
+            const dateCompare = a.date.localeCompare(b.date);
+            if (dateCompare !== 0) return dateCompare;
+            return a.startTime.localeCompare(b.startTime);
+          })
+        ),
+        catchError((error) => {
+          console.error('Error al obtener citas del cliente (backend):', error);
+          return of([]);
+        })
+      );
+    }
+
     return from(this.firestoreHelper.getDocuments<Appointment>('appointments', where('clientId', '==', clientId))).pipe(
       map(appointments => {
         // Ordenar en memoria por fecha y hora
@@ -105,6 +156,10 @@ export class AppointmentService {
    * Obtener una cita específica por ID
    */
   getAppointmentById(appointmentId: string): Observable<Appointment | null> {
+    if (BACKEND_CONFIG.enabled) {
+      return this.appointmentsApi.getAppointmentById(appointmentId);
+    }
+
     return from(this.firestoreHelper.getDocument<Appointment>('appointments', appointmentId));
   }
 
@@ -112,6 +167,16 @@ export class AppointmentService {
    * Crear una nueva cita
    */
   createAppointment(appointment: Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>): Observable<string | null> {
+    if (BACKEND_CONFIG.enabled) {
+      return this.appointmentsApi.createAppointment(appointment).pipe(
+        map((r) => r?.id ?? null),
+        catchError((error) => {
+          console.error('Error al crear cita (backend):', error);
+          return of(null);
+        })
+      );
+    }
+
     const now = Timestamp.now();
     const appointmentData = {
       ...appointment,
@@ -132,6 +197,16 @@ export class AppointmentService {
    * Actualizar una cita existente
    */
   updateAppointment(appointmentId: string, updates: Partial<Appointment>): Observable<boolean> {
+    if (BACKEND_CONFIG.enabled) {
+      return this.appointmentsApi.updateAppointment(appointmentId, updates).pipe(
+        map((r) => !!r?.success),
+        catchError((error) => {
+          console.error('Error al actualizar cita (backend):', error);
+          return of(false);
+        })
+      );
+    }
+
     const updateData = {
       ...updates,
       updatedAt: new Date().toISOString()
@@ -200,6 +275,16 @@ export class AppointmentService {
    * Eliminar una cita
    */
   deleteAppointment(appointmentId: string): Observable<boolean> {
+    if (BACKEND_CONFIG.enabled) {
+      return this.appointmentsApi.deleteAppointment(appointmentId).pipe(
+        map((r) => !!r?.success),
+        catchError((error) => {
+          console.error('Error al eliminar cita (backend):', error);
+          return of(false);
+        })
+      );
+    }
+
     if (Capacitor.isNativePlatform()) {
       // Usar REST API en iOS/Android
       return from(this.firestoreNative.deleteDocument('appointments', appointmentId)).pipe(
@@ -232,6 +317,18 @@ export class AppointmentService {
     endTime: string,
     excludeAppointmentId?: string
   ): Observable<boolean> {
+    if (BACKEND_CONFIG.enabled) {
+      return this.appointmentsApi
+        .isTimeSlotAvailable({ doctorId, date, startTime, endTime, excludeAppointmentId })
+        .pipe(
+          map((r) => !!r?.available),
+          catchError((error) => {
+            console.error('Error al verificar disponibilidad (backend):', error);
+            return of(false);
+          })
+        );
+    }
+
     const q = query(
       this.appointmentsCollection,
       where('doctorId', '==', doctorId),

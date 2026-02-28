@@ -38,13 +38,18 @@ export class FooterComponent implements OnInit, OnDestroy {
 
   isActive(path: string): boolean {
     const currentUrl = this.router.url;
-    
-    // Exact match for home
+
+    // Home tab activo si es /app, /app/, /app/home-doctor o /app/home-client
     if (path === '/app') {
-      return currentUrl === '/app' || currentUrl === '/app/';
+      return (
+        currentUrl === '/app' ||
+        currentUrl === '/app/' ||
+        currentUrl === '/app/home-doctor' ||
+        currentUrl === '/app/home-client'
+      );
     }
-    
-    // Match if current URL includes the path
+
+    // Match si la URL incluye el path
     return currentUrl.includes(path);
   }
 

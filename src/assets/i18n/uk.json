@@ -310,6 +310,7 @@
     "calendar.appointment": "зустріч",
     "calendar.appointments": "зустрічі",
     "calendar.today": "Сьогодні",
+    "calendar.tomorrow": "Завтра",
     "calendar.dateBlocked": "Ця дата заблокована (вакація або свято)",
     "calendar.noScheduleConfigured": "Немає налаштованого розкладу на цей день",
     "calendar.startSession": "Почати сеанс",
@@ -360,6 +361,22 @@
     "videoCall.microphone": "Мікрофон",
     "videoCall.camera": "Камера",
     "videoCall.endCall": "Завершити",
-    "videoCall.connecting": "З'єднання..."
+    "videoCall.connecting": "Підключення...",
+    "changePassword.title": "Змінити пароль",
+    "changePassword.subtitle": "Оновіть пароль, щоб зберегти свій обліковий запис у безпеці.",
+    "changePassword.requirementsTitle": "Вимоги до пароля:",
+    "changePassword.requirementMinLength": "• Мінімум 6 символів",
+    "changePassword.requirementDifferent": "• Має відрізнятися від поточного пароля",
+    "changePassword.requirementAdvice": "• Рекомендуємо використовувати літери, цифри та символи",
+    "changePassword.currentPasswordLabel": "Поточний пароль",
+    "changePassword.currentPasswordPlaceholder": "Введіть поточний пароль",
+    "changePassword.newPasswordLabel": "Новий пароль",
+    "changePassword.newPasswordPlaceholder": "Введіть новий пароль",
+    "changePassword.confirmPasswordLabel": "Підтвердити новий пароль",
+    "changePassword.confirmPasswordPlaceholder": "Підтвердіть новий пароль",
+    "changePassword.updating": "Оновлення...",
+    "changePassword.updateButton": "Оновити пароль",
+    "changePassword.securityTipTitle": "Порада щодо безпеки",
+    "changePassword.securityTip": "Ніколи не діліться своїм паролем. Команда Teraly ніколи не попросить ваш пароль електронною поштою або телефоном."
   }
 }

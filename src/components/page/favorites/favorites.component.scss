@@ -1,0 +1,14 @@
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #fff;
+  /* Ajusta el color de fondo según tu diseño */
+}
+
+@media (max-width: 768px) {
+  .sticky-header {
+    /* Puedes agregar más estilos para móviles si lo necesitas */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+}
