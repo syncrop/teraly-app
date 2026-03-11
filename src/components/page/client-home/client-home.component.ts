@@ -109,4 +109,9 @@ export class ClientHomeComponent implements OnInit {
       this.router.navigate(['/app/video-call', next.id]);
     }
   }
+
+  goToDoctorProfile(appointment: Appointment): void {
+    if (!appointment?.doctorId) return;
+    this.router.navigate(['/app/doctor', appointment.doctorId]);
+  }
 }

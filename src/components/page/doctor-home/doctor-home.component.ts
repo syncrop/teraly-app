@@ -207,7 +207,7 @@ export class DoctorHomeComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error al cargar citas pendientes:', error);
-        this.toastService.error('Error al cargar las solicitudes');
+        this.toastService.error($localize`:@@toast.requests.loadError:Error al cargar las solicitudes`);
       }
     });
   }
@@ -259,16 +259,16 @@ export class DoctorHomeComponent implements OnInit {
     this.appointmentService.confirmAppointment(requestId).subscribe({
       next: (success) => {
         if (success) {
-          this.toastService.success('Solicitud aceptada correctamente');
+          this.toastService.success($localize`:@@toast.requests.acceptSuccess:Solicitud aceptada correctamente`);
           // Recargar las citas para actualizar la lista
           this.loadTodayAppointments();
           this.loadPendingAppointments();
         } else {
-          this.toastService.error('No se pudo aceptar la solicitud');
+          this.toastService.error($localize`:@@toast.requests.acceptFailed:No se pudo aceptar la solicitud`);
         }
       },
       error: () => {
-        this.toastService.error('Error al aceptar la solicitud');
+        this.toastService.error($localize`:@@toast.requests.acceptError:Error al aceptar la solicitud`);
       }
     });
   }
@@ -277,16 +277,16 @@ export class DoctorHomeComponent implements OnInit {
     this.appointmentService.cancelAppointment(requestId).subscribe({
       next: (success) => {
         if (success) {
-          this.toastService.info('Solicitud rechazada');
+          this.toastService.info($localize`:@@toast.requests.rejectSuccess:Solicitud rechazada`);
           // Recargar las citas para actualizar la lista
           this.loadTodayAppointments();
           this.loadPendingAppointments();
         } else {
-          this.toastService.error('No se pudo rechazar la solicitud');
+          this.toastService.error($localize`:@@toast.requests.rejectFailed:No se pudo rechazar la solicitud`);
         }
       },
       error: () => {
-        this.toastService.error('Error al rechazar la solicitud');
+        this.toastService.error($localize`:@@toast.requests.rejectError:Error al rechazar la solicitud`);
       }
     });
   }

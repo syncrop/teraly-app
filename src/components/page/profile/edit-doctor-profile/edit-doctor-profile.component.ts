@@ -5,12 +5,10 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../../services/auth.service';
 import { ToastService } from '../../../../services/toast.service';
 import { Firestore, doc, updateDoc } from '@angular/fire/firestore';
-
-interface Language {
-  code: string;
-  flag: string;
-  name: string;
-}
+import { LanguagesSelectorComponent } from '../../../shared/languages-selector/languages-selector.component';
+import { isBackendEnabled } from '../../../../config/backend.config';
+import { UsersApiService } from '../../../../services/users-api.service';
+import { firstValueFrom } from 'rxjs';
 
 interface Specialty {
   id: string;
@@ -20,7 +18,7 @@ interface Specialty {
 @Component({
   selector: 'app-edit-doctor-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, LanguagesSelectorComponent],
   templateUrl: './edit-doctor-profile.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -29,20 +27,10 @@ export class EditDoctorProfileComponent implements OnInit {
   private router = inject(Router);
   private toastService = inject(ToastService);
   private firestore = inject(Firestore);
+  private readonly usersApi = inject(UsersApiService);
 
   isLoading = signal(false);
-  showLanguagesDropdown = signal(false);
   showSpecialtiesDropdown = signal(false);
-
-  availableLanguages: Language[] = [
-    { code: 'es', flag: '🇪🇸', name: 'Español' },
-    { code: 'en', flag: '🇬🇧', name: 'English' },
-    { code: 'pl', flag: '🇵🇱', name: 'Polski' },
-    { code: 'uk', flag: '🇺🇦', name: 'Українська' },
-    { code: 'fr', flag: '🇫🇷', name: 'Français' },
-    { code: 'de', flag: '🇩🇪', name: 'Deutsch' },
-    { code: 'pt', flag: '🇵🇹', name: 'Português' }
-  ];
 
   availableSpecialties: Specialty[] = [
     { id: 'ansiedad', name: 'Ansiedad' },
@@ -89,24 +77,8 @@ export class EditDoctorProfileComponent implements OnInit {
     }
   }
 
-  toggleLanguagesDropdown() {
-    this.showLanguagesDropdown.update(val => !val);
-  }
-
   toggleSpecialtiesDropdown() {
     this.showSpecialtiesDropdown.update(val => !val);
-  }
-
-  toggleLanguage(languageCode: string) {
-    const currentLanguages = this.profileForm.get('languages')?.value || [];
-    const index = currentLanguages.indexOf(languageCode);
-    
-    if (index > -1) {
-      const newLanguages = currentLanguages.filter(code => code !== languageCode);
-      this.profileForm.get('languages')?.setValue(newLanguages);
-    } else {
-      this.profileForm.get('languages')?.setValue([...currentLanguages, languageCode]);
-    }
   }
 
   toggleSpecialty(specialtyId: string) {
@@ -121,25 +93,9 @@ export class EditDoctorProfileComponent implements OnInit {
     }
   }
 
-  isLanguageSelected(languageCode: string): boolean {
-    const currentLanguages = this.profileForm.get('languages')?.value || [];
-    return currentLanguages.includes(languageCode);
-  }
-
   isSpecialtySelected(specialtyId: string): boolean {
     const currentSpecialties = this.profileForm.get('specialties')?.value || [];
     return currentSpecialties.includes(specialtyId);
-  }
-
-  getSelectedLanguagesDisplay(): string {
-    const currentLanguages = this.profileForm.get('languages')?.value || [];
-    if (currentLanguages.length === 0) return 'Selecciona idiomas';
-    
-    const selectedLangs = this.availableLanguages
-      .filter(lang => currentLanguages.includes(lang.code))
-      .map(lang => `${lang.flag} ${lang.name}`);
-    
-    return selectedLangs.join(', ');
   }
 
   getSelectedSpecialtiesDisplay(): string {
@@ -156,7 +112,7 @@ export class EditDoctorProfileComponent implements OnInit {
   async saveProfile() {
     if (this.profileForm.invalid) {
       this.profileForm.markAllAsTouched();
-      this.toastService.error('Por favor, completa todos los campos requeridos');
+      this.toastService.error($localize`:@@toast.common.requiredAllFields:Por favor, completa todos los campos requeridos`);
       return;
     }
 
@@ -165,43 +121,70 @@ export class EditDoctorProfileComponent implements OnInit {
     try {
       const currentUser = this.authService.currentUser();
       if (!currentUser) {
-        this.toastService.error('No se encontró el usuario');
+        this.toastService.error($localize`:@@toast.common.userNotFoundGeneric:No se encontró el usuario`);
         return;
       }
 
-      const userRef = doc(this.firestore, 'users', currentUser.uid);
-      const formValue = this.profileForm.value;
+      const formValue = this.profileForm.getRawValue();
 
-      await updateDoc(userRef, {
-        fullName: formValue.fullName,
-        licenseNumber: formValue.licenseNumber,
-        specialty: formValue.specialty,
-        description: formValue.description,
-        languages: formValue.languages,
-        specialties: formValue.specialties,
-        currency: formValue.currency,
-        price: formValue.price,
-        sessionDuration: formValue.sessionDuration,
-        experience: formValue.experience,
-        completed: true, // Mark profile as completed
-        updatedAt: new Date()
-      });
+      if (isBackendEnabled()) {
+        const updated = await firstValueFrom(
+          this.usersApi.upsertMe({
+            fullName: formValue.fullName,
+            licenseNumber: formValue.licenseNumber,
+            specialty: formValue.specialty,
+            description: formValue.description,
+            languages: formValue.languages,
+            specialties: formValue.specialties,
+            currency: formValue.currency,
+            price: formValue.price,
+            sessionDuration: formValue.sessionDuration,
+            experience: formValue.experience,
+            completed: true,
+          })
+        );
 
-      // Update local user state
-      this.authService.currentUser.set({
-        ...currentUser,
-        fullName: formValue.fullName!,
-        licenseNumber: formValue.licenseNumber!,
-        specialty: formValue.specialty!,
-        languages: formValue.languages!,
-        completed: true
-      });
+        this.authService.currentUser.set(updated);
+        this.authService.currentUserRole.set(updated.role);
+      } else {
+        const userRef = doc(this.firestore, 'users', currentUser.uid);
 
-      this.toastService.success('Perfil actualizado correctamente');
+        await updateDoc(userRef, {
+          fullName: formValue.fullName,
+          licenseNumber: formValue.licenseNumber,
+          specialty: formValue.specialty,
+          description: formValue.description,
+          languages: formValue.languages,
+          specialties: formValue.specialties,
+          currency: formValue.currency,
+          price: formValue.price,
+          sessionDuration: formValue.sessionDuration,
+          experience: formValue.experience,
+          completed: true,
+          updatedAt: new Date(),
+        });
+
+        this.authService.currentUser.set({
+          ...currentUser,
+          fullName: formValue.fullName,
+          licenseNumber: formValue.licenseNumber,
+          specialty: formValue.specialty,
+          description: formValue.description,
+          languages: formValue.languages,
+          specialties: formValue.specialties,
+          currency: formValue.currency,
+          price: formValue.price,
+          sessionDuration: formValue.sessionDuration,
+          experience: formValue.experience,
+          completed: true,
+        });
+      }
+
+      this.toastService.success($localize`:@@toast.profile.updateSuccess:Perfil actualizado correctamente`);
       this.router.navigate(['/app/profile']);
     } catch (error) {
       console.error('Error updating profile:', error);
-      this.toastService.error('Error al actualizar el perfil');
+      this.toastService.error($localize`:@@toast.profile.updateError:Error al actualizar el perfil`);
     } finally {
       this.isLoading.set(false);
     }

@@ -63,34 +63,11 @@
         <!-- Languages Multi-Select Dropdown -->
         <div class="pt-2 relative">
           <label class="block text-sm font-medium text-gray-700 mb-1" i18n="@@register.languagesLabel">Idiomas que hablas</label>
-          <button
-            type="button"
-            (click)="toggleLanguagesDropdown()"
-            class="appearance-none rounded-xl relative block w-full px-4 py-3.5 border border-gray-200 bg-gray-50 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white sm:text-sm text-left flex items-center justify-between"
-          >
-            <span [class.text-gray-500]="!registerForm.get('languages')?.value?.length">{{ getSelectedLanguagesDisplay() }}</span>
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          @if (showLanguagesDropdown()) {
-            <div class="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
-              @for (language of availableLanguages; track language.code) {
-                <label
-                  class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    [checked]="isLanguageSelected(language.code)"
-                    (change)="toggleLanguage(language.code)"
-                    class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                  />
-                  <span class="ml-3 text-sm text-gray-900">{{ language.flag }} {{ language.name }}</span>
-                </label>
-              }
-            </div>
-          }
+          <app-languages-selector
+            formControlName="languages"
+            placeholder="Selecciona idiomas"
+            i18n-placeholder="@@register.languagesPlaceholder"
+          ></app-languages-selector>
           @if (registerForm.get('languages')?.hasError('required') && registerForm.get('languages')?.touched) {
             <p class="text-red-500 text-xs mt-1" i18n="@@register.languagesRequired">Debes seleccionar al menos un idioma.</p>
           }

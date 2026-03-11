@@ -2,6 +2,7 @@ import { Injectable, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, user } from '@angular/fire/auth';
 import { Firestore, collection, doc, setDoc, getDoc, query, where, getDocs } from '@angular/fire/firestore';
+import { HttpErrorResponse } from '@angular/common/http';
 import { from, Observable, of } from 'rxjs';
 import { map, catchError, switchMap, tap } from 'rxjs/operators';
 import { finalize } from 'rxjs/operators';
@@ -10,7 +11,7 @@ import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { FirestoreHelperService } from './firestore-helper.service';
 import { LoaderService } from './loader.service';
-import { BACKEND_CONFIG } from '../config/backend.config';
+import { getBackendApiBaseUrl, isBackendEnabled } from '../config/backend.config';
 import { UsersApiService } from './users-api.service';
 import { firstValueFrom } from 'rxjs';
 
@@ -73,11 +74,11 @@ export class AuthService {
 
   /**
    * Perfil del usuario (durante la migración):
-   * - Backend (Cloud Run + Mongo) cuando BACKEND_CONFIG.enabled=true
-   * - Firestore mientras BACKEND_CONFIG.enabled=false
+   * - Backend (Cloud Run + Mongo) cuando isBackendEnabled()=true
+   * - Firestore mientras isBackendEnabled()=false
    */
   private async getUserProfile(uid: string): Promise<AppUser | null> {
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
       try {
         // Prefer /me when possible; fallback to /users/:uid for bootstrap scenarios.
         const me = await firstValueFrom(this.usersApi.getMe().pipe(catchError(() => of(null))));
@@ -89,6 +90,67 @@ export class AuthService {
     }
 
     return this.getFirestoreUser(uid);
+  }
+
+  private describeBackendProfileLoadError(error: unknown): string | null {
+    const baseUrl = getBackendApiBaseUrl();
+
+    if (error instanceof HttpErrorResponse) {
+      // status=0 usually means network error / CORS / DNS / connection refused.
+      if (error.status === 0) {
+        const looksLikeLocalhost = /^(https?:\/\/)?(localhost|127\.0\.0\.1)(:\d+)?\b/i.test(baseUrl);
+        if (looksLikeLocalhost && Capacitor.isNativePlatform()) {
+          return (
+            `No se pudo conectar al backend (${baseUrl}). ` +
+            'En móvil, "localhost" apunta al dispositivo: usa la IP de tu PC/Mac o un endpoint público.'
+          );
+        }
+        return `No se pudo conectar al backend (${baseUrl}). Verifica que esté levantado y accesible.`;
+      }
+
+      if (error.status === 401) {
+        return 'No se pudo autenticar contra el backend (token inválido o proyecto Firebase distinto).';
+      }
+
+      if (error.status === 403) {
+        return 'Acceso denegado por el backend.';
+      }
+
+      if (error.status === 503) {
+        return 'El backend está disponible pero la base de datos no responde o no está configurada.';
+      }
+
+      // 404 is handled by the caller as "missing profile".
+      if (error.status === 404) {
+        return null;
+      }
+
+      return `Error del backend (${error.status}). Intenta de nuevo.`;
+    }
+
+    return 'No se pudo obtener tu perfil desde el backend. Intenta de nuevo.';
+  }
+
+  private async getUserProfileFromBackendWithDiagnostics(uid: string): Promise<{ user: AppUser | null; error?: string }> {
+    // 1) Try /me
+    try {
+      const me = await firstValueFrom(this.usersApi.getMe());
+      if (me) return { user: me };
+    } catch (err) {
+      const message = this.describeBackendProfileLoadError(err);
+      if (message) return { user: null, error: message };
+    }
+
+    // 2) Fallback /users/:uid
+    try {
+      const profile = await firstValueFrom(this.usersApi.getUserById(uid));
+      return { user: profile };
+    } catch (err) {
+      const message = this.describeBackendProfileLoadError(err);
+      if (message) return { user: null, error: message };
+    }
+
+    return { user: null };
   }
 
   /**
@@ -197,8 +259,15 @@ export class AuthService {
 
             let userData: AppUser | null = null;
 
-            if (BACKEND_CONFIG.enabled) {
-              userData = await this.getUserProfile(uid);
+            if (isBackendEnabled()) {
+              const result = await this.getUserProfileFromBackendWithDiagnostics(uid);
+              userData = result.user;
+
+              if (result.error) {
+                await signOut(this.auth);
+                return { success: false, error: result.error };
+              }
+
               if (!userData) {
                 await signOut(this.auth);
                 return {
@@ -268,36 +337,9 @@ export class AuthService {
       switchMap((credential) =>
         from((async () => {
           const uid = credential.user.uid;
-          
-          const userData: AppUser = {
-            uid,
-            email,
-            fullName,
-            role: userType,
-            createdAt: new Date(),
-            isVerified: userType === 'client',
-            languages: languages || [],
-            ...(userType === 'doctor' && { 
-              isVerified: false,
-              specialty: '',
-              completed: false
-            })
-          };
 
-          if (BACKEND_CONFIG.enabled) {
-            // Create profile in backend (Cloud Run + Mongo).
-            await firstValueFrom(this.usersApi.upsertMe(userData));
-          } else {
-            const userRef = doc(this.firestore, 'users', uid);
-            await setDoc(userRef, userData);
-          }
-
-          this.currentUserRole.set(userType);
-          this.currentUser.set(userData);
-          localStorage.setItem('userRole', userType);
-          localStorage.setItem('userId', uid);
-
-          // store session token details (idToken, refreshToken, expiresAt, localId, email)
+          // store session token details ASAP so backend calls right after signup are authenticated
+          // (Authorization header is attached by the interceptor via AuthTokenService/localStorage)
           try {
             const tokenResult = await credential.user.getIdTokenResult();
             const idToken = tokenResult?.token || '';
@@ -309,8 +351,37 @@ export class AuthService {
             localStorage.setItem('localId', uid);
             localStorage.setItem('email', credential.user.email || email || '');
           } catch (e) {
-            // Error al guardar tokens
+            // Error al guardar tokens (no debe romper el registro)
           }
+          
+          const userData: AppUser = {
+            uid,
+            email,
+            fullName,
+            role: userType,
+            createdAt: new Date(),
+            isVerified: userType === 'client',
+            languages: languages || [],
+            ...(userType === 'doctor' && { 
+              isVerified: false,
+              licenseNumber: licenseNumber || '',
+              specialty: '',
+              completed: false
+            })
+          };
+
+          if (isBackendEnabled()) {
+            // Create profile in backend (Cloud Run + Mongo).
+            await firstValueFrom(this.usersApi.upsertMe(userData));
+          } else {
+            const userRef = doc(this.firestore, 'users', uid);
+            await setDoc(userRef, userData);
+          }
+
+          this.currentUserRole.set(userType);
+          this.currentUser.set(userData);
+          localStorage.setItem('userRole', userType);
+          localStorage.setItem('userId', uid);
 
           this.loaderService.hide();
           return { success: true, uid };
@@ -420,26 +491,26 @@ export class AuthService {
 
   // Obtener el usuario actual
   getCurrentUser(): Observable<AppUser | null> {
-    if (Capacitor.isNativePlatform()) {
-      // iOS/Android: Obtener UID y usar helper
-      const userId = this.getCurrentUserId();
-      if (!userId) {
-        return from([null]);
-      }
-      return from(this.getFirestoreUser(userId));
+    // Prefer cached signal (works for backend-mode too).
+    const cached = this.currentUser();
+    if (cached) {
+      return of(cached);
     }
-    
-    // Web: Usar SDK normal
-    return from(user(this.auth)).pipe(
-      switchMap((firebaseUser) => {
-        if (firebaseUser) {
-          return from(getDoc(doc(this.firestore, 'users', firebaseUser.uid))).pipe(
-            map((userDoc) => userDoc.data() as AppUser)
-          );
+
+    const userId = this.getCurrentUserId();
+    if (!userId) {
+      return of(null);
+    }
+
+    // Fetch using migration-aware profile loader (backend or Firestore).
+    return from(this.getUserProfile(userId)).pipe(
+      tap((userData) => {
+        if (userData) {
+          this.currentUser.set(userData);
+          this.currentUserRole.set(userData.role);
         }
-        return from([null]);
       }),
-      catchError(() => from([null]))
+      catchError(() => of(null))
     );
   }
 

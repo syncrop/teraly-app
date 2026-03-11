@@ -64,11 +64,11 @@ export class FavoritesService {
     const requester = await this.users.getByUid(requesterUid);
     if (!requester) throw new ForbiddenException('Missing profile');
 
-    const docs = (await this.mongo
+    const docs = await this.mongo
       .favorites()
       .find({ userId: requesterUid })
       .project({ doctorId: 1 })
-      .toArray()) as Array<Pick<FavoriteDoc, 'doctorId'>>;
+      .toArray();
 
     return { doctorIds: docs.map((d) => d.doctorId) };
   }

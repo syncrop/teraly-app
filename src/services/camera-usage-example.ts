@@ -31,7 +31,7 @@ export class ProfileExampleComponent {
       const base64 = await this.cameraService.photoToBase64(photo);
       
       if (!base64) {
-        this.toastService.error('Error al procesar la imagen');
+        this.toastService.error($localize`:@@toast.profile.imageProcessError:Error al procesar la imagen`);
         return;
       }
 
@@ -39,11 +39,11 @@ export class ProfileExampleComponent {
       const userId = 'current-user-id'; // Obtener del AuthService
       await this.userService.updateProfilePicture(userId, base64);
       
-      this.toastService.success('Foto de perfil actualizada');
+      this.toastService.success($localize`:@@profile.photoUpdated:Foto de perfil actualizada`);
       
     } catch (error) {
       console.error('Error al cambiar foto:', error);
-      this.toastService.error('Error al actualizar la foto');
+      this.toastService.error($localize`:@@toast.profile.updatePhotoError:Error al actualizar la foto`);
     }
   }
 }

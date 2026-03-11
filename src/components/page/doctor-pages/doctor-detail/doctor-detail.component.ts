@@ -1,20 +1,23 @@
 import { ChangeDetectionStrategy, Component, inject, signal, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ToastService } from '../../../../services/toast.service';
 import { AuthService } from '../../../../services/auth.service';
-import { UserService } from '../../../../services/user.service';
 import { FavoritesService } from '../../../../services/favorites.service';
 import { AppointmentService } from '../../../../services/appointment.service';
 import { ReviewService } from '../../../../services/review.service';
+import { UsersApiService } from '../../../../services/users-api.service';
+import { isBackendEnabled } from '../../../../config/backend.config';
+import { AvailabilitySlotsService } from '../../../../services/availability-slots.service';
 import { CurrencySymbolPipe } from '../../../shared/pipes/currency-symbol.pipe';
 import { Doctor, AvailableDay } from '../../../../models/doctor.model';
 import { DoctorReview } from '../../../../models/review.model';
-import { Firestore, doc, getDoc } from '@angular/fire/firestore';
 import { DaySchedule, BlockedDate } from '../../../../models/availability.model';
 
 interface AvailableTimeSlot {
   time: string;
+  endTime: string;
   available: boolean;
 }
 
@@ -33,11 +36,11 @@ export class DoctorDetailComponent implements OnInit {
   private toastService = inject(ToastService);
   private location = inject(Location);
   private authService = inject(AuthService);
-  private userService = inject(UserService);
+  private usersApi = inject(UsersApiService);
   private favoritesService = inject(FavoritesService);
   private appointmentService = inject(AppointmentService);
   private reviewService = inject(ReviewService);
-  private firestore = inject(Firestore);
+  private availabilitySlots = inject(AvailabilitySlotsService);
 
   @ViewChild('availabilitySection') availabilitySection?: ElementRef;
 
@@ -62,6 +65,9 @@ export class DoctorDetailComponent implements OnInit {
   myReview = signal<DoctorReview | null>(null);
   canCreateReview = signal(false);
   completedAppointmentIdForReview = signal<string | null>(null);
+
+  // UI gating: only show chat button when the client has or had an appointment with this doctor
+  canChatWithDoctor = signal(false);
 
   reviewRating = signal<number>(5);
   reviewComment = signal<string>('');
@@ -141,54 +147,61 @@ export class DoctorDetailComponent implements OnInit {
     const user = this.authService.currentUser();
     const userId = this.currentUserId();
 
-    if (!userId || !user || user.role !== 'client') {
+    if (!userId || !user || user.role !== 'client' || this.isOwnProfile()) {
       this.canCreateReview.set(false);
       this.myReview.set(null);
       this.completedAppointmentIdForReview.set(null);
+      this.canChatWithDoctor.set(false);
       return;
     }
 
-    // 1) Check if user already reviewed this doctor
-    this.reviewService.getReviewForDoctor(doctorId, userId).subscribe({
-      next: (existing) => {
-        this.myReview.set(existing);
-        if (existing) {
+    // Fetch relationship data in parallel (1 request for review + 1 for appointments)
+    forkJoin({
+      existingReview: this.reviewService.getReviewForDoctor(doctorId, userId),
+      appointments: this.appointmentService.getClientAppointments(userId),
+    }).subscribe({
+      next: ({ existingReview, appointments }) => {
+        this.myReview.set(existingReview);
+
+        const relevantAppointments = (appointments ?? []).filter(
+          (a) => a.doctorId === doctorId && !!a.id
+        );
+
+        // "Tiene o ha tenido" cita: any non-cancelled appointment with this doctor
+        const hasOrHadAppointment = relevantAppointments.some(
+          (a) => a.status !== 'cancelled'
+        );
+        this.canChatWithDoctor.set(hasOrHadAppointment);
+
+        if (existingReview) {
           this.canCreateReview.set(false);
           this.completedAppointmentIdForReview.set(null);
           return;
         }
 
-        // 2) Find a completed appointment for this doctor
-        this.appointmentService.getClientAppointments(userId).subscribe({
-          next: (appointments) => {
-            const completed = (appointments ?? [])
-              .filter(a => a.doctorId === doctorId && a.status === 'completed' && !!a.id)
-              .sort((a, b) => {
-                const dateCompare = (b.date ?? '').localeCompare(a.date ?? '');
-                if (dateCompare !== 0) return dateCompare;
-                return (b.startTime ?? '').localeCompare(a.startTime ?? '');
-              });
+        const completed = relevantAppointments
+          .filter((a) => a.status === 'completed')
+          .sort((a, b) => {
+            const dateCompare = (b.date ?? '').localeCompare(a.date ?? '');
+            if (dateCompare !== 0) return dateCompare;
+            return (b.startTime ?? '').localeCompare(a.startTime ?? '');
+          });
 
-            const apt = completed[0];
-            if (apt?.id) {
-              this.completedAppointmentIdForReview.set(apt.id);
-              this.canCreateReview.set(true);
-            } else {
-              this.completedAppointmentIdForReview.set(null);
-              this.canCreateReview.set(false);
-            }
-          },
-          error: () => {
-            this.completedAppointmentIdForReview.set(null);
-            this.canCreateReview.set(false);
-          }
-        });
+        const apt = completed[0];
+        if (apt?.id) {
+          this.completedAppointmentIdForReview.set(apt.id);
+          this.canCreateReview.set(true);
+        } else {
+          this.completedAppointmentIdForReview.set(null);
+          this.canCreateReview.set(false);
+        }
       },
       error: () => {
         this.canCreateReview.set(false);
         this.myReview.set(null);
         this.completedAppointmentIdForReview.set(null);
-      }
+        this.canChatWithDoctor.set(false);
+      },
     });
   }
 
@@ -199,23 +212,27 @@ export class DoctorDetailComponent implements OnInit {
     const appointmentId = this.completedAppointmentIdForReview();
 
     if (!doctorId || !userId || !user || user.role !== 'client') {
-      this.toastService.error('Debes iniciar sesión como paciente para dejar una reseña');
+      this.toastService.error(
+        $localize`:@@toast.reviews.mustLoginAsPatient:Debes iniciar sesión como paciente para dejar una reseña`
+      );
       return;
     }
 
     if (!appointmentId) {
-      this.toastService.error('Necesitas haber completado una cita para dejar una reseña');
+      this.toastService.error(
+        $localize`:@@toast.reviews.mustCompleteAppointment:Necesitas haber completado una cita para dejar una reseña`
+      );
       return;
     }
 
     const rating = this.reviewRating();
     const comment = this.reviewComment().trim();
     if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
-      this.toastService.error('Selecciona una calificación válida (1-5)');
+      this.toastService.error($localize`:@@toast.reviews.invalidRating:Selecciona una calificación válida (1-5)`);
       return;
     }
     if (!comment) {
-      this.toastService.error('Escribe un comentario');
+      this.toastService.error($localize`:@@toast.reviews.commentRequired:Escribe un comentario`);
       return;
     }
 
@@ -232,19 +249,19 @@ export class DoctorDetailComponent implements OnInit {
       next: (ok) => {
         this.isSubmittingReview.set(false);
         if (ok) {
-          this.toastService.success('¡Reseña enviada!');
+          this.toastService.success($localize`:@@toast.reviews.sentSuccess:¡Reseña enviada!`);
           this.reviewComment.set('');
           this.reviewRating.set(5);
           this.loadReviews(doctorId);
           this.refreshReviewEligibility(doctorId);
         } else {
-          this.toastService.error('No se pudo enviar la reseña');
+          this.toastService.error($localize`:@@toast.reviews.sendFailed:No se pudo enviar la reseña`);
         }
       },
       error: (err) => {
         console.error('Error submitting review:', err);
         this.isSubmittingReview.set(false);
-        this.toastService.error('Error al enviar la reseña');
+        this.toastService.error($localize`:@@toast.reviews.sendError:Error al enviar la reseña`);
       }
     });
   }
@@ -273,7 +290,7 @@ export class DoctorDetailComponent implements OnInit {
 
   loadDoctorData(doctorId: string) {
     this.isLoading.set(true);
-    this.userService.getDoctorById(doctorId).subscribe({
+    this.usersApi.getPublicDoctorById(doctorId).subscribe({
       next: (doctorData) => {
         if (doctorData) {
           this.doctor.set({
@@ -295,10 +312,13 @@ export class DoctorDetailComponent implements OnInit {
           // Load doctor availability (prefer data already fetched by UserService, fallback to Firestore getDoc)
           const appliedFromDoctorData = this.applyAvailabilityFromDoctorData(doctorData);
           if (!appliedFromDoctorData) {
-            this.loadDoctorAvailability(doctorId);
+            // If backend payload doesn't include availability, treat as not configured.
+            this.availableDays.set([]);
+            this.selectedDay.set(null);
+            this.timeSlots.set([]);
           }
         } else {
-          this.toastService.error('Doctor no encontrado');
+          this.toastService.error($localize`:@@toast.doctor.notFound:Doctor no encontrado`);
           this.goBack();
         }
         
@@ -306,29 +326,10 @@ export class DoctorDetailComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error al cargar datos del doctor:', error);
-        this.toastService.error('Error al cargar datos del doctor');
+        this.toastService.error($localize`:@@toast.doctor.loadError:Error al cargar datos del doctor`);
         this.isLoading.set(false);
       }
     });
-  }
-
-  async loadDoctorAvailability(doctorId: string) {
-    try {
-      const doctorRef = doc(this.firestore, 'users', doctorId);
-      const doctorDoc = await getDoc(doctorRef);
-      
-      if (doctorDoc.exists()) {
-        const data = doctorDoc.data();
-        const availability = this.parseDayScheduleList(data['availability']);
-        const blockedDates = this.parseBlockedDateList(data['blockedDates']);
-        const sessionDuration = this.parseNumberValue(data['sessionDuration']) ?? 60;
-        const breakTime = this.parseNumberValue(data['breakTime']) ?? 15;
-
-        this.applyAvailabilityConfig(availability, blockedDates, sessionDuration, breakTime);
-      }
-    } catch (error) {
-      console.error('Error al cargar disponibilidad del doctor:', error);
-    }
   }
 
   private applyAvailabilityFromDoctorData(doctorData: any): boolean {
@@ -517,7 +518,7 @@ export class DoctorDetailComponent implements OnInit {
           : i === 1
             ? $localize`:@@calendar.tomorrow:Mañana`
             : this.getCalendarDayAbbreviation(dayKey);
-      const dateString = date.toISOString().split('T')[0];
+      const dateString = this.availabilitySlots.formatDate(date);
       const dayNumber = date.getDate().toString();
       
       // Check if day is enabled in schedule
@@ -525,7 +526,7 @@ export class DoctorDetailComponent implements OnInit {
       const isDayEnabled = daySchedule && daySchedule.enabled && daySchedule.slots.length > 0;
       
       // Check if date is blocked
-      const isBlocked = this.isDateBlocked(dateString, blockedDates);
+      const isBlocked = this.availabilitySlots.isDateBlocked(dateString, blockedDates);
       
       days.push({
         date: dateString,
@@ -557,83 +558,31 @@ export class DoctorDetailComponent implements OnInit {
     }
   }
 
-  isDateBlocked(date: string, blockedDates: BlockedDate[]): boolean {
-    const checkDate = new Date(date);
-    
-    return blockedDates.some(blocked => {
-      const startDate = new Date(blocked.startDate);
-      const endDate = new Date(blocked.endDate);
-      return checkDate >= startDate && checkDate <= endDate;
-    });
-  }
-
   calculateTimeSlotsWithAvailability(selectedDate: string) {
     this.isLoadingSlots.set(true);
-    const date = new Date(selectedDate);
-    const dayOfWeek = date.getDay();
-    const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    const dayKey = dayKeys[dayOfWeek];
-    
-    const daySchedule = this.doctorAvailability.find(d => d.day === dayKey);
-    if (!daySchedule || !daySchedule.enabled || daySchedule.slots.length === 0) {
+
+    const candidates = this.availabilitySlots.generateSlotCandidatesForDate({
+      date: selectedDate,
+      availability: this.doctorAvailability,
+      sessionDurationMinutes: this.doctorSessionDuration,
+      breakMinutes: this.doctorBreakTime,
+      blockedDates: this.blockedDates,
+      omitPastOnToday: true,
+      now: new Date(),
+    });
+
+    if (candidates.length === 0) {
       this.timeSlots.set([]);
       this.isLoadingSlots.set(false);
       return;
     }
-    
-    const slots: AvailableTimeSlot[] = [];
-    const sessionDuration = +this.doctorSessionDuration;
-    const breakTime = this.doctorBreakTime;
-    
-    // Verificar si es hoy para filtrar por hora actual
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const selectedDay = new Date(selectedDate);
-    selectedDay.setHours(0, 0, 0, 0);
-    const isToday = selectedDay.getTime() === today.getTime();
-    
-    // Obtener hora actual en minutos
-    const now = new Date();
-    const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
-    
-    // For each time range in the day
-    daySchedule.slots.forEach(range => {
-      const [startHour, startMinute] = range.start.split(':').map(Number);
-      const [endHour, endMinute] = range.end.split(':').map(Number);
-      
-      let currentTime = startHour * 60 + startMinute;
-      let endTime = endHour * 60 + endMinute;
 
-      // Handle ranges that end at 00:00 or otherwise wrap past midnight
-      if (endTime <= currentTime) {
-        endTime += 24 * 60;
-      }
-      
-      while (currentTime + sessionDuration <= endTime) {
-        // Si es hoy, solo mostrar slots futuros
-        if (!isToday || currentTime > currentTimeInMinutes) {
-          const hour = Math.floor(currentTime / 60);
-          const minute = currentTime % 60;
-          const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-          
-          // Solo agregar si no existe ya
-          if (!slots.some(s => s.time === time)) {
-            slots.push({ time, available: true });
-          }
-        }
-        
-        currentTime += sessionDuration + breakTime;
-      }
-    });
-    
-    // Ordenar slots por hora
-    slots.sort((a, b) => {
-      const [aHour, aMin] = a.time.split(':').map(Number);
-      const [bHour, bMin] = b.time.split(':').map(Number);
-      return (aHour * 60 + aMin) - (bHour * 60 + bMin);
-    });
-    
-    // Verificar disponibilidad real contra citas existentes
+    const slots: AvailableTimeSlot[] = candidates.map((s) => ({
+      time: s.time,
+      endTime: s.endTime,
+      available: true,
+    }));
+
     this.checkSlotsAvailability(slots, selectedDate);
   }
 
@@ -645,16 +594,16 @@ export class DoctorDetailComponent implements OnInit {
       return;
     }
 
-    // Cargar citas existentes del día
-    this.appointmentService.getDoctorAppointmentsByDateRange(doctorId, date, date).subscribe({
+    // Public doctor profile: we only need busy intervals (no auth, no client data)
+    const source$ = isBackendEnabled()
+      ? this.appointmentService.getDoctorBusySlotsPublicByDateRange(doctorId, date, date)
+      : this.appointmentService.getDoctorAppointmentsByDateRange(doctorId, date, date);
+
+    source$.subscribe({
       next: (appointments) => {
-        // Marcar slots ocupados
-        const updatedSlots = slots.map(slot => {
-          const hasConflict = appointments.some(apt => {
-            if (apt.status === 'cancelled') return false;
-            return apt.startTime === slot.time;
-          });
-          return { ...slot, available: !hasConflict };
+        const updatedSlots = this.availabilitySlots.markSlotAvailability({
+          slots,
+          appointments,
         });
         
         this.timeSlots.set(updatedSlots);
@@ -692,12 +641,12 @@ export class DoctorDetailComponent implements OnInit {
     const doctorId = this.doctorId();
 
     if (!userId) {
-      this.toastService.error('Debes iniciar sesión para agregar favoritos');
+      this.toastService.error($localize`:@@toast.favorites.mustLoginToAdd:Debes iniciar sesión para agregar favoritos`);
       return;
     }
 
     if (!doctorId) {
-      this.toastService.error('Doctor no encontrado');
+      this.toastService.error($localize`:@@toast.doctor.notFound:Doctor no encontrado`);
       return;
     }
 
@@ -709,14 +658,14 @@ export class DoctorDetailComponent implements OnInit {
         next: (success) => {
           if (success) {
             this.isFavorite.set(false);
-            this.toastService.success('Eliminado de favoritos');
+            this.toastService.success($localize`:@@toast.favorites.removed:Eliminado de favoritos`);
           } else {
-            this.toastService.error('Error al eliminar de favoritos');
+            this.toastService.error($localize`:@@toast.favorites.removeError:Error al eliminar de favoritos`);
           }
         },
         error: (error) => {
           console.error('Error al eliminar favorito:', error);
-          this.toastService.error('Error al eliminar de favoritos');
+          this.toastService.error($localize`:@@toast.favorites.removeError:Error al eliminar de favoritos`);
         }
       });
     } else {
@@ -725,14 +674,14 @@ export class DoctorDetailComponent implements OnInit {
         next: (success) => {
           if (success) {
             this.isFavorite.set(true);
-            this.toastService.success('Agregado a favoritos');
+            this.toastService.success($localize`:@@toast.favorites.added:Agregado a favoritos`);
           } else {
-            this.toastService.error('Error al agregar a favoritos');
+            this.toastService.error($localize`:@@toast.favorites.addError:Error al agregar a favoritos`);
           }
         },
         error: (error) => {
           console.error('Error al agregar favorito:', error);
-          this.toastService.error('Error al agregar a favoritos');
+          this.toastService.error($localize`:@@toast.favorites.addError:Error al agregar a favoritos`);
         }
       });
     }
@@ -754,7 +703,9 @@ export class DoctorDetailComponent implements OnInit {
       }
       
       // Show error toast
-      this.toastService.error('Por favor, selecciona un día y una hora para tu cita');
+      this.toastService.error(
+        $localize`:@@toast.appointments.selectDayAndTime:Por favor, selecciona un día y una hora para tu cita`
+      );
       return;
     }
 
@@ -764,7 +715,7 @@ export class DoctorDetailComponent implements OnInit {
     const selectedTime = this.selectedTimeSlot();
 
     if (!clientId) {
-      this.toastService.error('Debes iniciar sesión para reservar una cita');
+      this.toastService.error($localize`:@@toast.appointments.mustLoginToBook:Debes iniciar sesión para reservar una cita`);
       this.router.navigate(['/login']);
       return;
     }
@@ -773,18 +724,22 @@ export class DoctorDetailComponent implements OnInit {
     this.authService.getCurrentUser().subscribe({
       next: (currentUser) => {
         if (!currentUser) {
-          this.toastService.error('Debes iniciar sesión para reservar una cita');
+          this.toastService.error(
+            $localize`:@@toast.appointments.mustLoginToBook:Debes iniciar sesión para reservar una cita`
+          );
           this.router.navigate(['/login']);
           return;
         }
 
         if (currentUser.role !== 'client') {
-          this.toastService.error('Solo los pacientes pueden reservar citas');
+          this.toastService.error($localize`:@@toast.appointments.onlyClientsCanBook:Solo los pacientes pueden reservar citas`);
           return;
         }
 
         if (!doctorData || !selectedDate || !selectedTime) {
-          this.toastService.error('Información incompleta para crear la cita');
+          this.toastService.error(
+            $localize`:@@toast.appointments.incompleteInfo:Información incompleta para crear la cita`
+          );
           return;
         }
 
@@ -804,7 +759,9 @@ export class DoctorDetailComponent implements OnInit {
         ).subscribe({
           next: (isAvailable) => {
             if (!isAvailable) {
-              this.toastService.error('Este horario ya no está disponible. Por favor, selecciona otro.');
+              this.toastService.error(
+                $localize`:@@toast.appointments.slotUnavailable:Este horario ya no está disponible. Por favor, selecciona otro.`
+              );
               // Refresh time slots
               this.calculateTimeSlotsWithAvailability(selectedDate);
               return;
@@ -828,46 +785,66 @@ export class DoctorDetailComponent implements OnInit {
               currency: doctorData.currency
             };
 
-            this.toastService.info('Creando tu cita...');
+            this.toastService.info($localize`:@@toast.appointments.creating:Creando tu cita...`);
 
             this.appointmentService.createAppointment(appointment).subscribe({
               next: (appointmentId) => {
                 if (appointmentId) {
-                  this.toastService.success('¡Cita reservada exitosamente!');
+                  this.toastService.success(
+                    $localize`:@@toast.appointments.bookedSuccess:¡Cita reservada exitosamente!`
+                  );
                   // Reset selections
                   this.selectedDay.set(null);
                   this.selectedTimeSlot.set(null);
                   // Navigate to appointments page
                   this.router.navigate(['/app/appointments']);
                 } else {
-                  this.toastService.error('Error al crear la cita. Intenta nuevamente.');
+                  this.toastService.error(
+                    $localize`:@@toast.appointments.createErrorRetry:Error al crear la cita. Intenta nuevamente.`
+                  );
                 }
               },
               error: (error) => {
                 console.error('Error creating appointment:', error);
-                this.toastService.error('Error al crear la cita. Intenta nuevamente.');
+                this.toastService.error(
+                  $localize`:@@toast.appointments.createErrorRetry:Error al crear la cita. Intenta nuevamente.`
+                );
               }
             });
           },
           error: (error) => {
             console.error('Error checking availability:', error);
-            this.toastService.error('Error al verificar disponibilidad. Intenta nuevamente.');
+            this.toastService.error(
+              $localize`:@@toast.appointments.checkAvailabilityErrorRetry:Error al verificar disponibilidad. Intenta nuevamente.`
+            );
           }
         });
       },
       error: (error) => {
         console.error('Error getting current user:', error);
-        this.toastService.error('Error al verificar autenticación. Intenta nuevamente.');
+        this.toastService.error(
+          $localize`:@@toast.auth.verifyAuthErrorRetry:Error al verificar autenticación. Intenta nuevamente.`
+        );
       }
     });
   }
 
   sendMessage() {
-    // TODO: Open chat/message
-    console.log('Send message to:', this.doctor().name);
+    const doctorId = this.doctorId();
+    if (!doctorId || this.isOwnProfile()) return;
+
+    if (!this.canChatWithDoctor()) {
+      this.toastService.error(
+        $localize`:@@toast.chat.requiresAppointment:Para chatear necesitas tener o haber tenido una cita con este profesional.`
+      );
+      return;
+    }
+
+    this.router.navigate(['/app/chat/dm', doctorId]);
   }
 
   selectDay(date: string) {
+    if (this.selectedDay() === date) return;
     this.selectedDay.set(date);
     this.selectedTimeSlot.set(null); // Reset selected time slot
     // Recalculate time slots for the newly selected day

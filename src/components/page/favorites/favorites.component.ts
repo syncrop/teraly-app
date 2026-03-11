@@ -7,6 +7,7 @@ import { UserService } from '../../../services/user.service';
 import { FavoritesService } from '../../../services/favorites.service';
 import { ToastService } from '../../../services/toast.service';
 import { forkJoin } from 'rxjs';
+import { AppointmentsComponent } from '../appointments/appointments.component';
 
 interface FavoriteDoctor {
   id: string;
@@ -25,7 +26,7 @@ interface FavoriteDoctor {
   selector: 'app-favorites',
   templateUrl: './favorites.component.html',
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, AppointmentsComponent]
 })
 export class FavoritesComponent implements OnInit {
   private router = inject(Router);
@@ -65,7 +66,7 @@ export class FavoritesComponent implements OnInit {
     const userId = this.authService.getCurrentUserId();
     
     if (!userId) {
-      this.toastService.error('Usuario no encontrado');
+      this.toastService.error($localize`:@@toast.common.userNotFound:Usuario no encontrado`);
       this.isLoading.set(false);
       return;
     }
@@ -108,14 +109,14 @@ export class FavoritesComponent implements OnInit {
           },
           error: (error) => {
             console.error('Error al cargar datos de doctores:', error);
-            this.toastService.error('Error al cargar favoritos');
+            this.toastService.error($localize`:@@toast.favorites.loadError:Error al cargar favoritos`);
             this.isLoading.set(false);
           }
         });
       },
       error: (error) => {
         console.error('Error al cargar favoritos:', error);
-        this.toastService.error('Error al cargar favoritos');
+        this.toastService.error($localize`:@@toast.favorites.loadError:Error al cargar favoritos`);
         this.isLoading.set(false);
       }
     });
@@ -143,7 +144,7 @@ export class FavoritesComponent implements OnInit {
     const userId = this.authService.getCurrentUserId();
     
     if (!userId) {
-      this.toastService.error('Usuario no encontrado');
+      this.toastService.error($localize`:@@toast.common.userNotFound:Usuario no encontrado`);
       return;
     }
 
@@ -152,14 +153,14 @@ export class FavoritesComponent implements OnInit {
         if (success) {
           const updated = this.favoriteDoctors().filter(d => d.id !== doctorId);
           this.favoriteDoctors.set(updated);
-          this.toastService.success('Eliminado de favoritos');
+          this.toastService.success($localize`:@@toast.favorites.removed:Eliminado de favoritos`);
         } else {
-          this.toastService.error('Error al eliminar de favoritos');
+          this.toastService.error($localize`:@@toast.favorites.removeError:Error al eliminar de favoritos`);
         }
       },
       error: (error) => {
         console.error('Error al eliminar favorito:', error);
-        this.toastService.error('Error al eliminar de favoritos');
+        this.toastService.error($localize`:@@toast.favorites.removeError:Error al eliminar de favoritos`);
       }
     });
   }

@@ -15,7 +15,7 @@ import { from, map, Observable, of, switchMap, catchError } from 'rxjs';
 import { FirestoreHelperService } from './firestore-helper.service';
 import { FirestoreNativeService } from './firestore-native.service';
 import { CreateDoctorReviewInput, DoctorReview } from '../models/review.model';
-import { BACKEND_CONFIG } from '../config/backend.config';
+import { isBackendEnabled } from '../config/backend.config';
 import { ReviewsApiService } from './reviews-api.service';
 
 @Injectable({
@@ -31,7 +31,7 @@ export class ReviewService {
 
   /** Returns all reviews authored by a client (Firestore-only). */
   getClientReviews(clientId: string): Observable<DoctorReview[]> {
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
       // Backend doesn't expose this endpoint yet.
       return of([]);
     }
@@ -51,7 +51,7 @@ export class ReviewService {
   }
 
   getDoctorReviews(doctorId: string): Observable<DoctorReview[]> {
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
       return this.reviewsApi.getDoctorReviews(doctorId).pipe(
         map((docs) =>
           (docs ?? [])
@@ -81,7 +81,7 @@ export class ReviewService {
   }
 
   getReviewForDoctor(doctorId: string, clientId: string): Observable<DoctorReview | null> {
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
       // clientId is ignored; backend uses authenticated user
       return this.reviewsApi.getMyReviewForDoctor(doctorId).pipe(
         map((docData) => (docData ? this.normalizeReview(docData) : null)),
@@ -104,7 +104,7 @@ export class ReviewService {
   }
 
   createReview(input: CreateDoctorReviewInput): Observable<boolean> {
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
       return this.reviewsApi.createReview(input).pipe(
         map((r) => !!r?.success),
         catchError((err) => {
@@ -152,7 +152,7 @@ export class ReviewService {
 
   /** Utility: checks appointment ownership/completed server-side should be enforced by rules; this is UI gating only. */
   canUserReviewDoctor(clientId: string, doctorId: string, appointmentId: string): Observable<boolean> {
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
       // clientId is ignored; backend uses authenticated user
       return this.reviewsApi.canReview({ doctorId, appointmentId }).pipe(
         map((r) => !!r?.canReview),

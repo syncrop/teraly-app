@@ -29,11 +29,11 @@ export class ReviewsService {
     const requester = await this.users.getByUid(requesterUid);
     if (!requester) throw new ForbiddenException('Missing profile');
 
-    const docs = (await this.mongo
+    const docs = await this.mongo
       .reviews()
       .find({ doctorId })
       .sort({ createdAt: -1 })
-      .toArray()) as ReviewDoc[];
+      .toArray();
 
     return docs.map((d) => this.toReview(d));
   }

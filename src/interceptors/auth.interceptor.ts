@@ -2,11 +2,12 @@ import { inject } from '@angular/core';
 import { HttpInterceptorFn } from '@angular/common/http';
 import { from, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
-import { BACKEND_CONFIG } from '../config/backend.config';
+import { getBackendApiBaseUrl, getBackendConfig } from '../config/backend.config';
 import { AuthTokenService } from '../services/auth-token.service';
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
-  const { enabled, apiBaseUrl } = BACKEND_CONFIG;
+  const { enabled } = getBackendConfig();
+  const apiBaseUrl = getBackendApiBaseUrl();
 
   if (!enabled || !apiBaseUrl) {
     return next(request);

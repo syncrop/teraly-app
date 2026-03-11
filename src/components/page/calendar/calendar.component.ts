@@ -136,7 +136,7 @@ export class CalendarComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error al cargar citas:', error);
-        this.toastService.error('Error al cargar las citas');
+        this.toastService.error($localize`:@@toast.calendar.loadAppointmentsError:Error al cargar las citas`);
         this.isLoading.set(false);
       }
     });
@@ -374,15 +374,15 @@ export class CalendarComponent implements OnInit {
     this.appointmentService.confirmAppointment(appointmentId).subscribe({
       next: (success) => {
         if (success) {
-          this.toastService.success('Cita confirmada');
+          this.toastService.success($localize`:@@toast.calendar.confirmSuccess:Cita confirmada`);
           this.loadAppointments();
           this.closeAppointmentModal();
         } else {
-          this.toastService.error('Error al confirmar la cita');
+          this.toastService.error($localize`:@@toast.calendar.confirmError:Error al confirmar la cita`);
         }
       },
       error: () => {
-        this.toastService.error('Error al confirmar la cita');
+        this.toastService.error($localize`:@@toast.calendar.confirmError:Error al confirmar la cita`);
       }
     });
   }
@@ -394,15 +394,15 @@ export class CalendarComponent implements OnInit {
     this.appointmentService.cancelAppointment(appointmentId).subscribe({
       next: (success) => {
         if (success) {
-          this.toastService.success('Cita cancelada');
+          this.toastService.success($localize`:@@toast.calendar.cancelSuccess:Cita cancelada`);
           this.loadAppointments();
           this.closeAppointmentModal();
         } else {
-          this.toastService.error('Error al cancelar la cita');
+          this.toastService.error($localize`:@@toast.calendar.cancelError:Error al cancelar la cita`);
         }
       },
       error: () => {
-        this.toastService.error('Error al cancelar la cita');
+        this.toastService.error($localize`:@@toast.calendar.cancelError:Error al cancelar la cita`);
       }
     });
   }
@@ -421,15 +421,15 @@ export class CalendarComponent implements OnInit {
     this.appointmentService.completeAppointment(appointmentId).subscribe({
       next: (success) => {
         if (success) {
-          this.toastService.success('Cita marcada como completada');
+          this.toastService.success($localize`:@@toast.calendar.completeSuccess:Cita marcada como completada`);
           this.loadAppointments();
           this.closeAppointmentModal();
         } else {
-          this.toastService.error('Error al completar la cita');
+          this.toastService.error($localize`:@@toast.calendar.completeError:Error al completar la cita`);
         }
       },
       error: () => {
-        this.toastService.error('Error al completar la cita');
+        this.toastService.error($localize`:@@toast.calendar.completeError:Error al completar la cita`);
       }
     });
   }

@@ -126,8 +126,10 @@ export class DoctorProfileComponent implements OnInit {
 
   toggleAvailability() {
     this.isAvailable.update(val => !val);
-    const status = this.isAvailable() ? 'disponible' : 'no disponible';
-    this.toastService.success(`Estado cambiado a ${status}`);
+    const status = this.isAvailable()
+      ? $localize`:@@availability.status.available:disponible`
+      : $localize`:@@availability.status.unavailable:no disponible`;
+    this.toastService.success($localize`:@@toast.doctorProfile.statusChanged:Estado cambiado a ${status}:status:`);
   }
 
   navigateToEditProfile() {
@@ -154,17 +156,17 @@ export class DoctorProfileComponent implements OnInit {
   }
 
   navigateToPayments() {
-    this.toastService.info('Función en desarrollo');
+    this.toastService.info($localize`:@@toast.common.featureInDevelopment:Función en desarrollo`);
     // this.router.navigate(['/app/payments']);
   }
 
   navigateToReviews() {
-    this.toastService.info('Función en desarrollo');
+    this.toastService.info($localize`:@@toast.common.featureInDevelopment:Función en desarrollo`);
     // this.router.navigate(['/app/reviews']);
   }
 
   changeLanguage(langCode: string) {
-    this.toastService.success('Idioma cambiado correctamente');
+    this.toastService.success($localize`:@@toast.profile.languageChanged:Idioma cambiado correctamente`);
     this.i18nService.setLanguage(langCode);
   }
 
@@ -177,7 +179,7 @@ export class DoctorProfileComponent implements OnInit {
   }
 
   logout() {
-    this.toastService.info('Cerrando sesión...');
+    this.toastService.info($localize`:@@toast.profile.loggingOut:Cerrando sesión...`);
     this.authService.logout();
   }
 }

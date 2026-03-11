@@ -38,7 +38,9 @@ export class ProfileComponent implements OnInit {
         this.userService.refreshUserData(userId).subscribe({
           next: (userData) => {
             if (userData && !userData.completed) {
-              this.toastService.info('Completa tu perfil profesional para empezar a ofrecer tus servicios');
+              this.toastService.info(
+                $localize`:@@toast.profile.completeProfessionalProfileToOffer:Completa tu perfil profesional para empezar a ofrecer tus servicios`
+              );
             }
           },
           error: (error) => {
@@ -50,7 +52,7 @@ export class ProfileComponent implements OnInit {
   }
 
   logout() {
-    this.toastService.info('Cerrando sesión...');
+    this.toastService.info($localize`:@@toast.profile.loggingOut:Cerrando sesión...`);
     this.authService.logout();
   }
 
@@ -63,12 +65,16 @@ export class ProfileComponent implements OnInit {
   }
 
   changeLanguage(langCode: string) {
-    this.toastService.success('Idioma cambiado correctamente');
+    this.toastService.success($localize`:@@toast.profile.languageChanged:Idioma cambiado correctamente`);
     this.i18nService.setLanguage(langCode);
   }
 
   editDoctorProfile() {
     this.router.navigate(['/app/edit-doctor-profile']);
+  }
+
+  editClientProfile() {
+    this.router.navigate(['/app/edit-client-profile']);
   }
 
   navigateToHelpSupport() {

@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { z } from 'zod';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { FirebaseAdminService } from '../auth/firebase-admin.service';
 import { FirebaseAuthGuard } from '../auth/firebase-auth.guard';
 import { UsersService, AppUser, UserRole } from './users.service';
 
@@ -21,6 +22,16 @@ const UpsertMeSchema = z
     role: z.enum(['client', 'doctor']).optional(),
     completed: z.boolean().optional(),
     photoURL: z.string().url().nullable().optional(),
+    phone: z
+      .union([z.string(), z.number()])
+      .transform((v) => String(v))
+      .nullable()
+      .optional(),
+    spokenLanguage: z
+      .union([z.string(), z.number()])
+      .transform((v) => String(v))
+      .nullable()
+      .optional(),
     specialty: z.string().optional(),
     specialties: z.array(z.string()).optional(),
     available: z.boolean().optional(),
@@ -33,6 +44,33 @@ const UpsertMeSchema = z
     reviewsCount: z.number().int().nonnegative().optional(),
     price: z.number().nonnegative().optional(),
     currency: z.string().optional(),
+    sessionDuration: z.number().int().positive().optional(),
+    breakTime: z.number().int().nonnegative().optional(),
+    availability: z
+      .array(
+        z
+          .object({
+            day: z.string(),
+            dayName: z.string().optional(),
+            enabled: z.boolean(),
+            slots: z.array(z.object({ start: z.string(), end: z.string() })),
+            isExpanded: z.boolean().optional(),
+          })
+          .passthrough()
+      )
+      .optional(),
+    blockedDates: z
+      .array(
+        z
+          .object({
+            startDate: z.string(),
+            endDate: z.string(),
+            reason: z.string(),
+            dateRange: z.string().optional(),
+          })
+          .passthrough()
+      )
+      .optional(),
     pricePerSession: z.string().optional(),
   })
   .passthrough();
@@ -44,7 +82,10 @@ const ProfilePictureSchema = z.object({
 @Controller('me')
 @UseGuards(FirebaseAuthGuard)
 export class MeController {
-  constructor(private readonly users: UsersService) {}
+  constructor(
+    private readonly users: UsersService,
+    private readonly firebaseAdmin: FirebaseAdminService
+  ) {}
 
   @Get()
   async getMe(@CurrentUser() user: any): Promise<AppUser> {
@@ -86,6 +127,24 @@ export class MeController {
   @Delete('profile-picture')
   async removeProfilePicture(@CurrentUser() user: any): Promise<{ success: boolean }> {
     await this.users.updateProfilePicture(user.uid, null);
+    return { success: true };
+  }
+
+  @Delete()
+  async deleteMe(@CurrentUser() user: any): Promise<{ success: boolean }> {
+    // 1) Delete app data first (Mongo). If DB is unavailable, fail without deleting Auth user.
+    await this.users.deleteAccountData(user.uid);
+
+    // 2) Best-effort delete Firebase Auth user.
+    try {
+      await this.firebaseAdmin.auth().deleteUser(user.uid);
+    } catch (err: any) {
+      const code = err?.code as string | undefined;
+      if (code !== 'auth/user-not-found') {
+        throw err;
+      }
+    }
+
     return { success: true };
   }
 }

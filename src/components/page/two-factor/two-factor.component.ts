@@ -22,7 +22,7 @@ export class TwoFactorComponent implements OnInit {
   }
 
   disableTwoFactor() {
-    this.toastService.info('Función en desarrollo');
+    this.toastService.info($localize`:@@toast.common.featureInDevelopment:Función en desarrollo`);
     // Implementar lógica para desactivar 2FA
   }
 }

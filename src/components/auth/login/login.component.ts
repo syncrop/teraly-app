@@ -47,7 +47,7 @@ console.log('Login form submitted');
         this.isLoading.set(false);
 
         if (result?.success === true) {
-          this.toastService.success('¡Bienvenido! Inicio de sesión exitoso');
+          this.toastService.success($localize`:@@toast.auth.loginSuccess:¡Bienvenido! Inicio de sesión exitoso`);
           const role = this.authService.currentUserRole();
           const currentUser = this.authService.currentUser();
           
@@ -69,7 +69,10 @@ console.log('Login form submitted');
               this.router.navigate(['/app/profile']).then(success => {
                 console.log('Navigation success:', success);
               });
-              this.toastService.show('Por favor, completa tu perfil para comenzar', 'info');
+              this.toastService.show(
+                $localize`:@@toast.auth.completeProfileToStart:Por favor, completa tu perfil para comenzar`,
+                'info'
+              );
             } else {
               console.log('Navigating to doctor home');
               this.router.navigate(['/app/home-doctor']).then(success => {
@@ -81,14 +84,16 @@ console.log('Login form submitted');
           }
         } else {
           console.log('Login failed:', result.error);
-          this.errorMessage.set(result.error || 'Error al iniciar sesión');
-          this.toastService.error(result.error || 'Error al iniciar sesión');
+          const fallback = $localize`:@@toast.auth.loginError:Error al iniciar sesión`;
+          this.errorMessage.set(result.error || fallback);
+          this.toastService.error(result.error || fallback);
         }
       },
       error: (error) => {
         this.isLoading.set(false);
-        this.errorMessage.set('Error al iniciar sesión. Intenta de nuevo.');
-        this.toastService.error('Error al iniciar sesión. Intenta de nuevo.');
+        const message = $localize`:@@toast.auth.loginErrorRetry:Error al iniciar sesión. Intenta de nuevo.`;
+        this.errorMessage.set(message);
+        this.toastService.error(message);
         console.error('Login error:', error);
       }
     });

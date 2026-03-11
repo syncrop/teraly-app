@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ToastService } from '../../../services/toast.service';
+import { ToastService, ToastType } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-toast',
@@ -42,7 +42,7 @@ import { ToastService } from '../../../services/toast.service';
 
         <!-- Mensaje -->
         <div class="flex-1">
-          <p class="text-sm font-semibold">{{ toastService.toastState().type === 'error' ? '¡Ups!' : '¡Hecho!' }}</p>
+          <p class="text-sm font-semibold">{{ titleFor(toastService.toastState().type) }}</p>
           <p class="text-xs opacity-90 font-medium">{{ toastService.toastState().message }}</p>
         </div>
 
@@ -56,4 +56,16 @@ import { ToastService } from '../../../services/toast.service';
 })
 export class ToastComponent {
   toastService = inject(ToastService);
+
+  titleFor(type: ToastType): string {
+    switch (type) {
+      case 'error':
+        return $localize`:@@toast.title.error:¡Ups!`;
+      case 'success':
+        return $localize`:@@toast.title.success:¡Hecho!`;
+      case 'info':
+      default:
+        return $localize`:@@toast.title.info:Info`;
+    }
+  }
 }

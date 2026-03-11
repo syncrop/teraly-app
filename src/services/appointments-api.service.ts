@@ -3,6 +3,12 @@ import { Observable } from 'rxjs';
 import { Appointment } from '../models/appointment.model';
 import { ApiClientService } from './api-client.service';
 
+export type PublicBusySlot = Readonly<{
+  date: string;
+  startTime: string;
+  endTime: string;
+}>;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -47,5 +53,22 @@ export class AppointmentsApiService {
     excludeAppointmentId?: string;
   }): Observable<{ available: boolean }>{
     return this.api.get<{ available: boolean }>('/v1/appointments/availability', params);
+  }
+
+  listDoctorBusySlotsPublic(doctorId: string, startDate: string, endDate: string): Observable<PublicBusySlot[]> {
+    return this.api.get<PublicBusySlot[]>('/v1/public/appointments/busy', {
+      doctorId,
+      startDate,
+      endDate,
+    });
+  }
+
+  isTimeSlotAvailablePublic(params: {
+    doctorId: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+  }): Observable<{ available: boolean }>{
+    return this.api.get<{ available: boolean }>('/v1/public/appointments/availability', params);
   }
 }

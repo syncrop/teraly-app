@@ -1,13 +1,11 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AppointmentService } from '../../../services/appointment.service';
 import { AuthService } from '../../../services/auth.service';
-import { UserService } from '../../../services/user.service';
 import { ReviewService } from '../../../services/review.service';
 import { ToastService } from '../../../services/toast.service';
 import { Appointment } from '../../../models/appointment.model';
-import { AppUser } from '../../../models/user.model';
 import { EmptyStateComponent } from '../../shared/empty-state/empty-state.component';
 
 @Component({
@@ -21,7 +19,6 @@ import { EmptyStateComponent } from '../../shared/empty-state/empty-state.compon
 export class AppointmentsComponent implements OnInit {
   private appointmentService = inject(AppointmentService);
   private authService = inject(AuthService);
-  private userService = inject(UserService);
   private router = inject(Router);
   private reviewService = inject(ReviewService);
   private toastService = inject(ToastService);
@@ -31,6 +28,12 @@ export class AppointmentsComponent implements OnInit {
   pastAppointments = signal<Appointment[]>([]);
   isLoading = signal<boolean>(true);
   selectedTab = signal<'upcoming' | 'past'>('upcoming');
+
+  /**
+   * full: renders the whole appointments page (header + tabs)
+   * past-only: renders only the past appointments section (same UI as "Pasadas")
+   */
+  @Input() display: 'full' | 'past-only' = 'full';
 
   // Reviews
   isLoadingReviewInfo = signal<boolean>(true);
@@ -45,12 +48,12 @@ export class AppointmentsComponent implements OnInit {
   isSubmittingReview = signal<boolean>(false);
 
   readonly statusLabels: Record<string, string> = {
-    pending: 'Pendiente',
-    scheduled: 'Programada',
-    completed: 'Completada',
-    cancelled: 'Cancelada',
-    'in-progress': 'En curso',
-    confirmed: 'Confirmada'
+    pending: $localize`:@@appointments.status.pending:Pendiente`,
+    scheduled: $localize`:@@appointments.status.scheduled:Programada`,
+    completed: $localize`:@@appointments.status.completed:Completada`,
+    cancelled: $localize`:@@appointments.status.cancelled:Cancelada`,
+    'in-progress': $localize`:@@appointments.status.inProgress:En curso`,
+    confirmed: $localize`:@@appointments.status.confirmed:Confirmada`
   };
 
   readonly statusClasses: Record<string, string> = {
@@ -63,6 +66,9 @@ export class AppointmentsComponent implements OnInit {
   };
 
   ngOnInit(): void {
+    if (this.display === 'past-only') {
+      this.selectedTab.set('past');
+    }
     this.loadAppointments();
   }
 
@@ -126,11 +132,11 @@ export class AppointmentsComponent implements OnInit {
   openReviewModal(appointment: Appointment): void {
     if (!appointment?.id) return;
     if (appointment.status !== 'completed') {
-      this.toastService.error('Solo puedes reseñar una cita completada');
+      this.toastService.error($localize`:@@toast.reviews.onlyCompletedAppointment:Solo puedes reseñar una cita completada`);
       return;
     }
     if (!this.canLeaveReview(appointment)) {
-      this.toastService.info('Ya has dejado una reseña a este profesional');
+      this.toastService.info($localize`:@@toast.reviews.alreadyLeft:Ya has dejado una reseña a este profesional`);
       return;
     }
 
@@ -162,30 +168,32 @@ export class AppointmentsComponent implements OnInit {
     const user = this.authService.currentUser();
 
     if (!appointment?.id || !appointment.doctorId) {
-      this.toastService.error('No se pudo preparar la reseña');
+      this.toastService.error($localize`:@@toast.reviews.prepareFailed:No se pudo preparar la reseña`);
       return;
     }
     if (!userId || !user || user.role !== 'client') {
-      this.toastService.error('Debes iniciar sesión como paciente para dejar una reseña');
+      this.toastService.error(
+        $localize`:@@toast.reviews.mustLoginAsPatient:Debes iniciar sesión como paciente para dejar una reseña`
+      );
       return;
     }
     if (appointment.status !== 'completed') {
-      this.toastService.error('Solo puedes reseñar una cita completada');
+      this.toastService.error($localize`:@@toast.reviews.onlyCompletedAppointment:Solo puedes reseñar una cita completada`);
       return;
     }
     if (this.hasReviewForDoctor(appointment.doctorId)) {
-      this.toastService.info('Ya has dejado una reseña a este profesional');
+      this.toastService.info($localize`:@@toast.reviews.alreadyLeft:Ya has dejado una reseña a este profesional`);
       return;
     }
 
     const rating = this.reviewRating();
     const comment = this.reviewComment().trim();
     if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
-      this.toastService.error('Selecciona una calificación válida (1-5)');
+      this.toastService.error($localize`:@@toast.reviews.invalidRating:Selecciona una calificación válida (1-5)`);
       return;
     }
     if (!comment) {
-      this.toastService.error('Escribe un comentario');
+      this.toastService.error($localize`:@@toast.reviews.commentRequired:Escribe un comentario`);
       return;
     }
 
@@ -197,7 +205,7 @@ export class AppointmentsComponent implements OnInit {
         appointmentId: appointment.id,
         rating,
         comment,
-        clientName: user.fullName || user.email || 'Usuario',
+        clientName: user.fullName || user.email || $localize`:@@common.user:Usuario`,
         clientAvatar: user.photoURL ?? null,
       })
       .subscribe({
@@ -209,16 +217,16 @@ export class AppointmentsComponent implements OnInit {
               ...prev,
               [appointment.doctorId]: true,
             }));
-            this.toastService.success('¡Reseña enviada!');
+            this.toastService.success($localize`:@@toast.reviews.sentSuccess:¡Reseña enviada!`);
             this.closeReviewModal();
           } else {
-            this.toastService.error('No se pudo enviar la reseña');
+            this.toastService.error($localize`:@@toast.reviews.sendFailed:No se pudo enviar la reseña`);
           }
         },
         error: (err) => {
           console.error('Error al enviar reseña:', err);
           this.isSubmittingReview.set(false);
-          this.toastService.error('Error al enviar la reseña');
+          this.toastService.error($localize`:@@toast.reviews.sendError:Error al enviar la reseña`);
         },
       });
   }
@@ -275,19 +283,51 @@ export class AppointmentsComponent implements OnInit {
     this.router.navigate(['/app/video-call', appointmentId]);
   }
 
+  goToDoctorPublicProfile(appointment: Appointment): void {
+    const doctorId = appointment?.doctorId;
+    if (!doctorId) return;
+    this.router.navigate(['/app/doctor', doctorId]);
+  }
+
   cancelAppointment(appointmentId: string): void {
-    if (confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
+    if (confirm($localize`:@@appointments.confirmCancel:¿Estás seguro de que deseas cancelar esta cita?`)) {
       this.appointmentService.cancelAppointment(appointmentId).subscribe({
         next: (success) => {
           if (success) {
+            this.toastService.success($localize`:@@toast.appointments.cancelled:Cita cancelada`);
             this.loadAppointments();
+          } else {
+            this.toastService.error($localize`:@@toast.appointments.cancelFailed:No se pudo cancelar la cita`);
           }
         },
         error: (error) => {
           console.error('Error al cancelar cita:', error);
+          this.toastService.error($localize`:@@toast.appointments.cancelError:Error al cancelar la cita`);
         }
       });
     }
+  }
+
+  deleteAppointment(appointmentId: string): void {
+    const ok = confirm(
+      $localize`:@@appointments.confirmDelete:¿Eliminar esta cita definitivamente? Esta acción no se puede deshacer.`
+    );
+    if (!ok) return;
+
+    this.appointmentService.deleteAppointment(appointmentId).subscribe({
+      next: (success) => {
+        if (success) {
+          this.toastService.success($localize`:@@toast.appointments.deleted:Cita eliminada`);
+          this.loadAppointments();
+        } else {
+          this.toastService.error($localize`:@@toast.appointments.deleteFailed:No se pudo eliminar la cita`);
+        }
+      },
+      error: (error) => {
+        console.error('Error al eliminar cita:', error);
+        this.toastService.error($localize`:@@toast.appointments.deleteError:Error al eliminar la cita`);
+      },
+    });
   }
 
   formatDate(dateString: string): string {
@@ -302,6 +342,33 @@ export class AppointmentsComponent implements OnInit {
 
   formatTime(time: string): string {
     return time;
+  }
+
+  formatType(type: Appointment['type'] | string | null | undefined): string {
+    switch (type) {
+      case 'video':
+        return $localize`:@@appointments.type.video:Video`;
+      case 'audio':
+        return $localize`:@@appointments.type.audio:Audio`;
+      case 'chat':
+        return $localize`:@@appointments.type.chat:Chat`;
+      default:
+        return String(type ?? '').trim() || $localize`:@@appointments.type.session:Sesión`;
+    }
+  }
+
+  getDoctorInitials(name: string | null | undefined): string {
+    const cleaned = (name ?? '').trim();
+    if (!cleaned) return 'DR';
+
+    const parts = cleaned
+      .replace(/\s+/g, ' ')
+      .split(' ')
+      .filter(Boolean);
+
+    const first = parts[0]?.[0] ?? 'D';
+    const second = parts.length > 1 ? (parts[1]?.[0] ?? '') : (parts[0]?.[1] ?? '');
+    return (first + second).toUpperCase();
   }
 
   canJoinCall(appointment: Appointment): boolean {

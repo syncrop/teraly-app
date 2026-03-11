@@ -3,7 +3,7 @@ import { Firestore, collection, doc, setDoc, getDoc, deleteDoc, query, where, ge
 import { from, Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { FirestoreHelperService } from './firestore-helper.service';
-import { BACKEND_CONFIG } from '../config/backend.config';
+import { isBackendEnabled } from '../config/backend.config';
 import { FavoritesApiService } from './favorites-api.service';
 
 export interface Favorite {
@@ -22,7 +22,7 @@ export class FavoritesService {
 
   // Agregar doctor a favoritos
   addFavorite(userId: string, doctorId: string): Observable<boolean> {
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
       // userId is ignored; backend uses the authenticated user
       return this.favoritesApi.addFavorite(doctorId).pipe(
         map((r) => !!r?.success),
@@ -53,7 +53,7 @@ export class FavoritesService {
 
   // Eliminar doctor de favoritos
   removeFavorite(userId: string, doctorId: string): Observable<boolean> {
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
       // userId is ignored; backend uses the authenticated user
       return this.favoritesApi.removeFavorite(doctorId).pipe(
         map((r) => !!r?.success),
@@ -78,7 +78,7 @@ export class FavoritesService {
 
   // Verificar si un doctor está en favoritos
   isFavorite(userId: string, doctorId: string): Observable<boolean> {
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
       // userId is ignored; backend uses the authenticated user
       return this.favoritesApi.isFavorite(doctorId).pipe(
         map((r) => !!r?.isFavorite),
@@ -101,7 +101,7 @@ export class FavoritesService {
 
   // Obtener todos los favoritos de un usuario
   getUserFavorites(userId: string): Observable<string[]> {
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
       // userId is ignored; backend uses the authenticated user
       return this.favoritesApi.listMyFavorites().pipe(
         map((r) => r?.doctorIds ?? []),

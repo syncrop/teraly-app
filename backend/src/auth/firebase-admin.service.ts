@@ -7,7 +7,15 @@ export class FirebaseAdminService {
 
   constructor() {
     // Uses Application Default Credentials on Cloud Run.
-    this.app = admin.apps.length ? admin.app() : admin.initializeApp();
+    // Locally, make sure FIREBASE_PROJECT_ID matches the frontend Firebase projectId.
+    const projectId =
+      process.env.FIREBASE_PROJECT_ID ||
+      process.env.GOOGLE_CLOUD_PROJECT ||
+      process.env.GCLOUD_PROJECT;
+
+    this.app = admin.apps.length
+      ? admin.app()
+      : admin.initializeApp(projectId ? { projectId } : undefined);
   }
 
   auth(): admin.auth.Auth {

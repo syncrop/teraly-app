@@ -1,3 +1,5 @@
+import { BlockedDate, DaySchedule } from './availability.model';
+
 export type UserRole = 'client' | 'doctor' | null;
 
 export interface AppUser {
@@ -8,6 +10,8 @@ export interface AppUser {
   createdAt: any;
   completed?: boolean;
   photoURL?: string;
+  phone?: string | null;
+  spokenLanguage?: string | null;
   // Campos para doctores
   specialty?: string;
   specialties?: string[];
@@ -21,5 +25,9 @@ export interface AppUser {
   reviewsCount?: number;
   price?: number;
   currency?: string;
+  sessionDuration?: number;
+  breakTime?: number;
+  availability?: DaySchedule[];
+  blockedDates?: BlockedDate[];
   pricePerSession?: string;
 }

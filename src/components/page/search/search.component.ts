@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { UserService } from '../../../services/user.service';
 import { CurrencySymbolPipe } from '../../shared/pipes/currency-symbol.pipe';
 import { AppUser } from '@/models/user.model';
+import { LanguagesSelectorComponent, LanguageOption } from '../../shared/languages-selector/languages-selector.component';
 
 interface Doctor {
   id: string;
@@ -21,6 +22,7 @@ interface Doctor {
   priceCurrency: string;
   pricePerSession: string;
   languages: string[];
+  languageFlags: string[];
   verified: boolean;
 }
 
@@ -32,17 +34,11 @@ interface FilterChip {
   type?: 'toggle' | 'dropdown' | 'range';
 }
 
-interface Language {
-  code: string;
-  name: string;
-  flag: string;
-}
-
 @Component({
   selector: 'app-search',
   templateUrl: './search.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, CurrencySymbolPipe]
+  imports: [CommonModule, FormsModule, CurrencySymbolPipe, LanguagesSelectorComponent]
 })
 export class SearchComponent implements OnInit {
   private userService = inject(UserService);
@@ -67,7 +63,10 @@ export class SearchComponent implements OnInit {
         // Mapear usuarios de Firestore a formato Doctor del componente
         const mappedDoctors = users
           .filter(user => user.completed === true) // Solo mostrar doctores con perfil completo
-          .map((user: AppUser) => ({
+          .map((user: AppUser) => {
+            const languageCodes = this.normalizeLanguageCodes(user.languages);
+
+            return {
             id: user.uid,
             name: user.fullName || 'Doctor',
             specialty: user.specialty || 'Psicología',
@@ -79,9 +78,11 @@ export class SearchComponent implements OnInit {
             priceAmount: user.price,
             priceCurrency: user.currency || 'EUR',
             pricePerSession: user.pricePerSession,
-            languages: user.languages?.map(lang => this.getLanguageFlag(lang)) || ['🇪🇸'],
+            languages: languageCodes,
+            languageFlags: languageCodes.map((code) => this.getLanguageFlag(code)),
             verified: user.isVerified || false
-          }));
+          };
+        });
         
         this.doctors.set(mappedDoctors);
         this.isLoading.set(false);
@@ -95,12 +96,15 @@ export class SearchComponent implements OnInit {
     });
   }
 
-  private getLanguageFlag(langCode: string): string {
+  getLanguageFlag(langCode: string): string {
     const flags: Record<string, string> = {
       'es': '🇪🇸',
       'en': '🇬🇧',
       'pl': '🇵🇱',
       'uk': '🇺🇦',
+      'fr': '🇫🇷',
+      'de': '🇩🇪',
+      'pt': '🇵🇹',
       'español': '🇪🇸',
       'english': '🇬🇧',
       'polski': '🇵🇱',
@@ -108,17 +112,27 @@ export class SearchComponent implements OnInit {
     };
     return flags[langCode.toLowerCase()] || '🇪🇸';
   }
+
+  private normalizeLanguageCodes(languages: string[] | null | undefined): string[] {
+    if (!Array.isArray(languages)) return [];
+    return languages
+      .map((lang) => (lang ?? '').trim().toLowerCase())
+      .filter(Boolean);
+  }
   
   filterChips = signal<FilterChip[]>([
     { id: 'language', label: 'Idioma', icon: '🌍', active: false, type: 'dropdown' },
     { id: 'price', label: 'Precio', icon: '💰', active: false, type: 'range' }
   ]);
 
-  availableLanguages: Language[] = [
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
-    { code: 'en', name: 'English', flag: '🇬🇧' },
-    { code: 'pl', name: 'Polski', flag: '🇵🇱' },
-    { code: 'uk', name: 'Українська', flag: '🇺🇦' }
+  readonly availableLanguages: LanguageOption[] = [
+    { code: 'es', flag: '🇪🇸', name: 'Español' },
+    { code: 'en', flag: '🇬🇧', name: 'English' },
+    { code: 'pl', flag: '🇵🇱', name: 'Polski' },
+    { code: 'uk', flag: '🇺🇦', name: 'Українська' },
+    { code: 'fr', flag: '🇫🇷', name: 'Français' },
+    { code: 'de', flag: '🇩🇪', name: 'Deutsch' },
+    { code: 'pt', flag: '🇵🇹', name: 'Português' }
   ];
 
   selectedLanguages = signal<string[]>([]);
@@ -143,11 +157,10 @@ export class SearchComponent implements OnInit {
       );
     }
     
-    // Filter by languages
-    if (this.selectedLanguages().length > 0) {
-      results = results.filter(doc => 
-        this.selectedLanguages().some(lang => doc.languages.includes(lang))
-      );
+    // Filter by languages (codes)
+    const selectedLanguageCodes = this.selectedLanguages();
+    if (selectedLanguageCodes.length > 0) {
+      results = results.filter(doc => selectedLanguageCodes.some(lang => doc.languages.includes(lang)));
     }
 
     // Filter by price range
@@ -162,7 +175,14 @@ export class SearchComponent implements OnInit {
   resultsCount = computed(() => this.filteredDoctors().length);
 
   toggleFiltersModal() {
-    this.showFiltersModal.update(val => !val);
+    this.showFiltersModal.update(val => {
+      const next = !val;
+      if (!next) {
+        this.showLanguageDropdown.set(false);
+        this.showPriceDropdown.set(false);
+      }
+      return next;
+    });
   }
 
   toggleFilterChip(chipId: string) {
@@ -190,6 +210,7 @@ export class SearchComponent implements OnInit {
   removeFilterChip(chipId: string) {
     if (chipId === 'language') {
       this.selectedLanguages.set([]);
+      this.showLanguageDropdown.set(false);
       this.filterChips.update(chips =>
         chips.map(chip =>
           chip.id === chipId ? { ...chip, active: false } : chip
@@ -197,6 +218,7 @@ export class SearchComponent implements OnInit {
       );
     } else if (chipId === 'price') {
       this.selectedPriceRange.set({ min: 0, max: 500 });
+      this.showPriceDropdown.set(false);
       this.filterChips.update(chips =>
         chips.map(chip =>
           chip.id === chipId ? { ...chip, active: false } : chip
@@ -205,19 +227,13 @@ export class SearchComponent implements OnInit {
     }
   }
 
-  toggleLanguage(langFlag: string) {
-    this.selectedLanguages.update(langs => {
-      if (langs.includes(langFlag)) {
-        return langs.filter(l => l !== langFlag);
-      } else {
-        return [...langs, langFlag];
-      }
-    });
+  onSelectedLanguagesChange(codes: string[]): void {
+    const normalizedCodes = this.normalizeLanguageCodes(codes);
+    this.selectedLanguages.set(normalizedCodes);
 
-    // Activate language filter chip
     this.filterChips.update(chips =>
       chips.map(chip =>
-        chip.id === 'language' ? { ...chip, active: this.selectedLanguages().length > 0 } : chip
+        chip.id === 'language' ? { ...chip, active: normalizedCodes.length > 0 } : chip
       )
     );
   }
@@ -246,7 +262,7 @@ export class SearchComponent implements OnInit {
     const selected = this.selectedLanguages();
     if (selected.length === 0) return 'Idioma';
     if (selected.length === 1) {
-      const lang = this.availableLanguages.find(l => selected.includes(l.flag));
+      const lang = this.availableLanguages.find(l => l.code === selected[0]);
       return lang ? `${lang.flag} ${lang.name}` : 'Idioma';
     }
     return `${selected.length} idiomas`;
@@ -266,7 +282,7 @@ export class SearchComponent implements OnInit {
     return name.substring(0, 2).toUpperCase();
   }
 
-  viewDoctorDetail(doctorId: number) {
+  viewDoctorDetail(doctorId: string) {
     this.router.navigate(['/app/doctor', doctorId]);
   }
 }

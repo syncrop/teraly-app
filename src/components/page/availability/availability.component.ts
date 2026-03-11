@@ -5,8 +5,10 @@ import { Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../services/toast.service';
-import { Firestore, doc, getDoc, updateDoc } from '@angular/fire/firestore';
 import { TimeSlot, DaySchedule, BlockedDate } from '../../../models/availability.model';
+import { isBackendEnabled } from '../../../config/backend.config';
+import { UsersApiService } from '../../../services/users-api.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-availability',
@@ -19,7 +21,7 @@ export class AvailabilityComponent implements OnInit {
   private location = inject(Location);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
-  private firestore = inject(Firestore);
+  private readonly usersApi = inject(UsersApiService);
 
   sessionDuration = signal<number>(60);
   breakTime = signal<number>(15);
@@ -52,33 +54,34 @@ export class AvailabilityComponent implements OnInit {
   }
 
   async loadAvailability() {
-    const userId = this.authService.getCurrentUserId();
-    if (!userId) return;
+    if (!isBackendEnabled()) {
+      this.toastService.error(
+        $localize`:@@toast.availability.backendDisabledLoad:La API del backend está deshabilitada. No se puede cargar la disponibilidad.`
+      );
+      return;
+    }
+
     try {
-      const userRef = doc(this.firestore, 'users', userId);
-      const userDoc = await getDoc(userRef);
-      
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        
-        if (userData['sessionDuration']) {
-          this.sessionDuration.set(userData['sessionDuration']);
-        }
-        
-        if (userData['breakTime'] !== undefined) {
-          this.breakTime.set(userData['breakTime']);
-        }
-        
-        if (userData['availability']) {
-          this.weekSchedule.set(userData['availability']);
-        }
-        
-        if (userData['blockedDates']) {
-          this.blockedDates.set(userData['blockedDates']);
-        }
+      const me = await firstValueFrom(this.usersApi.getMe());
+
+      if (me.sessionDuration) {
+        this.sessionDuration.set(me.sessionDuration);
+      }
+
+      if (me.breakTime !== undefined && me.breakTime !== null) {
+        this.breakTime.set(me.breakTime);
+      }
+
+      if (me.availability) {
+        this.weekSchedule.set(me.availability);
+      }
+
+      if (me.blockedDates) {
+        this.blockedDates.set(me.blockedDates);
       }
     } catch (error) {
       console.error('Error al cargar disponibilidad:', error);
+      this.toastService.error($localize`:@@toast.availability.loadError:Error al cargar la disponibilidad`);
     }
   }
 
@@ -101,12 +104,12 @@ export class AvailabilityComponent implements OnInit {
 
   addBlockedDate() {
     if (!this.newBlockedDate.startDate || !this.newBlockedDate.endDate) {
-      this.toastService.error('Debes seleccionar las fechas');
+      this.toastService.error($localize`:@@toast.availability.selectDatesRequired:Debes seleccionar las fechas`);
       return;
     }
 
     if (!this.newBlockedDate.reason.trim()) {
-      this.toastService.error('Debes indicar un motivo');
+      this.toastService.error($localize`:@@toast.availability.reasonRequired:Debes indicar un motivo`);
       return;
     }
 
@@ -114,7 +117,9 @@ export class AvailabilityComponent implements OnInit {
     const end = new Date(this.newBlockedDate.endDate);
 
     if (end < start) {
-      this.toastService.error('La fecha de fin debe ser posterior a la de inicio');
+      this.toastService.error(
+        $localize`:@@toast.availability.endDateAfterStart:La fecha de fin debe ser posterior a la de inicio`
+      );
       return;
     }
 
@@ -130,7 +135,7 @@ export class AvailabilityComponent implements OnInit {
 
     this.blockedDates.update(dates => [...dates, blocked]);
     this.closeBlockedDateModal();
-    this.toastService.success('Día bloqueado añadido');
+    this.toastService.success($localize`:@@toast.availability.blockedDateAdded:Día bloqueado añadido`);
   }
 
   removeBlockedDate(index: number) {
@@ -139,7 +144,7 @@ export class AvailabilityComponent implements OnInit {
       newDates.splice(index, 1);
       return newDates;
     });
-    this.toastService.success('Día bloqueado eliminado');
+    this.toastService.success($localize`:@@toast.availability.blockedDateRemoved:Día bloqueado eliminado`);
   }
 
   formatDateRange(start: Date, end: Date): string {
@@ -204,7 +209,7 @@ export class AvailabilityComponent implements OnInit {
   removeTimeSlot(dayIndex: number, slotIndex: number) {
     const currentSlots = this.weekSchedule()[dayIndex].slots.length;
     if (currentSlots <= 1) {
-      this.toastService.error('Debe haber al menos un horario por día');
+      this.toastService.error($localize`:@@toast.availability.minOneSlotPerDay:Debe haber al menos un horario por día`);
       return;
     }
     
@@ -225,34 +230,38 @@ export class AvailabilityComponent implements OnInit {
   }
 
   async saveAvailability() {
-    const userId = this.authService.getCurrentUserId();
-    if (!userId) {
-      this.toastService.error('Usuario no encontrado');
+    if (!isBackendEnabled()) {
+      this.toastService.error(
+        $localize`:@@toast.availability.backendDisabledSave:La API del backend está deshabilitada. No se puede guardar la disponibilidad.`
+      );
       return;
     }
 
     // Validar que al menos un día esté habilitado
     const hasEnabledDay = this.weekSchedule().some(day => day.enabled);
     if (!hasEnabledDay) {
-      this.toastService.error('Debes habilitar al menos un día de la semana');
+      this.toastService.error(
+        $localize`:@@toast.availability.enableAtLeastOneWeekday:Debes habilitar al menos un día de la semana`
+      );
       return;
     }
 
     this.isSaving.set(true);
     try {
-      const userRef = doc(this.firestore, 'users', userId);
-      await updateDoc(userRef, {
+      await firstValueFrom(this.usersApi.upsertMe({
         sessionDuration: this.sessionDuration(),
         breakTime: this.breakTime(),
         availability: this.weekSchedule(),
-        blockedDates: this.blockedDates()
-      });
+        blockedDates: this.blockedDates(),
+      }));
 
-      this.toastService.success('Disponibilidad guardada correctamente');
+      this.toastService.success(
+        $localize`:@@toast.availability.saveSuccess:Disponibilidad guardada correctamente`
+      );
       this.goBack();
     } catch (error) {
       console.error('Error al guardar disponibilidad:', error);
-      this.toastService.error('Error al guardar la disponibilidad');
+      this.toastService.error($localize`:@@toast.availability.saveError:Error al guardar la disponibilidad`);
     } finally {
       this.isSaving.set(false);
     }

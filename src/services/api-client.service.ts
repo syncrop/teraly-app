@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { BACKEND_CONFIG } from '../config/backend.config';
+import { getBackendApiBaseUrl, isBackendEnabled } from '../config/backend.config';
 
 export type ApiQueryParams = Record<string, string | number | boolean | null | undefined>;
 
@@ -12,11 +12,11 @@ export class ApiClientService {
   private readonly http = inject(HttpClient);
 
   private get baseUrl(): string {
-    return (BACKEND_CONFIG.apiBaseUrl || '').replace(/\/$/, '');
+    return getBackendApiBaseUrl();
   }
 
   private ensureEnabled(): void {
-    if (!BACKEND_CONFIG.enabled) {
+    if (!isBackendEnabled()) {
       throw new Error('Backend API is disabled (BACKEND_CONFIG.enabled=false).');
     }
 

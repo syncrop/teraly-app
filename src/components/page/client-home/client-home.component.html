@@ -1,4 +1,4 @@
-<div class="pb-32 bg-gray-50 min-h-screen">
+<div class="bg-gray-50 min-h-full">
   <app-header 
     subtitle="Buenos días,"
     [userName]="userName()"
@@ -12,7 +12,15 @@
   <!-- Next Appointment Card -->
   <div class="px-6">
     @if (nextAppointment()) {
-      <div class="bg-indigo-600 rounded-3xl p-6 text-white shadow-lg">
+      <div
+        class="bg-indigo-600 rounded-3xl p-6 text-white shadow-lg cursor-pointer transition-colors hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-white/50"
+        role="button"
+        tabindex="0"
+        aria-label="Ver perfil del doctor"
+        (click)="goToDoctorProfile(nextAppointment()!)"
+        (keydown.enter)="goToDoctorProfile(nextAppointment()!)"
+        (keydown.space)="$event.preventDefault(); goToDoctorProfile(nextAppointment()!)"
+      >
         <div class="flex items-center justify-between mb-4">
           <span class="text-sm font-semibold" i18n="@@clientHome.nextAppointment">PRÓXIMA CONSULTA</span>
           <span class="text-xs bg-indigo-500 px-3 py-1 rounded-full">En {{ minutesUntilNext() | minutesToTime }}</span>
@@ -41,8 +49,12 @@
           </div>
         </div>
 
+        <div class="flex justify-end mb-3">
+          <span class="text-xs text-indigo-200" i18n="@@clientHome.viewDoctorProfile">Ver perfil →</span>
+        </div>
+
         <button 
-          (click)="joinVideoCall()"
+          (click)="$event.stopPropagation(); joinVideoCall()"
           class="w-full bg-white text-indigo-600 font-semibold py-3 rounded-lg hover:bg-gray-100 transition-colors" 
           i18n="@@clientHome.joinNow">
           Unirse ahora →

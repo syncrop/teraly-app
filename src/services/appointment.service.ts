@@ -18,8 +18,10 @@ import { Capacitor } from '@capacitor/core';
 import { FirestoreNativeService } from './firestore-native.service';
 import { Appointment } from '../models/appointment.model';
 import { FirestoreHelperService } from './firestore-helper.service';
-import { BACKEND_CONFIG } from '../config/backend.config';
+import { isBackendEnabled } from '../config/backend.config';
 import { AppointmentsApiService } from './appointments-api.service';
+import { AvailabilitySlotsService } from './availability-slots.service';
+import { AppointmentInterval } from './availability-slots.service';
 
 @Injectable({
   providedIn: 'root'
@@ -30,6 +32,7 @@ export class AppointmentService {
   private firestoreHelper = inject(FirestoreHelperService);
   private firestoreNative = inject(FirestoreNativeService);
   private appointmentsApi = inject(AppointmentsApiService);
+  private availabilitySlots = inject(AvailabilitySlotsService);
 
   /**
    * Obtener todas las citas de un doctor
@@ -37,7 +40,7 @@ export class AppointmentService {
   getDoctorAppointments(doctorId: string): Observable<Appointment[]> {
     console.log('AppointmentService: Consultando citas para doctorId:', doctorId);
 
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
       return this.appointmentsApi.listDoctorAppointments(doctorId).pipe(
         map((appointments) =>
           (appointments ?? []).sort((a, b) => {
@@ -79,8 +82,8 @@ export class AppointmentService {
     startDate: string,
     endDate: string
   ): Observable<Appointment[]> {
-    if (BACKEND_CONFIG.enabled) {
-      return this.appointmentsApi.listDoctorAppointments(doctorId, startDate, endDate).pipe(
+    if (isBackendEnabled()) {
+        return this.appointmentsApi.listDoctorAppointments(doctorId, startDate, endDate).pipe(
         map((appointments) =>
           (appointments ?? []).sort((a, b) => {
             const dateCompare = a.date.localeCompare(b.date);
@@ -117,11 +120,41 @@ export class AppointmentService {
   }
 
   /**
+   * Public busy slots for a doctor in a date range.
+   * Only returns time intervals; safe to call from the public doctor profile.
+   */
+  getDoctorBusySlotsPublicByDateRange(
+    doctorId: string,
+    startDate: string,
+    endDate: string
+  ): Observable<AppointmentInterval[]> {
+    if (isBackendEnabled()) {
+      return this.appointmentsApi.listDoctorBusySlotsPublic(doctorId, startDate, endDate).pipe(
+        map((slots) =>
+          (slots ?? []).map((s) => ({
+            id: undefined,
+            startTime: s.startTime,
+            endTime: s.endTime,
+            status: 'confirmed',
+          }))
+        ),
+        catchError((error) => {
+          console.error('Error al obtener busy slots (backend public):', error);
+          return of([]);
+        })
+      );
+    }
+
+    // Fallback: use full appointments (may still be subject to Firestore rules).
+    return this.getDoctorAppointmentsByDateRange(doctorId, startDate, endDate);
+  }
+
+  /**
    * Obtener citas de un cliente
    */
   getClientAppointments(clientId: string): Observable<Appointment[]> {
-    if (BACKEND_CONFIG.enabled) {
-      return this.appointmentsApi.listClientAppointments(clientId).pipe(
+    if (isBackendEnabled()) {
+        return this.appointmentsApi.listClientAppointments(clientId).pipe(
         map((appointments) =>
           (appointments ?? []).sort((a, b) => {
             const dateCompare = a.date.localeCompare(b.date);
@@ -156,7 +189,7 @@ export class AppointmentService {
    * Obtener una cita específica por ID
    */
   getAppointmentById(appointmentId: string): Observable<Appointment | null> {
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
       return this.appointmentsApi.getAppointmentById(appointmentId);
     }
 
@@ -167,8 +200,8 @@ export class AppointmentService {
    * Crear una nueva cita
    */
   createAppointment(appointment: Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>): Observable<string | null> {
-    if (BACKEND_CONFIG.enabled) {
-      return this.appointmentsApi.createAppointment(appointment).pipe(
+    if (isBackendEnabled()) {
+        return this.appointmentsApi.createAppointment(appointment).pipe(
         map((r) => r?.id ?? null),
         catchError((error) => {
           console.error('Error al crear cita (backend):', error);
@@ -197,8 +230,8 @@ export class AppointmentService {
    * Actualizar una cita existente
    */
   updateAppointment(appointmentId: string, updates: Partial<Appointment>): Observable<boolean> {
-    if (BACKEND_CONFIG.enabled) {
-      return this.appointmentsApi.updateAppointment(appointmentId, updates).pipe(
+    if (isBackendEnabled()) {
+        return this.appointmentsApi.updateAppointment(appointmentId, updates).pipe(
         map((r) => !!r?.success),
         catchError((error) => {
           console.error('Error al actualizar cita (backend):', error);
@@ -275,8 +308,8 @@ export class AppointmentService {
    * Eliminar una cita
    */
   deleteAppointment(appointmentId: string): Observable<boolean> {
-    if (BACKEND_CONFIG.enabled) {
-      return this.appointmentsApi.deleteAppointment(appointmentId).pipe(
+    if (isBackendEnabled()) {
+        return this.appointmentsApi.deleteAppointment(appointmentId).pipe(
         map((r) => !!r?.success),
         catchError((error) => {
           console.error('Error al eliminar cita (backend):', error);
@@ -317,9 +350,10 @@ export class AppointmentService {
     endTime: string,
     excludeAppointmentId?: string
   ): Observable<boolean> {
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
+      // Public endpoint works for both clients and doctors.
       return this.appointmentsApi
-        .isTimeSlotAvailable({ doctorId, date, startTime, endTime, excludeAppointmentId })
+        .isTimeSlotAvailablePublic({ doctorId, date, startTime, endTime })
         .pipe(
           map((r) => !!r?.available),
           catchError((error) => {
@@ -342,40 +376,19 @@ export class AppointmentService {
           const data = doc.data();
           return { ...data, id: doc.id } as Appointment;
         });
-        
-        // Verificar si hay conflicto con alguna cita existente
-        const hasConflict = appointments.some(apt => {
-          // Excluir la cita actual si se está editando
-          if (excludeAppointmentId && apt.id === excludeAppointmentId) {
-            return false;
-          }
 
-          // Verificar solapamiento de horarios
-          const aptStart = this.timeToMinutes(apt.startTime);
-          const aptEnd = this.timeToMinutes(apt.endTime);
-          const newStart = this.timeToMinutes(startTime);
-          const newEnd = this.timeToMinutes(endTime);
-
-          // Dos intervalos se solapan si:
-          // El inicio de uno está antes del fin del otro Y el fin de uno está después del inicio del otro
-          return !(newStart < aptEnd && newEnd > aptStart);
+        return this.availabilitySlots.isTimeSlotAvailableAgainstAppointments({
+          startTime,
+          endTime,
+          appointments,
+          excludeAppointmentId,
         });
-
-        return !hasConflict;
       }),
       catchError(error => {
         console.error('Error al verificar disponibilidad:', error);
         return of(false);
       })
     );
-  }
-
-  /**
-   * Convertir tiempo HH:MM a minutos desde medianoche
-   */
-  private timeToMinutes(time: string): number {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
   }
 
   /**

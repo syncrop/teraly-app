@@ -6,7 +6,7 @@ import { from, Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { AppUser } from '../models/user.model';
 import { FirestoreHelperService } from './firestore-helper.service';
-import { BACKEND_CONFIG } from '../config/backend.config';
+import { isBackendEnabled } from '../config/backend.config';
 import { UsersApiService } from './users-api.service';
 
 @Injectable({
@@ -20,7 +20,7 @@ export class UserService {
 
   // Obtener un usuario por su UID
   getUserById(uid: string): Observable<AppUser | null> {
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
       return this.usersApi.getUserById(uid);
     }
 
@@ -34,7 +34,7 @@ export class UserService {
 
   // Obtener lista de doctores desde Firestore
   getDoctors(): Observable<AppUser[]> {
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
       return this.usersApi.listUsersByRole('doctor');
     }
 
@@ -56,7 +56,7 @@ export class UserService {
 
   // Obtener lista de clientes desde Firestore
   getClients(): Observable<AppUser[]> {
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
       return this.usersApi.listUsersByRole('client');
     }
 
@@ -65,7 +65,7 @@ export class UserService {
 
   // Actualizar la foto de perfil del usuario en Firestore
   updateProfilePicture(userId: string, photoURL: string): Observable<boolean> {
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
       // Backend decides authorization (owner-only)
       return this.usersApi.updateMyProfilePicture(photoURL).pipe(
         map((r) => !!r?.success),
@@ -100,7 +100,7 @@ export class UserService {
 
   // Eliminar la foto de perfil del usuario en Firestore
   removeProfilePicture(userId: string): Observable<boolean> {
-    if (BACKEND_CONFIG.enabled) {
+    if (isBackendEnabled()) {
       return this.usersApi.removeMyProfilePicture().pipe(
         map((r) => !!r?.success),
         catchError((error) => {

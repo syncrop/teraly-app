@@ -5,6 +5,7 @@ import { AppointmentService } from '../../../services/appointment.service';
 import { AuthService } from '../../../services/auth.service';
 import { Appointment } from '../../../models/appointment.model';
 import { Room, RoomEvent, Track, RemoteTrack, RemoteParticipant, RemoteTrackPublication, DataPacket_Kind } from 'livekit-client';
+import { StreamChatService } from '../../../services/stream-chat.service';
 
 @Component({
   selector: 'app-video-call',
@@ -19,6 +20,7 @@ export class VideoCallComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private appointmentService = inject(AppointmentService);
   private authService = inject(AuthService);
+  private streamChat = inject(StreamChatService);
 
   @ViewChild('localVideo') localVideoRef!: ElementRef<HTMLVideoElement>;
   @ViewChild('remoteVideo') remoteVideoRef!: ElementRef<HTMLVideoElement>;
@@ -31,7 +33,7 @@ export class VideoCallComponent implements OnInit, OnDestroy {
   isScreenSharing = signal<boolean>(false);
   callDuration = signal<string>('00:00');
   showChat = signal<boolean>(false);
-  messages = signal<Array<{text: string, sender: string, time: string, isOwn: boolean}>>([]);
+  messages = this.streamChat.messages;
   currentMessage = signal<string>('');
   
   private callStartTime: Date | null = null;
@@ -74,6 +76,11 @@ export class VideoCallComponent implements OnInit, OnDestroy {
         if (appointment) {
           this.appointment.set(appointment);
           this.isLoading.set(false);
+
+          // Connect Stream Chat for persistent messaging per appointment.
+          this.connectStreamChat(appointment).catch((err) => {
+            console.warn('Stream Chat connect failed', err);
+          });
         } else {
           this.router.navigate(['/app/home-client']);
         }
@@ -83,6 +90,10 @@ export class VideoCallComponent implements OnInit, OnDestroy {
         this.router.navigate(['/app/home-client']);
       }
     });
+  }
+
+  private async connectStreamChat(appointment: Appointment): Promise<void> {
+    await this.streamChat.connectToAppointment(appointment);
   }
 
   private async startCall(): Promise<void> {
@@ -161,14 +172,7 @@ export class VideoCallComponent implements OnInit, OnDestroy {
       this.isLoading.set(false);
     });
 
-    // Cuando se recibe un mensaje de chat
-    this.room.on(RoomEvent.DataReceived, (payload: Uint8Array, participant?: RemoteParticipant) => {
-      if (participant) {
-        const decoder = new TextDecoder();
-        const message = decoder.decode(payload);
-        this.addMessage(message, participant.identity, false);
-      }
-    });
+    // LiveKit Data channel chat is disabled (we use Stream Chat for persistence).
   }
 
   private attachLocalVideo(): void {
@@ -271,27 +275,15 @@ export class VideoCallComponent implements OnInit, OnDestroy {
 
   sendMessage(): void {
     const messageText = this.currentMessage().trim();
-    if (!messageText || !this.room) return;
 
-    // Enviar mensaje a otros participantes
-    const encoder = new TextEncoder();
-    const data = encoder.encode(messageText);
-    this.room.localParticipant.publishData(data, { reliable: true });
+    if (!messageText) return;
 
-    // Agregar mensaje propio a la lista
-    const userName = this.authService.currentUser()?.fullName || 'Tú';
-    this.addMessage(messageText, userName, true);
+    this.streamChat.send(messageText).catch((err) => {
+      console.error('Error sending Stream message', err);
+    });
     
     // Limpiar input
     this.currentMessage.set('');
-  }
-
-  private addMessage(text: string, sender: string, isOwn: boolean): void {
-    const now = new Date();
-    const time = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-    
-    const newMessage = { text, sender, time, isOwn };
-    this.messages.update(msgs => [...msgs, newMessage]);
   }
 
   updateMessageInput(event: Event): void {
@@ -309,6 +301,9 @@ export class VideoCallComponent implements OnInit, OnDestroy {
       this.room.disconnect();
       this.room = null;
     }
+
+    // Disconnect Stream Chat
+    this.streamChat.disconnect().catch(() => undefined);
     
     // Redirigir al usuario después de un pequeño delay
     setTimeout(() => {

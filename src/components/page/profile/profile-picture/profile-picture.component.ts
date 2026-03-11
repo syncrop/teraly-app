@@ -66,7 +66,7 @@ export class ProfilePictureComponent implements OnInit {
   async onFileSelected(event?: Event) {
     const userId = this.authService.getCurrentUserId();
     if (!userId) {
-      this.toastService.error('Usuario no encontrado');
+      this.toastService.error($localize`:@@toast.common.userNotFound:Usuario no encontrado`);
       return;
     }
 
@@ -95,14 +95,14 @@ export class ProfilePictureComponent implements OnInit {
           blob = await response.blob();
         } else {
           this.isLoading.set(false);
-          this.toastService.error('No se pudo procesar la imagen');
+          this.toastService.error($localize`:@@toast.profile.imageProcessError:No se pudo procesar la imagen`);
           return;
         }
         
         // Validar que el blob no esté vacío
         if (blob.size === 0) {
           this.isLoading.set(false);
-          this.toastService.error('La imagen seleccionada está vacía');
+          this.toastService.error($localize`:@@toast.profile.imageEmpty:La imagen seleccionada está vacía`);
           return;
         }
         
@@ -124,14 +124,14 @@ export class ProfilePictureComponent implements OnInit {
         
         // Validate file type
         if (!file.type.startsWith('image/')) {
-          this.toastService.error('Por favor selecciona un archivo de imagen válido');
+          this.toastService.error($localize`:@@profile.invalidImage:Por favor selecciona un archivo de imagen válido`);
           this.isLoading.set(false);
           return;
         }
 
         // Validate file size (max 8MB)
         if (file.size > 8 * 1024 * 1024) {
-          this.toastService.error('La imagen no puede superar los 8MB');
+          this.toastService.error($localize`:@@toast.profile.imageTooLarge8mb:La imagen no puede superar los 8MB`);
           this.isLoading.set(false);
           return;
         }
@@ -140,7 +140,7 @@ export class ProfilePictureComponent implements OnInit {
       }
     } catch (error) {
       this.isLoading.set(false);
-      this.toastService.error('Error al seleccionar la imagen');
+      this.toastService.error($localize`:@@toast.profile.imageSelectError:Error al seleccionar la imagen`);
     }
   }
 
@@ -164,21 +164,21 @@ export class ProfilePictureComponent implements OnInit {
               });
               
               this.isLoading.set(false);
-              this.toastService.success('Foto de perfil actualizada');
+              this.toastService.success($localize`:@@profile.photoUpdated:Foto de perfil actualizada`);
             } else {
               this.isLoading.set(false);
-              this.toastService.error('Error al guardar la foto de perfil');
+              this.toastService.error($localize`:@@toast.profile.savePhotoError:Error al guardar la foto de perfil`);
             }
           },
           error: () => {
             this.isLoading.set(false);
-            this.toastService.error('Error al actualizar el perfil');
+            this.toastService.error($localize`:@@toast.profile.updateError:Error al actualizar el perfil`);
           }
         });
       },
       error: () => {
         this.isLoading.set(false);
-        this.toastService.error('Error al subir la imagen');
+        this.toastService.error($localize`:@@toast.profile.uploadImageError:Error al subir la imagen`);
       }
     });
   }
@@ -186,7 +186,7 @@ export class ProfilePictureComponent implements OnInit {
   removeProfilePicture() {
     const userId = this.authService.getCurrentUserId();
     if (!userId) {
-      this.toastService.error('Usuario no encontrado');
+      this.toastService.error($localize`:@@toast.common.userNotFound:Usuario no encontrado`);
       return;
     }
 
@@ -218,15 +218,15 @@ export class ProfilePictureComponent implements OnInit {
           });
           
           this.isLoading.set(false);
-          this.toastService.info('Foto de perfil eliminada');
+          this.toastService.info($localize`:@@profile.photoRemoved:Foto de perfil eliminada`);
         } else {
           this.isLoading.set(false);
-          this.toastService.error('Error al eliminar la foto de perfil');
+          this.toastService.error($localize`:@@toast.profile.removePhotoError:Error al eliminar la foto de perfil`);
         }
       },
       error: () => {
         this.isLoading.set(false);
-        this.toastService.error('Error al eliminar la foto');
+        this.toastService.error($localize`:@@toast.profile.removePhotoGenericError:Error al eliminar la foto`);
       }
     });
   }

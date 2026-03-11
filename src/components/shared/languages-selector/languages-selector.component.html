@@ -1,0 +1,64 @@
+@if (mode() === 'dropdown') {
+  @if (mode() === 'list') {
+    <div class="w-full bg-white border border-gray-200 rounded-xl max-h-60 overflow-y-auto">
+      @for (language of availableLanguages(); track language.code) {
+        <label class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors">
+          <input
+            type="checkbox"
+            [checked]="isSelected(language.code)"
+            (change)="toggleLanguage(language.code)"
+            [disabled]="isDisabledState()"
+            class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+          />
+          <span class="ml-3 text-sm text-gray-900">{{ language.flag }} {{ language.name }}</span>
+        </label>
+      }
+    </div>
+  } @else {
+    <button
+      type="button"
+      (click)="toggleDropdown()"
+      [disabled]="isDisabledState()"
+      class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-left flex items-center justify-between disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
+    >
+      <span [class.text-gray-400]="!hasSelection()">
+        {{ getDisplayText() }}
+      </span>
+      <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
+
+    @if (showDropdown()) {
+      <div class="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+        @for (language of availableLanguages(); track language.code) {
+          <label class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors">
+            <input
+              type="checkbox"
+              [checked]="isSelected(language.code)"
+              (change)="toggleLanguage(language.code)"
+              [disabled]="isDisabledState()"
+              class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+            />
+            <span class="ml-3 text-sm text-gray-900">{{ language.flag }} {{ language.name }}</span>
+          </label>
+        }
+      </div>
+    }
+  }
+} @else {
+  <div class="w-full bg-white max-h-60 overflow-y-auto">
+    @for (language of availableLanguages(); track language.code) {
+      <label class="flex items-center px-2 py-2.5 hover:bg-gray-50 cursor-pointer transition-colors rounded-lg">
+        <input
+          type="checkbox"
+          [checked]="isSelected(language.code)"
+          (change)="toggleLanguage(language.code)"
+          [disabled]="isDisabledState()"
+          class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+        />
+        <span class="ml-3 text-sm text-gray-900">{{ language.flag }} {{ language.name }}</span>
+      </label>
+    }
+  </div>
+}

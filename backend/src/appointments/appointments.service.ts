@@ -4,6 +4,12 @@ import { MongoService } from '../db/mongo.service';
 import { UsersService } from '../users/users.service';
 import { Appointment, CreateAppointmentInput, UpdateAppointmentInput } from './appointments.types';
 
+export type PublicBusySlot = Readonly<{
+  date: string;
+  startTime: string;
+  endTime: string;
+}>;
+
 type AppointmentDoc = Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'> & {
   _id: ObjectId;
   createdAt: Date;
@@ -24,6 +30,29 @@ export class AppointmentsService {
     private readonly mongo: MongoService,
     private readonly users: UsersService
   ) {}
+
+  /** True when there is at least one non-cancelled appointment between both users (either direction). */
+  async hasNonCancelledAppointmentBetween(params: {
+    requesterUid: string;
+    otherUid: string;
+  }): Promise<boolean> {
+    const requester = await this.users.getByUid(params.requesterUid);
+    if (!requester) throw new ForbiddenException('Missing profile');
+
+    const otherUid = String(params.otherUid || '').trim();
+    if (!otherUid) return false;
+
+    const filter: Record<string, unknown> = {
+      status: { $ne: 'cancelled' },
+      $or: [
+        { doctorId: params.requesterUid, clientId: otherUid },
+        { doctorId: otherUid, clientId: params.requesterUid },
+      ],
+    };
+
+    const doc = await this.mongo.appointments().findOne(filter, { projection: { _id: 1 } });
+    return !!doc;
+  }
 
   async list(params: {
     requesterUid: string;
@@ -99,6 +128,18 @@ export class AppointmentsService {
       throw new ForbiddenException('Not allowed');
     }
 
+    // Always enforce overlap check server-side to prevent double-booking.
+    const availability = await this.isTimeSlotAvailablePublic({
+      doctorId: payload.doctorId,
+      date: payload.date,
+      startTime: payload.startTime,
+      endTime: payload.endTime,
+    });
+
+    if (!availability.available) {
+      throw new ForbiddenException('Slot not available');
+    }
+
     const now = new Date();
     const insert = {
       ...payload,
@@ -166,9 +207,26 @@ export class AppointmentsService {
       throw new ForbiddenException('Not allowed');
     }
 
+    return this.isTimeSlotAvailablePublic({
+      doctorId: params.doctorId,
+      date: params.date,
+      startTime: params.startTime,
+      endTime: params.endTime,
+      excludeAppointmentId: params.excludeAppointmentId,
+    });
+  }
+
+  async isTimeSlotAvailablePublic(params: {
+    doctorId: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+    excludeAppointmentId?: string;
+  }): Promise<{ available: boolean }> {
     const filter: Record<string, unknown> = {
       doctorId: params.doctorId,
       date: params.date,
+      status: { $ne: 'cancelled' },
     };
 
     if (params.excludeAppointmentId) {
@@ -185,6 +243,33 @@ export class AppointmentsService {
 
     const conflict = await this.mongo.appointments().findOne(filter);
     return { available: !conflict };
+  }
+
+  async listPublicBusySlots(params: {
+    doctorId: string;
+    startDate: string;
+    endDate: string;
+  }): Promise<PublicBusySlot[]> {
+    const filter: Record<string, unknown> = {
+      doctorId: params.doctorId,
+      status: { $ne: 'cancelled' },
+      date: {
+        $gte: params.startDate,
+        $lte: params.endDate,
+      },
+    };
+
+    const docs = (await this.mongo
+      .appointments()
+      .find(filter, { projection: { date: 1, startTime: 1, endTime: 1 } })
+      .sort({ date: 1, startTime: 1 })
+      .toArray()) as unknown as Array<{ date: string; startTime: string; endTime: string }>;
+
+    return (docs ?? []).map((d) => ({
+      date: String(d.date ?? ''),
+      startTime: String(d.startTime ?? ''),
+      endTime: String(d.endTime ?? ''),
+    }));
   }
 
   private toAppointment(doc: AppointmentDoc): Appointment {

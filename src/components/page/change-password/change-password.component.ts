@@ -53,7 +53,7 @@ export class ChangePasswordComponent implements OnInit {
 
   async changePassword() {
     if (this.passwordForm.invalid) {
-      this.toastService.error('Por favor completa todos los campos correctamente');
+      this.toastService.error($localize`:@@toast.password.invalidForm:Por favor completa todos los campos correctamente`);
       return;
     }
 
@@ -63,13 +63,15 @@ export class ChangePasswordComponent implements OnInit {
 
     // Validar que las nuevas contraseñas coincidan
     if (newPassword !== confirmPassword) {
-      this.toastService.error('Las contraseñas nuevas no coinciden');
+      this.toastService.error($localize`:@@toast.password.newPasswordsMismatch:Las contraseñas nuevas no coinciden`);
       return;
     }
 
     // Validar que la nueva contraseña sea diferente a la actual
     if (currentPassword === newPassword) {
-      this.toastService.error('La nueva contraseña debe ser diferente a la actual');
+      this.toastService.error(
+        $localize`:@@toast.password.newMustDiffer:La nueva contraseña debe ser diferente a la actual`
+      );
       return;
     }
 
@@ -79,7 +81,7 @@ export class ChangePasswordComponent implements OnInit {
       const user = this.auth.currentUser;
       
       if (!user || !user.email) {
-        this.toastService.error('No se pudo obtener el usuario actual');
+        this.toastService.error($localize`:@@toast.password.currentUserMissing:No se pudo obtener el usuario actual`);
         this.isLoading.set(false);
         return;
       }
@@ -92,9 +94,9 @@ export class ChangePasswordComponent implements OnInit {
       } catch (error: any) {
         console.error('Error al reautenticar:', error);
         if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-          this.toastService.error('La contraseña actual es incorrecta');
+          this.toastService.error($localize`:@@toast.password.currentIncorrect:La contraseña actual es incorrecta`);
         } else {
-          this.toastService.error('Error al verificar la contraseña actual');
+          this.toastService.error($localize`:@@toast.password.currentVerifyError:Error al verificar la contraseña actual`);
         }
         this.isLoading.set(false);
         return;
@@ -103,7 +105,7 @@ export class ChangePasswordComponent implements OnInit {
       // Actualizar la contraseña
       await updatePassword(user, newPassword);
       
-      this.toastService.success('Contraseña actualizada correctamente');
+      this.toastService.success($localize`:@@toast.password.updatedSuccess:Contraseña actualizada correctamente`);
       this.passwordForm.reset();
       
       // Volver a la página anterior después de un breve delay
@@ -115,14 +117,14 @@ export class ChangePasswordComponent implements OnInit {
       console.error('Error al cambiar contraseña:', error);
       
       if (error.code === 'auth/weak-password') {
-        this.toastService.error('La contraseña es demasiado débil');
+        this.toastService.error($localize`:@@toast.password.weakPassword:La contraseña es demasiado débil`);
       } else if (error.code === 'auth/requires-recent-login') {
-        this.toastService.error('Por seguridad, debes volver a iniciar sesión');
+        this.toastService.error($localize`:@@toast.password.reloginRequired:Por seguridad, debes volver a iniciar sesión`);
         setTimeout(() => {
           this.authService.logout();
         }, 2000);
       } else {
-        this.toastService.error('Error al cambiar la contraseña');
+        this.toastService.error($localize`:@@toast.password.changeError:Error al cambiar la contraseña`);
       }
     } finally {
       this.isLoading.set(false);

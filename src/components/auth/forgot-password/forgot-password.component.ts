@@ -46,16 +46,20 @@ export class ForgotPasswordComponent {
         
         if (result.success) {
           this.submitted.set(true);
-          this.toastService.success('Email de recuperación enviado. Revisa tu bandeja');
+          this.toastService.success(
+            $localize`:@@toast.auth.resetEmailSent:Email de recuperación enviado. Revisa tu bandeja`
+          );
         } else {
-          this.errorMessage.set(result.error || 'Error al enviar el email de recuperación');
-          this.toastService.error(result.error || 'Error al enviar el email de recuperación');
+          const fallback = $localize`:@@toast.auth.resetEmailError:Error al enviar el email de recuperación`;
+          this.errorMessage.set(result.error || fallback);
+          this.toastService.error(result.error || fallback);
         }
       },
       error: (error) => {
         this.isLoading.set(false);
-        this.errorMessage.set('Error al enviar el email. Intenta de nuevo.');
-        this.toastService.error('Error al enviar el email. Intenta de nuevo.');
+        const message = $localize`:@@toast.auth.resetEmailErrorRetry:Error al enviar el email. Intenta de nuevo.`;
+        this.errorMessage.set(message);
+        this.toastService.error(message);
         console.error('Password reset error:', error);
       }
     });

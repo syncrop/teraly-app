@@ -6,8 +6,9 @@ import { UsersModule } from './users/users.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
-  imports: [AuthModule, DbModule, HealthModule, UsersModule, AppointmentsModule, FavoritesModule, ReviewsModule],
+  imports: [AuthModule, DbModule, HealthModule, UsersModule, AppointmentsModule, FavoritesModule, ReviewsModule, ChatModule],
 })
 export class AppModule {}

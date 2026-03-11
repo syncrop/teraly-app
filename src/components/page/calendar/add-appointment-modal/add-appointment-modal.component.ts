@@ -8,9 +8,11 @@ import { ToastService } from '../../../../services/toast.service';
 import { Appointment } from '../../../../models/appointment.model';
 import { Firestore, doc, getDoc } from '@angular/fire/firestore';
 import { DaySchedule, BlockedDate } from '../../../../models/availability.model';
+import { AvailabilitySlotsService } from '../../../../services/availability-slots.service';
 
 interface TimeSlot {
   time: string;
+  endTime: string;
   available: boolean;
 }
 
@@ -26,6 +28,7 @@ export class AddAppointmentModalComponent {
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
   private firestore = inject(Firestore);
+  private availabilitySlots = inject(AvailabilitySlotsService);
 
   // Inputs y Outputs
   selectedDate = input<Date>(new Date());
@@ -135,64 +138,42 @@ export class AddAppointmentModalComponent {
     
     const selectedDate = this.selectedDate_internal();
     const dateStr = this.formatDate(selectedDate);
-    
-    // Verificar si el día está bloqueado
-    if (this.isDateBlocked(dateStr)) {
-      this.toastService.info('Esta fecha está bloqueada (vacaciones o día festivo)');
-      this.availableTimeSlots.set([]);
-      this.isLoadingSlots.set(false);
-      return;
-    }
-    
-    // Obtener día de la semana
-    const dayOfWeek = selectedDate.getDay();
-    const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    const dayKey = dayKeys[dayOfWeek];
-    
-    // Buscar configuración del día
-    const daySchedule = this.doctorAvailability.find(d => d.day === dayKey);
-    
-    if (!daySchedule || !daySchedule.enabled || daySchedule.slots.length === 0) {
-      this.toastService.info('No hay horarios configurados para este día');
-      this.availableTimeSlots.set([]);
-      this.isLoadingSlots.set(false);
-      return;
-    }
-    
-    const slots: TimeSlot[] = [];
-    const sessionDuration = +this.doctorSessionDuration;
-    const breakTime = this.doctorBreakTime;
-    
-    // Generar slots basados en los rangos horarios del día
-    daySchedule.slots.forEach(range => {
-      const [startHour, startMinute] = range.start.split(':').map(Number);
-      const [endHour, endMinute] = range.end.split(':').map(Number);
-      
-      let currentTime = startHour * 60 + startMinute;
-      const endTime = endHour * 60 + endMinute;
-      
-      while (currentTime + sessionDuration <= endTime) {
-        const hour = Math.floor(currentTime / 60);
-        const minute = currentTime % 60;
-        const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        
-        slots.push({ time, available: true });
-        currentTime += sessionDuration + breakTime;
-      }
-    });
-    
-    // Verificar disponibilidad real contra citas existentes
-    this.checkSlotsAvailability(slots);
-  }
 
-  isDateBlocked(date: string): boolean {
-    const checkDate = new Date(date);
-    
-    return this.blockedDates.some(blocked => {
-      const startDate = new Date(blocked.startDate);
-      const endDate = new Date(blocked.endDate);
-      return checkDate >= startDate && checkDate <= endDate;
+    // Verificar si el día está bloqueado
+    if (this.availabilitySlots.isDateBlocked(dateStr, this.blockedDates)) {
+      this.toastService.info(
+        $localize`:@@toast.calendar.dateBlocked:Esta fecha está bloqueada (vacaciones o día festivo)`
+      );
+      this.availableTimeSlots.set([]);
+      this.isLoadingSlots.set(false);
+      return;
+    }
+
+    const candidates = this.availabilitySlots.generateSlotCandidatesForDate({
+      date: dateStr,
+      availability: this.doctorAvailability,
+      sessionDurationMinutes: this.doctorSessionDuration,
+      breakMinutes: this.doctorBreakTime,
+      blockedDates: this.blockedDates,
+      // Mantener comportamiento previo: no filtrar horas pasadas automáticamente en la UI del doctor.
+      omitPastOnToday: false,
+      now: new Date(),
     });
+
+    if (candidates.length === 0) {
+      this.toastService.info($localize`:@@toast.calendar.noSchedulesForDay:No hay horarios configurados para este día`);
+      this.availableTimeSlots.set([]);
+      this.isLoadingSlots.set(false);
+      return;
+    }
+
+    const slots: TimeSlot[] = candidates.map((s) => ({
+      time: s.time,
+      endTime: s.endTime,
+      available: true,
+    }));
+
+    this.checkSlotsAvailability(slots);
   }
 
   checkSlotsAvailability(slots: TimeSlot[]) {
@@ -208,13 +189,9 @@ export class AddAppointmentModalComponent {
     // Cargar citas existentes del día
     this.appointmentService.getDoctorAppointmentsByDateRange(doctorId, dateStr, dateStr).subscribe({
       next: (appointments) => {
-        // Marcar slots ocupados
-        const updatedSlots = slots.map(slot => {
-          const hasConflict = appointments.some(apt => {
-            if (apt.status === 'cancelled') return false;
-            return apt.startTime === slot.time;
-          });
-          return { ...slot, available: !hasConflict };
+        const updatedSlots = this.availabilitySlots.markSlotAvailability({
+          slots,
+          appointments,
         });
         
         this.availableTimeSlots.set(updatedSlots);
@@ -286,7 +263,7 @@ export class AddAppointmentModalComponent {
 
   async saveAppointment() {
     if (!this.isFormValid()) {
-      this.toastService.error('Por favor completa todos los campos requeridos');
+      this.toastService.error($localize`:@@toast.common.requiredFieldsAll:Por favor completa todos los campos requeridos`);
       return;
     }
 
@@ -310,7 +287,7 @@ export class AddAppointmentModalComponent {
     ).toPromise();
 
     if (!isAvailable) {
-      this.toastService.error('Este horario ya no está disponible');
+      this.toastService.error($localize`:@@toast.appointments.slotUnavailableShort:Este horario ya no está disponible`);
       this.isSaving.set(false);
       this.generateAvailableSlots(); // Refrescar slots
       return;
@@ -336,17 +313,17 @@ export class AddAppointmentModalComponent {
     this.appointmentService.createAppointment(appointment).subscribe({
       next: (appointmentId) => {
         if (appointmentId) {
-          this.toastService.success('Cita creada exitosamente');
+          this.toastService.success($localize`:@@toast.calendar.createSuccess:Cita creada exitosamente`);
           this.appointmentCreated.emit();
           this.closeModal();
         } else {
-          this.toastService.error('Error al crear la cita');
+          this.toastService.error($localize`:@@toast.calendar.createError:Error al crear la cita`);
         }
         this.isSaving.set(false);
       },
       error: (error) => {
         console.error('Error al crear cita:', error);
-        this.toastService.error('Error al crear la cita');
+        this.toastService.error($localize`:@@toast.calendar.createError:Error al crear la cita`);
         this.isSaving.set(false);
       }
     });

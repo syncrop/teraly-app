@@ -61,6 +61,12 @@ export const APP_ROUTES: Routes = [
         data: { expectedRole: 'doctor' }
       },
       {
+        path: 'edit-client-profile',
+        loadComponent: () => import('./components/page/profile/edit-client-profile/edit-client-profile.component').then(c => c.EditClientProfileComponent),
+        canActivate: [accessGuard],
+        data: { expectedRole: 'client' }
+      },
+      {
         path: 'help-support',
         loadComponent: () => import('./components/page/help-support/help-support.component').then(c => c.HelpSupportComponent)
       },
@@ -91,6 +97,10 @@ export const APP_ROUTES: Routes = [
       {
         path: 'video-call/:id',
         loadComponent: () => import('./components/page/video-call/video-call.component').then(c => c.VideoCallComponent)
+      },
+      {
+        path: 'chat/dm/:id',
+        loadComponent: () => import('./components/page/chat/direct-message-chat/direct-message-chat.component').then(c => c.DirectMessageChatComponent)
       },
       {
         path: 'privacy-security',
