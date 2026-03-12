@@ -14,6 +14,7 @@ export type StreamTokenResponse = {
 @Injectable()
 export class ChatService {
   private serverClient: StreamChat | null = null;
+  private serverClientApiKey: string | null = null;
 
   getApiKey(): string {
     const apiKey =
@@ -42,10 +43,16 @@ export class ChatService {
   }
 
   private getServerClient(): StreamChat {
-    if (this.serverClient) return this.serverClient;
-
     const apiKey = this.getApiKey();
     const apiSecret = this.getApiSecret();
+
+    // Avoid mismatches when env vars change but the process stays up.
+    // Stream tokens must be signed with the secret that belongs to the same apiKey.
+    if (this.serverClient && this.serverClientApiKey === apiKey) {
+      return this.serverClient;
+    }
+
+    this.serverClientApiKey = apiKey;
 
     this.serverClient = StreamChat.getInstance(apiKey, apiSecret);
     return this.serverClient;
@@ -56,6 +63,7 @@ export class ChatService {
     name?: string;
     image?: string;
   }): Promise<StreamTokenResponse> {
+    const apiKey = this.getApiKey();
     const client = this.getServerClient();
 
     // Best-effort: create/update the user on Stream so names/avatars show up.
@@ -72,7 +80,7 @@ export class ChatService {
     const token = client.createToken(params.userId);
 
     return {
-      apiKey: this.getApiKey(),
+      apiKey,
       token,
       user: {
         id: params.userId,
@@ -88,9 +96,10 @@ export class ChatService {
   }
 
   directMessageChannelId(userA: string, userB: string): string {
-    const safe = (id: string) => id.trim().replace(/[^a-zA-Z0-9_-]/g, '_');
-    const [a, b] = [safe(userA), safe(userB)].sort();
-    return `dm-${a}-${b}`;
+    const a = userA.trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+    const b = userB.trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+    const [first, second] = [a, b].sort();
+    return `dm-${first}-${second}`;
   }
 
   async ensureAppointmentChannel(params: {
@@ -129,12 +138,15 @@ export class ChatService {
   }): Promise<{ channelType: 'messaging'; channelId: string }> {
     const client = this.getServerClient();
 
-    const requesterId = String(params.requesterId || '').trim();
-    const otherUserId = String(params.otherUserId || '').trim();
-    const members = Array.from(new Set([requesterId, otherUserId].map((m) => m.trim()).filter(Boolean)));
+    const members = Array.from(
+      new Set([params.requesterId, params.otherUserId].map((m) => m.trim()).filter(Boolean))
+    );
 
-    const channelId = this.directMessageChannelId(requesterId, otherUserId);
-    const channel = client.channel('messaging', channelId, { members });
+    const channelId = this.directMessageChannelId(params.requesterId, params.otherUserId);
+
+    const channel = client.channel('messaging', channelId, {
+      members,
+    });
 
     try {
       await channel.create();

@@ -14,6 +14,11 @@
        class="text-gray-600 hover:text-indigo-600 transition-colors">
       <span i18n="@@navigation.search">Search</span>
     </a>
+    <a routerLink="/app/chats"
+       routerLinkActive="text-indigo-600 font-semibold"
+       class="text-gray-600 hover:text-indigo-600 transition-colors">
+      <span i18n="@@navigation.chats">Chats</span>
+    </a>
     <a routerLink="/app/profile"
        routerLinkActive="text-indigo-600 font-semibold"
        class="text-gray-600 hover:text-indigo-600 transition-colors">
@@ -27,7 +32,7 @@
 }
 
 <!-- Main Content -->
-<main [class.md:pt-20]="showHeader()" [class.pb-24]="showFooter()" class="min-h-full bg-white md:pt-0" 
+<main [class.md:pt-20]="showHeader()" [class.pb-24]="showFooter()" class="bg-white md:pt-0" 
       (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
   <router-outlet></router-outlet>
 </main>

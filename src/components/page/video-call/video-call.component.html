@@ -46,7 +46,18 @@
             <div class="message-content">
               <div class="message-sender">{{ msg.sender }}</div>
               <div class="message-text">{{ msg.text }}</div>
-              <div class="message-time">{{ msg.time }}</div>
+              <div class="message-time">
+                <span>{{ msg.time }}</span>
+                <span
+                  *ngIf="msg.isOwn && msg.deliveryStatus"
+                  class="message-check"
+                  [class.read]="msg.deliveryStatus === 'read'">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12l6 6L19 6"></path>
+                    <path d="M10 12l6 6L23 7"></path>
+                  </svg>
+                </span>
+              </div>
             </div>
           </div>
           <div *ngIf="messages().length === 0" class="no-messages">

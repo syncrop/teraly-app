@@ -76,6 +76,10 @@ export class DirectMessageChatComponent implements OnInit, OnDestroy {
 
     try {
       await this.streamChat.connectToDirectMessage(id);
+
+      // Mark as read as soon as the chat screen opens.
+      await this.streamChat.markRead();
+
       this.isLoading.set(false);
       queueMicrotask(() => this.scrollToBottom());
     } catch (err: any) {

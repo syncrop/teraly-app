@@ -11,6 +11,7 @@ export type ChatMessage = Readonly<{
   sender: string;
   time: string;
   isOwn: boolean;
+  deliveryStatus?: 'sent' | 'read';
 }>;
 
 @Injectable({
@@ -54,7 +55,9 @@ export class StreamChatService {
     }
 
     const tokenResponse = await firstValueFrom(this.chatApi.getStreamToken());
-    const client = StreamChat.getInstance(tokenResponse.apiKey);
+    const client = StreamChat.getInstance(tokenResponse.apiKey, {
+      timeout: 6000,
+    });
 
     const userName = this.auth.currentUser()?.fullName || tokenResponse.user.name || currentUid;
     const userImage = this.auth.currentUser()?.photoURL || tokenResponse.user.image;
@@ -82,14 +85,19 @@ export class StreamChatService {
     this.channel = channel;
     this.isConnected.set(true);
 
-    this.messages.set(this.mapMessages(channel.state.messages || [], currentUid));
+    this.updateMessagesFromState(currentUid);
 
-    const subscription = channel.on('message.new', () => {
-      const stateMessages = channel.state.messages || [];
-      this.messages.set(this.mapMessages(stateMessages, currentUid));
-    });
+    const onChange = () => this.updateMessagesFromState(currentUid);
 
-    this.unsubscribeChannelEvents = () => subscription.unsubscribe();
+    const subNew = channel.on('message.new', onChange);
+    const subUpdated = channel.on('message.updated', onChange);
+    const subRead = channel.on('message.read', onChange);
+
+    this.unsubscribeChannelEvents = () => {
+      subNew.unsubscribe();
+      subUpdated.unsubscribe();
+      subRead.unsubscribe();
+    };
   }
 
   async connectToAppointment(appointment: Appointment): Promise<void> {
@@ -143,14 +151,34 @@ export class StreamChatService {
     this.channel = channel;
     this.isConnected.set(true);
 
-    this.messages.set(this.mapMessages(channel.state.messages || [], currentUid));
+    this.updateMessagesFromState(currentUid);
 
-    const subscription = channel.on('message.new', () => {
-      const stateMessages = channel.state.messages || [];
-      this.messages.set(this.mapMessages(stateMessages, currentUid));
-    });
+    const onChange = () => this.updateMessagesFromState(currentUid);
 
-    this.unsubscribeChannelEvents = () => subscription.unsubscribe();
+    const subNew = channel.on('message.new', onChange);
+    const subUpdated = channel.on('message.updated', onChange);
+    const subRead = channel.on('message.read', onChange);
+
+    this.unsubscribeChannelEvents = () => {
+      subNew.unsubscribe();
+      subUpdated.unsubscribe();
+      subRead.unsubscribe();
+    };
+  }
+
+  async markRead(): Promise<void> {
+    if (!this.channel) return;
+
+    try {
+      await this.channel.markRead();
+    } catch {
+      // ignore
+    }
+
+    const currentUid = this.auth.getCurrentUserId();
+    if (currentUid) {
+      this.updateMessagesFromState(currentUid);
+    }
   }
 
   async send(text: string): Promise<void> {
@@ -184,7 +212,15 @@ export class StreamChatService {
     this.messages.set([]);
   }
 
-  private mapMessages(raw: Array<any>, currentUid: string): ChatMessage[] {
+  private updateMessagesFromState(currentUid: string): void {
+    const channel = this.channel;
+    if (!channel) return;
+    const stateMessages = channel.state.messages || [];
+    const readState = this.normalizeReadState(channel.state.read);
+    this.messages.set(this.mapMessages(stateMessages, currentUid, readState));
+  }
+
+  private mapMessages(raw: Array<any>, currentUid: string, readState: Array<any>): ChatMessage[] {
     return raw
       .filter((m) => typeof m?.text === 'string' && m.text.trim().length)
       .map((m) => {
@@ -194,14 +230,46 @@ export class StreamChatService {
         const senderId = String(m?.user?.id ?? '');
         const senderName = String(m?.user?.name ?? senderId ?? '');
 
+        const isOwn = senderId === currentUid;
+
+        const status = String(m?.status ?? '').toLowerCase();
+        const isSent = isOwn && (status === 'received' || status === 'sent');
+        const isRead = isSent && this.isMessageReadByOthers(created, currentUid, readState);
+
+        const deliveryStatus: ChatMessage['deliveryStatus'] = isRead ? 'read' : isSent ? 'sent' : undefined;
+
         return {
           id: String(m?.id ?? `${created.getTime()}-${senderId}`),
           text: String(m.text),
           sender: senderName || senderId || 'Usuario',
           time,
-          isOwn: senderId === currentUid,
+          isOwn,
+          deliveryStatus,
         } as ChatMessage;
       });
+  }
+
+  private isMessageReadByOthers(createdAt: Date, currentUid: string, readState: Array<any>): boolean {
+    const others = (readState || []).filter((r) => String(r?.user?.id ?? '') !== currentUid);
+    if (!others.length) return false;
+
+    return others.every((r) => {
+      const lastRead = r?.last_read ? new Date(r.last_read) : null;
+      if (!lastRead || Number.isNaN(lastRead.getTime())) return false;
+      return lastRead.getTime() >= createdAt.getTime();
+    });
+  }
+
+  private normalizeReadState(read: unknown): Array<any> {
+    // Stream SDKs have exposed `channel.state.read` both as:
+    // - Array<{ user: {id}, last_read }>
+    // - Record<userId, { user: {id}, last_read }>
+    if (!read) return [];
+    if (Array.isArray(read)) return read;
+    if (typeof read === 'object') {
+      return Object.values(read as Record<string, unknown>);
+    }
+    return [];
   }
 
   private toAppointmentChannelId(appointmentId: string): string {

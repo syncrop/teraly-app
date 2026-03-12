@@ -95,6 +95,10 @@ export const APP_ROUTES: Routes = [
         data: { expectedRole: 'client' }
       },
       {
+        path: 'chats',
+        loadComponent: () => import('./components/page/chat/conversations-list').then(c => c.ConversationsListComponent)
+      },
+      {
         path: 'video-call/:id',
         loadComponent: () => import('./components/page/video-call/video-call.component').then(c => c.VideoCallComponent)
       },

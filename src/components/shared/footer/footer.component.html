@@ -21,7 +21,7 @@
       <!-- Panel -->
       <a
         (click)="navigateToHome($event)"
-        class="flex flex-col items-center justify-center h-full px-2 min-w-[60px] cursor-pointer transition-colors"
+        class="flex flex-1 min-w-0 flex-col items-center justify-center h-full px-1 cursor-pointer transition-colors"
         [class.text-indigo-600]="isActive('/app')"
         [class.text-gray-400]="!isActive('/app')"
       >
@@ -34,7 +34,7 @@
       <!-- Pacientes -->
       <a
         routerLink="/app/patients"
-        class="flex flex-col items-center justify-center h-full px-2 min-w-[60px] transition-colors"
+        class="flex flex-1 min-w-0 flex-col items-center justify-center h-full px-1 transition-colors"
         [class.text-indigo-600]="isActive('/patients')"
         [class.text-gray-400]="!isActive('/patients')"
       >
@@ -47,7 +47,7 @@
       <!-- Agenda -->
       <a
         routerLink="/app/calendar"
-        class="flex flex-col items-center justify-center h-full px-2 min-w-[60px] transition-colors"
+        class="flex flex-1 min-w-0 flex-col items-center justify-center h-full px-1 transition-colors"
         [class.text-indigo-600]="isActive('/calendar')"
         [class.text-gray-400]="!isActive('/calendar')"
       >
@@ -57,10 +57,23 @@
         <span class="text-[10px] font-medium leading-none truncate">Agenda</span>
       </a>
 
+      <!-- Chats -->
+      <a
+        routerLink="/app/chats"
+        class="flex flex-1 min-w-0 flex-col items-center justify-center h-full px-1 transition-colors"
+        [class.text-indigo-600]="isActive('/chats')"
+        [class.text-gray-400]="!isActive('/chats')"
+      >
+        <svg class="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4l-4 4v-4z" />
+        </svg>
+        <span class="text-[10px] font-medium leading-none truncate">Chats</span>
+      </a>
+
       <!-- Perfil -->
       <a
         routerLink="/app/profile"
-        class="flex flex-col items-center justify-center h-full px-2 min-w-[60px] transition-colors"
+        class="flex flex-1 min-w-0 flex-col items-center justify-center h-full px-1 transition-colors"
         [class.text-indigo-600]="isActive('/profile')"
         [class.text-gray-400]="!isActive('/profile')"
       >
@@ -76,7 +89,7 @@
       <!-- Inicio -->
       <a
         (click)="navigateToHome($event)"
-        class="flex flex-col items-center justify-center h-full px-2 min-w-[60px] cursor-pointer transition-colors"
+        class="flex flex-1 min-w-0 flex-col items-center justify-center h-full px-1 cursor-pointer transition-colors"
         [class.text-indigo-600]="isActive('/app')"
         [class.text-gray-400]="!isActive('/app')"
       >
@@ -89,7 +102,7 @@
       <!-- Buscar -->
       <a
         routerLink="/app/search"
-        class="flex flex-col items-center justify-center h-full px-2 min-w-[60px] transition-colors"
+        class="flex flex-1 min-w-0 flex-col items-center justify-center h-full px-1 transition-colors"
         [class.text-indigo-600]="isActive('/search')"
         [class.text-gray-400]="!isActive('/search')"
       >
@@ -102,7 +115,7 @@
       <!-- Citas -->
       <a
         routerLink="/app/appointments"
-        class="flex flex-col items-center justify-center h-full px-2 min-w-[60px] transition-colors"
+        class="flex flex-1 min-w-0 flex-col items-center justify-center h-full px-1 transition-colors"
         [class.text-indigo-600]="isActive('/appointments')"
         [class.text-gray-400]="!isActive('/appointments')"
       >
@@ -112,10 +125,23 @@
         <span class="text-[10px] font-medium leading-none truncate">Citas</span>
       </a>
 
+      <!-- Chats -->
+      <a
+        routerLink="/app/chats"
+        class="flex flex-1 min-w-0 flex-col items-center justify-center h-full px-1 transition-colors"
+        [class.text-indigo-600]="isActive('/chats')"
+        [class.text-gray-400]="!isActive('/chats')"
+      >
+        <svg class="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4l-4 4v-4z" />
+        </svg>
+        <span class="text-[10px] font-medium leading-none truncate">Chats</span>
+      </a>
+
       <!-- Perfil -->
       <a
         routerLink="/app/profile"
-        class="flex flex-col items-center justify-center h-full px-2 min-w-[60px] transition-colors"
+        class="flex flex-1 min-w-0 flex-col items-center justify-center h-full px-1 transition-colors"
         [class.text-indigo-600]="isActive('/profile')"
         [class.text-gray-400]="!isActive('/profile')"
       >

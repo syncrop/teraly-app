@@ -95,8 +95,9 @@ export class PatientsComponent implements OnInit {
   }
 
   startChat(patient: Patient) {
-    // TODO: Implementar chat
-    console.log('Iniciar chat con:', patient.fullName);
+    const patientId = String(patient?.uid || '').trim();
+    if (!patientId) return;
+    this.router.navigate(['/app/chat/dm', patientId]);
   }
 
   callPatient(patient: Patient) {

@@ -29,11 +29,14 @@ export class PageComponent {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
-      const isVideoCall = event.url.includes('/video-call');
-      // Hide footer only on video-call
-      this.showFooter.set(!isVideoCall);
-      // Hide header on video-call
-      this.showHeader.set(!isVideoCall);
+      const url = event.urlAfterRedirects || event.url;
+      const isVideoCall = url.includes('/video-call');
+      const isChat = url.includes('/chat/');
+
+      // Hide footer on screens that implement their own bottom bars.
+      this.showFooter.set(!(isVideoCall || isChat));
+      // Hide header on immersive screens (they render their own header).
+      this.showHeader.set(!(isVideoCall || isChat));
       // Change root-container background for video-call
       const rootContainer = document.getElementById('root-container');
       if (rootContainer) {
@@ -102,8 +105,8 @@ export class PageComponent {
 
   goToNextFooterScreen() {
     const isDoctor = this.userRole() === 'doctor';
-    const doctorTabs = ['/app/home-doctor', '/app/patients', '/app/calendar', '/app/profile'];
-    const clientTabs = ['/app/home-client', '/app/search', '/app/appointments', '/app/profile'];
+    const doctorTabs = ['/app/home-doctor', '/app/patients', '/app/calendar', '/app/chats', '/app/profile'];
+    const clientTabs = ['/app/home-client', '/app/search', '/app/appointments', '/app/chats', '/app/profile'];
     const tabs = isDoctor ? doctorTabs : clientTabs;
     const currentIndex = tabs.findIndex(tab => this.router.url.startsWith(tab));
     if (currentIndex < tabs.length - 1) {
@@ -114,8 +117,8 @@ export class PageComponent {
 
   goToPrevFooterScreen() {
     const isDoctor = this.userRole() === 'doctor';
-    const doctorTabs = ['/app/home-doctor', '/app/patients', '/app/calendar', '/app/profile'];
-    const clientTabs = ['/app/home-client', '/app/search', '/app/appointments', '/app/profile'];
+    const doctorTabs = ['/app/home-doctor', '/app/patients', '/app/calendar', '/app/chats', '/app/profile'];
+    const clientTabs = ['/app/home-client', '/app/search', '/app/appointments', '/app/chats', '/app/profile'];
     const tabs = isDoctor ? doctorTabs : clientTabs;
     const currentIndex = tabs.findIndex(tab => this.router.url.startsWith(tab));
     if (currentIndex > 0) {

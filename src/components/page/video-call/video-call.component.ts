@@ -94,6 +94,9 @@ export class VideoCallComponent implements OnInit, OnDestroy {
 
   private async connectStreamChat(appointment: Appointment): Promise<void> {
     await this.streamChat.connectToAppointment(appointment);
+
+    // Mark as read as soon as the video call starts (no need to open the chat panel).
+    await this.streamChat.markRead();
   }
 
   private async startCall(): Promise<void> {
@@ -270,7 +273,12 @@ export class VideoCallComponent implements OnInit, OnDestroy {
   }
 
   toggleChat(): void {
-    this.showChat.set(!this.showChat());
+    const next = !this.showChat();
+    this.showChat.set(next);
+
+    if (next) {
+      this.streamChat.markRead().catch(() => undefined);
+    }
   }
 
   sendMessage(): void {
